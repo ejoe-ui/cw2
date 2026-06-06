@@ -627,7 +627,13 @@ async function verifyPin() {
   if (!roomVal) { showPinError('Enter a room number'); return; }
   if (!pinVal)  { showPinError('Enter your PIN'); return; }
 
-  if (pinVal === MASTER_PIN) { ROOM = roomVal; await unlockAdmin(); return; }
+  if (pinVal === MASTER_PIN) {
+  // Master only works if no PIN is set yet
+  const check = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=config`);
+  const hasPin = check?.[0]?.config?.admin_pin;
+  if (hasPin) { showPinError('Incorrect PIN'); return; }
+  ROOM = roomVal; await unlockAdmin(); return;
+}
 
   const rows = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=*`);
   if (!rows || !rows.length) { showPinError('Room not found'); return; }
