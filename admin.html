@@ -450,6 +450,54 @@
     <div class="error-text" id="pinChangeError" style="text-align:left;margin-top:6px"></div>
   </div>
 
+  <!-- ROOM MANAGEMENT -->
+  <div class="section">
+    <div class="section-head">
+      <div class="section-title">Room Management</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- Onboard new room -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Onboard New Room</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <div class="field-group" style="flex:1">
+            <label class="field-label">Room Number</label>
+            <input class="field-input" id="newRoomNum" type="text" maxlength="4" placeholder="e.g. 26">
+          </div>
+          <div class="field-group" style="flex:2">
+            <label class="field-label">Teacher Name</label>
+            <input class="field-input" id="newRoomTeacher" type="text" placeholder="e.g. Ms. Smith">
+          </div>
+          <div class="field-group" style="flex:2">
+            <label class="field-label">Teacher Email</label>
+            <input class="field-input" id="newRoomEmail" type="text" placeholder="e.g. smith@rjusd.org">
+          </div>
+          <button class="btn accent" onclick="onboardRoom()" style="height:38px;white-space:nowrap">Add Room</button>
+        </div>
+        <div class="field-hint" style="margin-top:6px">Default PIN will be set to the room number. Teacher will be prompted to change it on first login.</div>
+        <div class="error-text" id="onboardError" style="text-align:left;margin-top:4px"></div>
+      </div>
+
+      <div style="height:1px;background:var(--border);"></div>
+
+      <!-- Reset room PIN -->
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:8px;">Reset Teacher PIN</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <div class="field-group" style="flex:1">
+            <label class="field-label">Room Number</label>
+            <input class="field-input" id="resetRoomNum" type="text" maxlength="4" placeholder="e.g. 26">
+          </div>
+          <button class="btn" onclick="resetRoomPin()" style="height:38px;border-color:var(--warning);color:var(--warning)">Reset PIN</button>
+        </div>
+        <div class="field-hint" style="margin-top:6px">Resets the room PIN back to the room number and flags it as default. Teacher logs in with their room number as PIN.</div>
+        <div class="error-text" id="resetError" style="text-align:left;margin-top:4px"></div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
 
 <!-- MODAL -->
@@ -626,6 +674,15 @@ async function unlockAdmin() {
   }
   updateRoomInfo();
   await loadScreens();
+
+  // If default PIN, prompt to change it
+  if (classroom && classroom.config && classroom.config.pin_is_default) {
+    setTimeout(function() {
+      document.getElementById('pinChangeError').textContent = '';
+      document.getElementById('newPinInput').focus();
+      toast('Please set a new PIN — scroll down to Change PIN', false);
+    }, 600);
+  }
 }
 
 function logout() {
@@ -787,6 +844,7 @@ async function changePin() {
   errEl.textContent = '';
   var currentConfig = (classroom && classroom.config) ? classroom.config : {};
   currentConfig.admin_pin = newPin;
+  currentConfig.pin_is_default = false;
   if (classroom && classroom.id) {
     await sbUpdate('cw2_classrooms', classroom.id, { config: currentConfig });
     classroom.config = currentConfig;
@@ -796,6 +854,59 @@ async function changePin() {
   } else {
     errEl.textContent = 'Classroom record not found';
   }
+}
+
+// ── ROOM MANAGEMENT ──────────────────────────────
+async function onboardRoom() {
+  var roomNum  = document.getElementById('newRoomNum').value.trim();
+  var teacher  = document.getElementById('newRoomTeacher').value.trim();
+  var email    = document.getElementById('newRoomEmail').value.trim();
+  var errEl    = document.getElementById('onboardError');
+  errEl.textContent = '';
+
+  if (!roomNum)  { errEl.textContent = 'Room number required'; return; }
+  if (!teacher)  { errEl.textContent = 'Teacher name required'; return; }
+
+  // Check if room already exists
+  var existing = await sbFetch('cw2_classrooms', 'room=eq.' + roomNum + '&select=room');
+  if (existing && existing.length) { errEl.textContent = 'Room ' + roomNum + ' already exists'; return; }
+
+  var defaultPin = roomNum + roomNum; // e.g. room 26 → PIN 2626
+  var data = {
+    room: roomNum,
+    badge: 'RHS · ROOM ' + roomNum,
+    teacher_name: teacher,
+    teacher_email: email || null,
+    is_active: true,
+    config: { admin_pin: defaultPin, pin_is_default: true }
+  };
+
+  var result = await sbInsert('cw2_classrooms', data);
+  if (!result) { errEl.textContent = 'Failed to create room — check Supabase'; return; }
+
+  document.getElementById('newRoomNum').value = '';
+  document.getElementById('newRoomTeacher').value = '';
+  document.getElementById('newRoomEmail').value = '';
+  toast('Room ' + roomNum + ' added — default PIN: ' + defaultPin);
+}
+
+async function resetRoomPin() {
+  var roomNum = document.getElementById('resetRoomNum').value.trim();
+  var errEl   = document.getElementById('resetError');
+  errEl.textContent = '';
+
+  if (!roomNum) { errEl.textContent = 'Enter a room number'; return; }
+
+  var rows = await sbFetch('cw2_classrooms', 'room=eq.' + roomNum + '&select=id,config');
+  if (!rows || !rows.length) { errEl.textContent = 'Room ' + roomNum + ' not found'; return; }
+
+  var defaultPin = roomNum + roomNum;
+  var newConfig = { admin_pin: defaultPin, pin_is_default: true };
+  var result = await sbUpdate('cw2_classrooms', rows[0].id, { config: newConfig });
+  if (!result) { errEl.textContent = 'Reset failed — check Supabase'; return; }
+
+  document.getElementById('resetRoomNum').value = '';
+  toast('Room ' + roomNum + ' PIN reset — new PIN: ' + defaultPin);
 }
 
 // ── TOAST ─────────────────────────────────────────
