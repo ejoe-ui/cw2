@@ -606,7 +606,6 @@ function buildBoard() {
   }
 }
 
-// ── ALIGNMENT ── supports 'center' (default) and 'left'
 function padLine(text, cols, align) {
   text = (text || '').toUpperCase().substring(0, cols);
   if (align === 'left') {
@@ -712,8 +711,8 @@ function setSyncStatus(state, label) {
   document.getElementById('syncLabel').textContent = label;
 }
 
+// ── LOAD SCREENS — local + 1 random global per rotation ──
 async function loadScreens() {
-  // Load local screens, global screens, and room prefs in parallel
   var results = await Promise.all([
     sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc'),
     sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc'),
@@ -728,41 +727,47 @@ async function loadScreens() {
   var prefsMap = {};
   prefs.forEach(function(p) { prefsMap[p.screen_id] = p; });
 
-  // Process all screens — apply prefs overrides
-  function processScreen(r, isGlobal) {
+  // Filter and map local screens
+  var mapped = [];
+  localScreens.forEach(function(r) {
+    if (!r.enabled) return;
     var pref = prefsMap[r.id];
-    // If teacher has disabled this screen for their room, skip it
-    if (pref && pref.enabled === false) return null;
+    if (pref && pref.enabled === false) return;
     var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
-    return {
+    mapped.push({
       lines:      lines,
       speed:      r.speed || 10,
       id:         r.id,
       align:      r.align || 'center',
-      isGlobal:   isGlobal,
+      isGlobal:   false,
       sort_order: pref ? pref.sort_order : r.sort_order
-    };
+    });
+  });
+
+  // Sort local screens by sort_order
+  mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
+
+  // Filter eligible globals (not disabled by teacher pref)
+  var eligibleGlobals = globalScreens.filter(function(r) {
+    var pref = prefsMap[r.id];
+    return !(pref && pref.enabled === false);
+  });
+
+  // Pick 1 random global and append
+  if (eligibleGlobals.length) {
+    var pick = eligibleGlobals[Math.floor(Math.random() * eligibleGlobals.length)];
+    var lines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines || '[]');
+    mapped.push({
+      lines:    lines,
+      speed:    pick.speed || 12,
+      id:       pick.id,
+      align:    pick.align || 'center',
+      isGlobal: true,
+      sort_order: 9999
+    });
   }
 
-  var allScreens = [];
-  localScreens.forEach(function(r) {
-    // Local screens respect their own enabled flag
-    if (!r.enabled) return;
-    var s = processScreen(r, false);
-    if (s) allScreens.push(s);
-  });
-  globalScreens.forEach(function(r) {
-    // Global screens are always enabled unless teacher has explicitly disabled
-    var s = processScreen(r, true);
-    if (s) allScreens.push(s);
-  });
-
-  if (!allScreens.length) return null;
-
-  // Sort by sort_order
-  allScreens.sort(function(a, b) { return a.sort_order - b.sort_order; });
-
-  return allScreens;
+  return mapped.length ? mapped : null;
 }
 
 async function loadHonorRoll() {
