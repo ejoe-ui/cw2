@@ -562,7 +562,7 @@
 <script>
 const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
-const MASTER_PIN   = '8675'; // ← Change this to your master override PIN
+
 
 let ROOM = '', classroom = null, screens = [], editingId = null;
 
@@ -622,6 +622,39 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 async function verifyPin() {
+  const roomVal = document.getElementById('pinRoom').value.trim();
+  const pinVal  = document.getElementById('pinInput').value.trim();
+  if (!roomVal) { showPinError('Enter a room number'); return; }
+  if (!pinVal)  { showPinError('Enter your PIN'); return; }
+
+  // Fetch master PIN from Supabase
+  const adminRow = await sbFetch('cw2_settings', `room=eq.admin&select=master_pin`);
+  const masterPin = adminRow?.[0]?.master_pin || null;
+
+  // Master override — only works if room has no PIN set
+  if (masterPin && pinVal === masterPin) {
+    const check = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=config`);
+    const hasPin = check?.[0]?.config?.admin_pin;
+    if (hasPin) { showPinError('Incorrect PIN'); return; }
+    ROOM = roomVal; await unlockAdmin(); return;
+  }
+
+  // Normal room PIN check
+  const rows = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=*`);
+  if (!rows || !rows.length) { showPinError('Room not found'); return; }
+  const cls = rows[0];
+  const storedPin = cls.config?.admin_pin || null;
+  if (!storedPin) { showPinError('No PIN set — contact your admin'); return; }
+  if (pinVal !== String(storedPin)) {
+    showPinError('Incorrect PIN');
+    const inp = document.getElementById('pinInput');
+    inp.classList.add('error');
+    setTimeout(() => inp.classList.remove('error'), 400);
+    return;
+  }
+  ROOM = roomVal; classroom = cls;
+  await unlockAdmin();
+}
   const roomVal = document.getElementById('pinRoom').value.trim();
   const pinVal  = document.getElementById('pinInput').value.trim();
   if (!roomVal) { showPinError('Enter a room number'); return; }
