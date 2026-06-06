@@ -326,10 +326,12 @@
 
   <!-- NOISE METER -->
   <div id="noise-meter" title="Noise level — click to adjust" onclick="toggleNoisePanel()">
-    <div class="nm-bar" id="nm0"></div><div class="nm-bar" id="nm1"></div>
+<div class="nm-bar" id="nm0"></div><div class="nm-bar" id="nm1"></div>
     <div class="nm-bar" id="nm2"></div><div class="nm-bar" id="nm3"></div>
     <div class="nm-bar" id="nm4"></div><div class="nm-bar" id="nm5"></div>
     <div class="nm-bar" id="nm6"></div><div class="nm-bar" id="nm7"></div>
+    <div class="nm-bar" id="nm8"></div><div class="nm-bar" id="nm9"></div>
+    <div class="nm-bar" id="nm10"></div><div class="nm-bar" id="nm11"></div>
   </div>
 
   <div class="h-divider"></div>
@@ -898,10 +900,10 @@ function nmTick() {
   for (let i=0;i<slice;i++) sum += data[i]*data[i];
   const rms   = Math.sqrt(sum/slice);
   const level = Math.min(100, Math.round((rms/255)*100*2.2));
-  for (let i=0;i<8;i++) {
+  for (let i=0;i<12;i++) {
     const b = document.getElementById('nm'+i);
     if (!b) continue;
-    const on = level >= (i+1)*12.5;
+    const on = level >= (i+1)*8.33;
     if (on) {
       if      (level >= nmRed)    b.className = 'nm-bar on-red';
       else if (level >= nmYellow) b.className = 'nm-bar on-yellow';
