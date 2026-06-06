@@ -21,7 +21,6 @@
     --tan:         #C4BEB5;
   }
 
-  /* ══ THEMES ══ */
   [data-theme="retro-dark"] {
     --green: #005640; --green-dark: #003d2e; --green-dim: #002a1a;
     --tile-bg: #1a1a1a; --tile-border: #2c2c2c; --tile-text: #f0ebe0;
@@ -50,7 +49,6 @@
     --font-tile: var(--font-modern); --font-ui: var(--font-label);
     --scaleX: 1; --scanline: 0;
   }
-  /* ── WALL-E MODE ── */
   [data-theme="walle"] {
     --green: #c8a84b; --green-dark: #9a7a2a; --green-dim: #2a1a00;
     --tile-bg: #1a1000; --tile-border: #3a2800; --tile-text: #f0c060;
@@ -58,7 +56,6 @@
     --font-tile: var(--font-retro); --font-ui: var(--font-retro);
     --scaleX: 0.78; --scanline: 1;
   }
-  /* ── EVE MODE ── */
   [data-theme="eve"] {
     --green: #4db8ff; --green-dark: #2a8acc; --green-dim: #001a2a;
     --tile-bg: #f0f8ff; --tile-border: #c0e0f8; --tile-text: #003366;
@@ -79,7 +76,6 @@
     opacity: var(--scanline, 0); transition: opacity 0.4s;
   }
 
-  /* ══ HEADER ══ */
   #header {
     position: relative; width: 100%; height: 10vh;
     min-height: 56px; max-height: 80px;
@@ -152,7 +148,6 @@
   }
   @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
 
-  /* ══ NOISE METER ══ */
   #noise-meter {
     display: none; align-items: center; gap: 3px;
     flex-shrink: 0; height: 32px; padding: 0 4px;
@@ -167,7 +162,6 @@
   #noise-meter .nm-bar.on-yellow { background: #d97706; }
   #noise-meter .nm-bar.on-red    { background: #dc2626; }
 
-  /* ══ NOISE PANEL ══ */
   #noise-panel {
     position: fixed; top: calc(10vh + 8px); left: 20px;
     background: #1e1e1e; border: 1px solid #444; border-radius: 10px;
@@ -198,7 +192,6 @@
   }
   .np-toggle.on { background: var(--green); border-color: var(--green); color: #fff; }
 
-  /* ══ BOARD ══ */
   #board-wrap {
     width: 100%; height: calc(100vh - 10vh - 3px);
     display: flex; flex-direction: column;
@@ -233,7 +226,6 @@
   }
   .tile.flipping { animation: flipDown 0.65s cubic-bezier(0.4,0,0.2,1) forwards; }
 
-  /* ══ HONOR TICKER ══ */
   #honor-ticker-wrap {
     position: fixed; bottom: 4px; left: 0; right: 0; height: 28px;
     background: rgba(0,0,0,0.82); border-top: 1px solid var(--green-dim);
@@ -254,14 +246,12 @@
   .ticker-name { font-size: 11px; font-weight: 700; color: var(--tan); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 6px; }
   .ticker-sep  { color: var(--green); font-size: 10px; padding: 0 4px; opacity: 0.7; }
 
-  /* ══ BOTTOM ACCENT ══ */
   #bottom-accent {
     position: fixed; bottom: 0; left: 0; right: 0; height: 4px;
     background: linear-gradient(90deg, var(--green-dark) 0%, var(--green) 30%, var(--tan) 50%, var(--green) 70%, var(--green-dark) 100%);
     z-index: 10;
   }
 
-  /* ══ INDICATOR DOTS ══ */
   #indicator-bar {
     position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%);
     display: flex; gap: 7px; align-items: center; z-index: 50;
@@ -269,7 +259,6 @@
   .ind-dot { width: 7px; height: 7px; border-radius: 50%; background: #2a2a2a; transition: background 0.3s; }
   .ind-dot.active { background: var(--green); }
 
-  /* ══ MODE DIAL ══ */
   #dial-trigger { position: fixed; bottom: 0; right: 0; width: 80px; height: 80px; z-index: 60; cursor: pointer; }
   #dial-panel {
     position: fixed; bottom: 20px; right: 20px;
@@ -302,7 +291,6 @@
   #dial-hint:hover { color: #444; }
   body:hover #dial-hint { color: #2e2e2e; }
 
-  /* ══ SOUND PROMPT ══ */
   #sound-prompt {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     background: rgba(0,86,64,0.85); color: #fff; font-family: var(--font-retro);
@@ -310,7 +298,6 @@
     padding: 7px 18px; border-radius: 4px; cursor: pointer; z-index: 200; transition: opacity 0.5s;
   }
 
-  /* ══ VERSION BADGE ══ */
   #version-badge {
     position: fixed; top: calc(10vh + 6px); right: 8px;
     font-family: var(--font-retro); font-size: 7px;
@@ -324,9 +311,8 @@
 <div id="header">
   <div class="h-badge" id="roomBadge">CW · LOADING</div>
 
-  <!-- NOISE METER -->
   <div id="noise-meter" title="Noise level — click to adjust" onclick="toggleNoisePanel()">
-<div class="nm-bar" id="nm0"></div><div class="nm-bar" id="nm1"></div>
+    <div class="nm-bar" id="nm0"></div><div class="nm-bar" id="nm1"></div>
     <div class="nm-bar" id="nm2"></div><div class="nm-bar" id="nm3"></div>
     <div class="nm-bar" id="nm4"></div><div class="nm-bar" id="nm5"></div>
     <div class="nm-bar" id="nm6"></div><div class="nm-bar" id="nm7"></div>
@@ -353,7 +339,6 @@
   <div class="h-clock" id="clock">--:-- --</div>
 </div>
 
-<!-- NOISE PANEL -->
 <div id="noise-panel">
   <div class="np-title">🎙 Noise Meter</div>
   <div class="np-presets">
@@ -409,57 +394,42 @@
 </div>
 
 <script>
-/* ════════════════════════════════════════════════════
-   COWBOY WIRE 2.0 — DISPLAY
-   Loads room config from Supabase via ?room= param
-   All content per-room, privacy-filtered
-════════════════════════════════════════════════════ */
-
-// ── SUPABASE CONFIG ──────────────────────────────────
 const SUPABASE_URL  = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
-async function sbFetch(table, query = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-    }
+async function sbFetch(table, query) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
   });
   if (!res.ok) return null;
   return res.json();
 }
 
-// ── ROOM CONFIG ──────────────────────────────────────
 const params   = new URLSearchParams(location.search);
 const ROOM     = params.get('room') || '27';
 let   CLASSROOM = null;
 let   SETTINGS  = null;
 
 async function loadRoomConfig() {
-  const [classrooms, settings] = await Promise.all([
-    sbFetch('cw2_classrooms', `room=eq.${ROOM}&select=*`),
-    sbFetch('cw2_settings',   `room=eq.${ROOM}&select=*`),
-  ]);
-  CLASSROOM = classrooms?.[0] || null;
-  SETTINGS  = settings?.[0]   || null;
+  const classrooms = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
+  const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
+  CLASSROOM = (classrooms && classrooms[0]) ? classrooms[0] : null;
+  SETTINGS  = (settings && settings[0])     ? settings[0]   : null;
 
   if (CLASSROOM) {
-    document.getElementById('roomBadge').textContent = CLASSROOM.badge || `CW · ROOM ${ROOM}`;
-    document.title = `Cowboy Wire · Room ${ROOM}`;
+    document.getElementById('roomBadge').textContent = CLASSROOM.badge || ('CW · ROOM ' + ROOM);
+    document.title = 'Cowboy Wire · Room ' + ROOM;
   } else {
-    document.getElementById('roomBadge').textContent = `CW · ROOM ${ROOM}`;
-    document.title = `Cowboy Wire · Room ${ROOM}`;
+    document.getElementById('roomBadge').textContent = 'CW · ROOM ' + ROOM;
+    document.title = 'Cowboy Wire · Room ' + ROOM;
   }
 
-  // Apply saved theme
   const savedTheme = localStorage.getItem('cw2-theme-' + ROOM) || 'retro-dark';
-  const idx = DISPLAY_MODES.findIndex(m => m.key === savedTheme);
+  const idx = DISPLAY_MODES.findIndex(function(m) { return m.key === savedTheme; });
   dialModeIdx = idx >= 0 ? idx : 0;
   applyDisplayMode(dialModeIdx, false);
 }
 
-// ── DISPLAY CONFIG ───────────────────────────────────
 const ROWS        = 7;
 const COLS        = 21;
 const SYNC_SEC    = 60;
@@ -470,11 +440,10 @@ const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?:-/\'#@&%+';
 let messages   = [];
 let currentIdx = 0;
 let tiles      = [];
-let prevLines  = Array.from({ length: ROWS }, () => ' '.repeat(COLS));
+let prevLines  = Array.from({ length: ROWS }, function() { return ' '.repeat(COLS); });
 let rotateTimer = null;
 let syncTimer   = null;
 
-// ── BELL SCHEDULES ───────────────────────────────────
 const SCHEDULES = {
   regular: { periods: [
     { id:'1', label:'P1', start:'08:10', end:'09:02' },
@@ -543,25 +512,21 @@ const NO_SCHOOL = [
   '2027-04-06','2027-04-07','2027-04-08','2027-04-09',
 ];
 
-// Special date overrides — add as needed each year
-const DATE_OVERRIDES = {
-  // '2026-06-08': 'minimum',
-};
+const DATE_OVERRIDES = {};
 
-function toMins(t) { const [h,m] = t.split(':').map(Number); return h*60+m; }
-function nowMins() { const n = new Date(); return n.getHours()*60+n.getMinutes(); }
+function toMins(t) { var p = t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+function nowMins() { var n = new Date(); return n.getHours()*60+n.getMinutes(); }
 function dateStr(d) {
-  // Use local date to avoid UTC offset issues
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
 }
 
 function getSchedule() {
-  const now = new Date();
-  const ds  = dateStr(now);
-  const dow = now.getDay();
+  var now = new Date();
+  var ds  = dateStr(now);
+  var dow = now.getDay();
   if (dow === 0 || dow === 6 || NO_SCHOOL.includes(ds)) return null;
   if (DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
   if (dow === 3) return SCHEDULES.blockWed;
@@ -571,23 +536,24 @@ function getSchedule() {
 }
 
 function updatePeriodTimer() {
-  const wrap  = document.getElementById('periodTimer');
-  const label = document.getElementById('periodLabel');
-  const time  = document.getElementById('periodTime');
+  var wrap  = document.getElementById('periodTimer');
+  var label = document.getElementById('periodLabel');
+  var time  = document.getElementById('periodTime');
   if (!wrap) return;
-  const sched = getSchedule();
+  var sched = getSchedule();
   if (!sched) { wrap.style.display = 'none'; return; }
-  const nm = nowMins();
-  for (const p of sched.periods) {
-    const s = toMins(p.start), e = toMins(p.end);
+  var nm = nowMins();
+  for (var i = 0; i < sched.periods.length; i++) {
+    var p = sched.periods[i];
+    var s = toMins(p.start), e = toMins(p.end);
     if (nm >= s && nm < e) {
-      const left = e - nm;
+      var left = e - nm;
       if (p.break) {
         label.textContent = p.label;
         time.textContent  = left + ' MIN';
         time.className    = 'h-period-time';
       } else {
-        const sinceStart = nm - s;
+        var sinceStart = nm - s;
         label.textContent = p.label;
         time.textContent  = left + ' MIN LEFT';
         time.className    = 'h-period-time' + (left<=5?' ending':left<=15?' warning':'');
@@ -609,61 +575,64 @@ function updatePeriodTimer() {
 }
 
 function updatePassPill(left, sinceStart) {
-  const pill = document.getElementById('passStatusPill');
+  var pill = document.getElementById('passStatusPill');
   if (!pill) return;
-  if (sinceStart < 15)     { pill.className = 'h-pass-status red';    pill.textContent = `🔴 Hold · OK in ${15-sinceStart}m`; }
-  else if (left <= 15)     { pill.className = 'h-pass-status red';    pill.textContent = `🔴 Last ${left} min`; }
-  else if (left <= 20)     { pill.className = 'h-pass-status yellow'; pill.textContent = `🟡 Last chance · ${left} min`; }
-  else                     { pill.className = 'h-pass-status green';  pill.textContent = `🟢 OK · ${left} min`; }
+  if (sinceStart < 15)     { pill.className = 'h-pass-status red';    pill.textContent = '🔴 Hold · OK in '+(15-sinceStart)+'m'; }
+  else if (left <= 15)     { pill.className = 'h-pass-status red';    pill.textContent = '🔴 Last '+left+' min'; }
+  else if (left <= 20)     { pill.className = 'h-pass-status yellow'; pill.textContent = '🟡 Last chance · '+left+' min'; }
+  else                     { pill.className = 'h-pass-status green';  pill.textContent = '🟢 OK · '+left+' min'; }
 }
 
-// ── BOARD RENDERING ──────────────────────────────────
 function buildBoard() {
-  const wrap = document.getElementById('board-wrap');
+  var wrap = document.getElementById('board-wrap');
   wrap.innerHTML = ''; tiles = [];
-  for (let r = 0; r < ROWS; r++) {
-    const rowEl = document.createElement('div');
+  for (var r = 0; r < ROWS; r++) {
+    var rowEl = document.createElement('div');
     rowEl.className = 'tile-row';
-    const rowTiles = [];
-    for (let c = 0; c < COLS; c++) {
-      const tileEl = document.createElement('div');
+    var rowTiles = [];
+    for (var c = 0; c < COLS; c++) {
+      var tileEl = document.createElement('div');
       tileEl.className = 'tile';
-      const charEl = document.createElement('span');
+      var charEl = document.createElement('span');
       charEl.className = 'tile-char';
       charEl.textContent = '';
       tileEl.appendChild(charEl);
       rowEl.appendChild(tileEl);
-      rowTiles.push({ el: tileEl, charEl });
+      rowTiles.push({ el: tileEl, charEl: charEl });
     }
     wrap.appendChild(rowEl);
     tiles.push(rowTiles);
   }
 }
 
-function padCenter(text, cols) {
+// ── ALIGNMENT ── supports 'center' (default) and 'left'
+function padLine(text, cols, align) {
   text = (text || '').toUpperCase().substring(0, cols);
-  const total = cols - text.length, left = Math.floor(total / 2);
+  if (align === 'left') {
+    return text + ' '.repeat(cols - text.length);
+  }
+  var total = cols - text.length, left = Math.floor(total / 2);
   return ' '.repeat(left) + text + ' '.repeat(total - left);
 }
 
 function animateTile(tile, finalChar, delay) {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      let step = 0;
-      const iv = setInterval(() => {
-        const rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      var step = 0;
+      var iv = setInterval(function() {
+        var rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
         tile.charEl.textContent = rnd;
         tile.el.style.background = step % 2 === 0 ? '#0f2a1a' : '#162c1e';
         tile.charEl.style.color  = step % 2 === 0 ? '#00cc66' : '#C4BEB5';
         step++;
         if (step >= SCRAMBLE_STP) {
           clearInterval(iv);
-          const ch = (finalChar || ' ').trim();
+          var ch = (finalChar || ' ').trim();
           tile.charEl.textContent = ch;
           tile.charEl.style.color = 'var(--tile-text)';
           tile.el.style.background = 'var(--tile-bg)';
           tile.el.classList.add('flipping');
-          tile.el.addEventListener('animationend', () => {
+          tile.el.addEventListener('animationend', function() {
             tile.el.classList.remove('flipping');
             resolve();
           }, { once: true });
@@ -677,18 +646,19 @@ function showMessage(idx) {
   if (!messages.length) return;
   idx = ((idx % messages.length) + messages.length) % messages.length;
   currentIdx = idx;
-  const msg = messages[idx];
-  const newLines = Array.from({ length: ROWS }, (_, r) => padCenter(msg.lines[r] || '', COLS));
+  var msg = messages[idx];
+  var align = msg.align || 'center';
+  var newLines = Array.from({ length: ROWS }, function(_, r) { return padLine(msg.lines[r] || '', COLS, align); });
   updateDots();
-  let changedTiles = 0;
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
+  var changedTiles = 0;
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
       if (newLines[r][c] !== prevLines[r][c]) changedTiles++;
   if (changedTiles > 0) playFlipSound(changedTiles);
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c < COLS; c++)
-      if (newLines[r][c] !== prevLines[r][c])
-        animateTile(tiles[r][c], newLines[r][c], Math.random() * 1200);
+  for (var r2 = 0; r2 < ROWS; r2++)
+    for (var c2 = 0; c2 < COLS; c2++)
+      if (newLines[r2][c2] !== prevLines[r2][c2])
+        animateTile(tiles[r2][c2], newLines[r2][c2], Math.random() * 1200);
   prevLines = newLines;
   scheduleNext(msg.speed || 10);
 }
@@ -696,73 +666,68 @@ function showMessage(idx) {
 function scheduleNext(speedSec) {
   clearTimeout(rotateTimer);
   if (messages.length > 1)
-    rotateTimer = setTimeout(() => showMessage(currentIdx + 1), (speedSec || 10) * 1000);
+    rotateTimer = setTimeout(function() { showMessage(currentIdx + 1); }, (speedSec || 10) * 1000);
 }
 
 function nextMsg() { clearTimeout(rotateTimer); showMessage(currentIdx + 1); }
 function prevMsg() { clearTimeout(rotateTimer); showMessage(currentIdx - 1); }
 
 function buildDots() {
-  const bar = document.getElementById('indicator-bar');
+  var bar = document.getElementById('indicator-bar');
   bar.innerHTML = '';
-  const count = Math.min(messages.length, 16);
-  for (let i = 0; i < count; i++) {
-    const d = document.createElement('div');
+  var count = Math.min(messages.length, 16);
+  for (var i = 0; i < count; i++) {
+    var d = document.createElement('div');
     d.className = 'ind-dot';
     bar.appendChild(d);
   }
   if (messages.length > 16) {
-    const s = document.createElement('span');
-    s.style.cssText = 'color:#333;font-size:10px;letter-spacing:0.1em';
-    s.textContent = '+' + (messages.length - 16);
-    bar.appendChild(s);
+    var sp = document.createElement('span');
+    sp.style.cssText = 'color:#333;font-size:10px;letter-spacing:0.1em';
+    sp.textContent = '+' + (messages.length - 16);
+    bar.appendChild(sp);
   }
   updateDots();
 }
 
 function updateDots() {
-  document.querySelectorAll('.ind-dot').forEach((d, i) => {
+  document.querySelectorAll('.ind-dot').forEach(function(d, i) {
     d.className = 'ind-dot' + (i === currentIdx ? ' active' : '');
   });
 }
 
-// ── CLOCK ────────────────────────────────────────────
 function updateClock() {
-  const now = new Date();
-  let h = now.getHours();
-  const m = now.getMinutes().toString().padStart(2, '0');
-  const ap = h >= 12 ? 'PM' : 'AM';
+  var now = new Date();
+  var h = now.getHours();
+  var m = now.getMinutes().toString().padStart(2, '0');
+  var ap = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
-  document.getElementById('clock').textContent = `${h}:${m} ${ap}`;
+  document.getElementById('clock').textContent = h + ':' + m + ' ' + ap;
 }
 
-// ── SYNC STATUS ──────────────────────────────────────
 function setSyncStatus(state, label) {
-  const dot = document.getElementById('syncDot');
+  var dot = document.getElementById('syncDot');
   dot.className = 'sync-dot' + (state==='live'?' live':state==='error'?' error':'');
   document.getElementById('syncLabel').textContent = label;
 }
 
-// ── CONTENT LOADING ──────────────────────────────────
 async function loadScreens() {
-  const rows = await sbFetch('cw2_screens',
-    `room=eq.${ROOM}&enabled=eq.true&order=sort_order.asc`);
+  var rows = await sbFetch('cw2_screens', 'room=eq.' + ROOM + '&enabled=eq.true&order=sort_order.asc');
   if (!rows || !rows.length) return null;
-  return rows.map(r => {
-    const lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
-    return { lines, speed: r.speed || 10, id: r.id };
+  return rows.map(function(r) {
+    var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
+    return { lines: lines, speed: r.speed || 10, id: r.id, align: r.align || 'center' };
   });
 }
 
 async function loadHonorRoll() {
-  const rows = await sbFetch('cw2_honor_roll',
-    `room=eq.${ROOM}&active=eq.true&order=name.asc`);
+  var rows = await sbFetch('cw2_honor_roll', 'room=eq.' + ROOM + '&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
-  const inner = document.getElementById('honor-ticker-inner');
-  const html  = rows.map(r =>
-    `<span class="ticker-name">${r.name}</span><span class="ticker-sep">·</span>`
-  ).join('');
-  inner.innerHTML = html + html; // doubled for seamless loop
+  var inner = document.getElementById('honor-ticker-inner');
+  var html  = rows.map(function(r) {
+    return '<span class="ticker-name">' + r.name + '</span><span class="ticker-sep">·</span>';
+  }).join('');
+  inner.innerHTML = html + html;
   document.getElementById('honor-ticker-wrap').style.display = 'flex';
 }
 
@@ -770,43 +735,33 @@ async function startBoard() {
   setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
 
-  const screens = await loadScreens();
+  var screens = await loadScreens();
   if (screens && screens.length) {
     messages = screens;
   } else {
-    // Default welcome screen if no content yet
     messages = [{
-      lines: [
-        'COWBOY WIRE 2.0',
-        `ROOM ${ROOM}`,
-        '',
-        'RIVERDALE HIGH SCHOOL',
-        '',
-        'CONNECTING...',
-        '',
-      ],
-      speed: 10
+      lines: ['COWBOY WIRE 2.0', 'ROOM ' + ROOM, '', 'RIVERDALE HIGH SCHOOL', '', 'CONNECTING...', ''],
+      speed: 10, align: 'center'
     }];
   }
 
-  prevLines = Array.from({ length: ROWS }, () => '\x00'.repeat(COLS));
+  prevLines = Array.from({ length: ROWS }, function() { return '\x00'.repeat(COLS); });
   buildDots();
   showMessage(0);
-  setSyncStatus('live', `LIVE · ROOM ${ROOM}`);
+  setSyncStatus('live', 'LIVE · ROOM ' + ROOM);
 
-  // Sync every minute
   clearInterval(syncTimer);
-  syncTimer = setInterval(async () => {
-    const fresh = await loadScreens();
+  syncTimer = setInterval(async function() {
+    var fresh = await loadScreens();
     if (fresh) {
-      const savedLine = messages[currentIdx]?.lines?.[0] || '';
+      var savedLine = (messages[currentIdx] && messages[currentIdx].lines) ? messages[currentIdx].lines[0] : '';
       messages = fresh;
-      const ni = messages.findIndex(m => m.lines?.[0] === savedLine);
+      var ni = messages.findIndex(function(m) { return m.lines && m.lines[0] === savedLine; });
       if (ni >= 0) currentIdx = ni;
       buildDots();
-      const t = new Date();
-      let h = t.getHours() % 12 || 12;
-      setSyncStatus('live', `SYNCED ${h}:${t.getMinutes().toString().padStart(2,'0')}`);
+      var t = new Date();
+      var h = t.getHours() % 12 || 12;
+      setSyncStatus('live', 'SYNCED ' + h + ':' + t.getMinutes().toString().padStart(2,'0'));
     } else {
       setSyncStatus('error', 'SYNC FAILED');
     }
@@ -814,12 +769,12 @@ async function startBoard() {
 }
 
 // ── NOISE METER ──────────────────────────────────────
-let nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
-let nmYellow = 40, nmRed = 68, nmPresetKey = 'normal';
-const NM_PRESETS = { quiet:{yellow:30,red:55}, normal:{yellow:40,red:68}, loud:{yellow:55,red:80} };
+var nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
+var nmYellow = 40, nmRed = 68, nmPresetKey = 'normal';
+var NM_PRESETS = { quiet:{yellow:30,red:55}, normal:{yellow:40,red:68}, loud:{yellow:55,red:80} };
 
 try {
-  const saved = JSON.parse(localStorage.getItem(`cw2-noise-${ROOM}`) || '{}');
+  var saved = JSON.parse(localStorage.getItem('cw2-noise-' + ROOM) || '{}');
   if (saved.on !== undefined) nmOn = !!saved.on;
   if (saved.yellow) nmYellow = saved.yellow;
   if (saved.red)    nmRed    = saved.red;
@@ -827,17 +782,17 @@ try {
 } catch(e) {}
 
 function nmSave() {
-  try { localStorage.setItem(`cw2-noise-${ROOM}`, JSON.stringify({on:nmOn,yellow:nmYellow,red:nmRed,preset:nmPresetKey})); } catch(e) {}
+  try { localStorage.setItem('cw2-noise-' + ROOM, JSON.stringify({on:nmOn,yellow:nmYellow,red:nmRed,preset:nmPresetKey})); } catch(e) {}
 }
 function nmPreset(key) {
   nmPresetKey = key;
-  const p = NM_PRESETS[key];
+  var p = NM_PRESETS[key];
   nmYellow = p.yellow; nmRed = p.red;
   document.getElementById('nm-yellow-slider').value = nmYellow;
   document.getElementById('nm-red-slider').value    = nmRed;
   document.getElementById('nm-yellow-val').textContent = nmYellow;
   document.getElementById('nm-red-val').textContent    = nmRed;
-  ['quiet','normal','loud'].forEach(k => {
+  ['quiet','normal','loud'].forEach(function(k) {
     document.getElementById('np-'+k).className = 'np-preset' + (k===key?' active':'');
   });
   nmSave();
@@ -847,13 +802,13 @@ function nmSliderChange() {
   nmRed    = parseInt(document.getElementById('nm-red-slider').value);
   document.getElementById('nm-yellow-val').textContent = nmYellow;
   document.getElementById('nm-red-val').textContent    = nmRed;
-  ['quiet','normal','loud'].forEach(k => document.getElementById('np-'+k).className='np-preset');
+  ['quiet','normal','loud'].forEach(function(k) { document.getElementById('np-'+k).className='np-preset'; });
   nmPresetKey = 'custom'; nmSave();
 }
 function nmUpdateUI() {
-  const meter  = document.getElementById('noise-meter');
-  const btn    = document.getElementById('nm-toggle-btn');
-  const dialBtn = document.getElementById('noiseToggleBtn');
+  var meter   = document.getElementById('noise-meter');
+  var btn     = document.getElementById('nm-toggle-btn');
+  var dialBtn = document.getElementById('noiseToggleBtn');
   if (nmOn) {
     meter.classList.add('active');
     btn.className = 'np-toggle on';
@@ -869,16 +824,16 @@ function nmUpdateUI() {
   document.getElementById('nm-red-slider').value    = nmRed;
   document.getElementById('nm-yellow-val').textContent = nmYellow;
   document.getElementById('nm-red-val').textContent    = nmRed;
-  ['quiet','normal','loud'].forEach(k => {
+  ['quiet','normal','loud'].forEach(function(k) {
     document.getElementById('np-'+k).className = 'np-preset'+(k===nmPresetKey?' active':'');
   });
 }
 async function nmStart() {
   if (nmStream) return;
   try {
-    nmStream  = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    nmStream   = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
     nmAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    const source = nmAudioCtx.createMediaStreamSource(nmStream);
+    var source = nmAudioCtx.createMediaStreamSource(nmStream);
     nmAnalyser = nmAudioCtx.createAnalyser();
     nmAnalyser.fftSize = 256; nmAnalyser.smoothingTimeConstant = 0.75;
     source.connect(nmAnalyser); nmTick();
@@ -886,24 +841,24 @@ async function nmStart() {
 }
 function nmStop() {
   if (nmAnimFrame) { cancelAnimationFrame(nmAnimFrame); nmAnimFrame = null; }
-  if (nmStream)    { nmStream.getTracks().forEach(t=>t.stop()); nmStream = null; }
+  if (nmStream)    { nmStream.getTracks().forEach(function(t){t.stop();}); nmStream = null; }
   if (nmAudioCtx)  { nmAudioCtx.close(); nmAudioCtx = null; }
   nmAnalyser = null;
-  for (let i = 0; i < 8; i++) { const b=document.getElementById('nm'+i); if(b) b.className='nm-bar'; }
+  for (var i = 0; i < 12; i++) { var b=document.getElementById('nm'+i); if(b) b.className='nm-bar'; }
 }
 function nmTick() {
   if (!nmAnalyser) return;
-  const data = new Uint8Array(nmAnalyser.frequencyBinCount);
+  var data = new Uint8Array(nmAnalyser.frequencyBinCount);
   nmAnalyser.getByteFrequencyData(data);
-  const slice = Math.floor(data.length*0.67);
-  let sum = 0;
-  for (let i=0;i<slice;i++) sum += data[i]*data[i];
-  const rms   = Math.sqrt(sum/slice);
-  const level = Math.min(100, Math.round((rms/255)*100*2.2));
-  for (let i=0;i<12;i++) {
-    const b = document.getElementById('nm'+i);
+  var slice = Math.floor(data.length*0.67);
+  var sum = 0;
+  for (var i=0;i<slice;i++) sum += data[i]*data[i];
+  var rms   = Math.sqrt(sum/slice);
+  var level = Math.min(100, Math.round((rms/255)*100*2.2));
+  for (var j=0;j<12;j++) {
+    var b = document.getElementById('nm'+j);
     if (!b) continue;
-    const on = level >= (i+1)*8.33;
+    var on = level >= (j+1)*8.33;
     if (on) {
       if      (level >= nmRed)    b.className = 'nm-bar on-red';
       else if (level >= nmYellow) b.className = 'nm-bar on-yellow';
@@ -916,12 +871,12 @@ async function toggleNoiseMeter() {
   nmOn = !nmOn; nmSave(); nmUpdateUI();
   if (nmOn) await nmStart(); else nmStop();
 }
-let noisePanelOpen = false;
+var noisePanelOpen = false;
 function toggleNoisePanel() {
   noisePanelOpen = !noisePanelOpen;
   document.getElementById('noise-panel').classList.toggle('open', noisePanelOpen);
 }
-document.addEventListener('click', e => {
+document.addEventListener('click', function(e) {
   if (noisePanelOpen && !e.target.closest('#noise-panel') && !e.target.closest('#noise-meter')) {
     noisePanelOpen = false;
     document.getElementById('noise-panel').classList.remove('open');
@@ -930,21 +885,21 @@ document.addEventListener('click', e => {
 (function(){ nmUpdateUI(); if(nmOn) nmStart(); })();
 
 // ── FLIP SOUND ───────────────────────────────────────
-const SOUND_PROFILES = ['OFF','CLASSIC','JADE','DIGITAL'];
-let soundIdx = 1, audioCtx = null;
-try { const s=localStorage.getItem('cw2-sound');if(s&&SOUND_PROFILES.includes(s))soundIdx=SOUND_PROFILES.indexOf(s); }catch(e){}
-function getAudioCtx(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}return audioCtx?.state==='suspended'?null:audioCtx;}
-function enableSound(el){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}if(audioCtx?.state==='suspended')audioCtx.resume();if(soundIdx===0){soundIdx=1;updateSoundBtn();}if(el){el.style.opacity='0';setTimeout(()=>el.remove(),600);}playFlipSound(5);}
-function cycleSoundProfile(){if(audioCtx?.state==='suspended')audioCtx.resume();soundIdx=(soundIdx+1)%SOUND_PROFILES.length;try{localStorage.setItem('cw2-sound',SOUND_PROFILES[soundIdx]);}catch(e){}updateSoundBtn();if(SOUND_PROFILES[soundIdx]!=='OFF')playFlipSound(6);}
-function updateSoundBtn(){const btn=document.getElementById('soundToggleBtn');if(!btn)return;const labels={OFF:'🔇 OFF',CLASSIC:'🔊 Classic',JADE:'⌨️ Jade',DIGITAL:'💾 Digital'};btn.textContent=labels[SOUND_PROFILES[soundIdx]];}
-function playFlipSound(n){const profile=SOUND_PROFILES[soundIdx];if(profile==='OFF')return;const ctx=getAudioCtx();if(!ctx)return;if(ctx.state==='suspended'){ctx.resume();return;}if(profile==='CLASSIC')playClassicSound(n);if(profile==='JADE')playJadeSound(n);if(profile==='DIGITAL')playDigitalSound(n);}
-function playClassicClick(ctx,time,vol){const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.09),ctx.sampleRate);const data=buf.getChannelData(0);for(let i=0;i<data.length;i++){const t=i/data.length;data[i]=((Math.random()*2-1)*0.65+Math.sin(2*Math.PI*160*i/ctx.sampleRate)*0.35)*Math.pow(1-t,2.8);}const src=ctx.createBufferSource();src.buffer=buf;const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=800;f.Q.value=1.2;const g=ctx.createGain();g.gain.value=vol||0.18;src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(time);}
-function playClassicSound(n){const ctx=getAudioCtx();if(!ctx)return;const now=ctx.currentTime,clicks=Math.min(Math.max(Math.floor(n*0.5),4),20);for(let i=0;i<clicks;i++)playClassicClick(ctx,now+(i/clicks)*2.8,0.08+Math.sin(i/clicks*Math.PI)*0.14);}
-function playJadeSound(n){const ctx=getAudioCtx();if(!ctx)return;const now=ctx.currentTime,freq=1800,decay=0.015,vol=0.26,spread=Math.min(n*0.008,1.8),count=Math.min(Math.max(Math.floor(n*0.6),4),60);for(let i=0;i<count;i++){const t=now+(i/count)*spread,v=vol*(0.75+Math.random()*0.25);const osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='square';osc.frequency.setValueAtTime(freq,t);osc.frequency.exponentialRampToValueAtTime(freq*0.45,t+decay);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(v,t+0.0003);gain.gain.exponentialRampToValueAtTime(0.001,t+decay*1.5);const f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=2.8;osc.connect(f);f.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+decay*2);}}
-function playDigitalSound(n){const ctx=getAudioCtx();if(!ctx)return;const now=ctx.currentTime,beeps=Math.min(Math.max(Math.floor(n*0.4),3),16);const freqs=[1100,990,880,770,990,1100,880,770];for(let i=0;i<beeps;i++){const osc=ctx.createOscillator(),g=ctx.createGain();osc.type='square';osc.frequency.value=freqs[i%freqs.length];g.gain.setValueAtTime(0,now+(i/beeps)*2.8);g.gain.linearRampToValueAtTime(0.1,now+(i/beeps)*2.8+0.004);g.gain.linearRampToValueAtTime(0,now+(i/beeps)*2.8+0.034);osc.connect(g);g.connect(ctx.destination);osc.start(now+(i/beeps)*2.8);osc.stop(now+(i/beeps)*2.8+0.05);}}
+var SOUND_PROFILES = ['OFF','CLASSIC','JADE','DIGITAL'];
+var soundIdx = 1, audioCtx = null;
+try { var s=localStorage.getItem('cw2-sound');if(s&&SOUND_PROFILES.includes(s))soundIdx=SOUND_PROFILES.indexOf(s); }catch(e){}
+function getAudioCtx(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}return audioCtx.state==='suspended'?null:audioCtx;}
+function enableSound(el){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(soundIdx===0){soundIdx=1;updateSoundBtn();}if(el){el.style.opacity='0';setTimeout(function(){el.remove();},600);}playFlipSound(5);}
+function cycleSoundProfile(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();soundIdx=(soundIdx+1)%SOUND_PROFILES.length;try{localStorage.setItem('cw2-sound',SOUND_PROFILES[soundIdx]);}catch(e){}updateSoundBtn();if(SOUND_PROFILES[soundIdx]!=='OFF')playFlipSound(6);}
+function updateSoundBtn(){var btn=document.getElementById('soundToggleBtn');if(!btn)return;var labels={OFF:'🔇 OFF',CLASSIC:'🔊 Classic',JADE:'⌨️ Jade',DIGITAL:'💾 Digital'};btn.textContent=labels[SOUND_PROFILES[soundIdx]];}
+function playFlipSound(n){var profile=SOUND_PROFILES[soundIdx];if(profile==='OFF')return;var ctx=getAudioCtx();if(!ctx)return;if(ctx.state==='suspended'){ctx.resume();return;}if(profile==='CLASSIC')playClassicSound(n);if(profile==='JADE')playJadeSound(n);if(profile==='DIGITAL')playDigitalSound(n);}
+function playClassicClick(ctx,time,vol){var buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.09),ctx.sampleRate);var data=buf.getChannelData(0);for(var i=0;i<data.length;i++){var t=i/data.length;data[i]=((Math.random()*2-1)*0.65+Math.sin(2*Math.PI*160*i/ctx.sampleRate)*0.35)*Math.pow(1-t,2.8);}var src=ctx.createBufferSource();src.buffer=buf;var f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=800;f.Q.value=1.2;var g=ctx.createGain();g.gain.value=vol||0.18;src.connect(f);f.connect(g);g.connect(ctx.destination);src.start(time);}
+function playClassicSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.currentTime,clicks=Math.min(Math.max(Math.floor(n*0.5),4),20);for(var i=0;i<clicks;i++)playClassicClick(ctx,now+(i/clicks)*2.8,0.08+Math.sin(i/clicks*Math.PI)*0.14);}
+function playJadeSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.currentTime,freq=1800,decay=0.015,vol=0.26,spread=Math.min(n*0.008,1.8),count=Math.min(Math.max(Math.floor(n*0.6),4),60);for(var i=0;i<count;i++){var t=now+(i/count)*spread,v=vol*(0.75+Math.random()*0.25);var osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='square';osc.frequency.setValueAtTime(freq,t);osc.frequency.exponentialRampToValueAtTime(freq*0.45,t+decay);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(v,t+0.0003);gain.gain.exponentialRampToValueAtTime(0.001,t+decay*1.5);var f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=2.8;osc.connect(f);f.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+decay*2);}}
+function playDigitalSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.currentTime,beeps=Math.min(Math.max(Math.floor(n*0.4),3),16);var freqs=[1100,990,880,770,990,1100,880,770];for(var i=0;i<beeps;i++){var osc=ctx.createOscillator(),g=ctx.createGain();osc.type='square';osc.frequency.value=freqs[i%freqs.length];g.gain.setValueAtTime(0,now+(i/beeps)*2.8);g.gain.linearRampToValueAtTime(0.1,now+(i/beeps)*2.8+0.004);g.gain.linearRampToValueAtTime(0,now+(i/beeps)*2.8+0.034);osc.connect(g);g.connect(ctx.destination);osc.start(now+(i/beeps)*2.8);osc.stop(now+(i/beeps)*2.8+0.05);}}
 
 // ── MODE DIAL ────────────────────────────────────────
-const DISPLAY_MODES = [
+var DISPLAY_MODES = [
   { key:'retro-dark',   label:'Retro · Dark',   angle:-135 },
   { key:'retro-light',  label:'Retro · Light',  angle: -45 },
   { key:'modern-dark',  label:'Modern · Dark',  angle:  45 },
@@ -952,21 +907,21 @@ const DISPLAY_MODES = [
   { key:'walle',        label:'WALL-E',          angle: 160 },
   { key:'eve',          label:'EVE',             angle: 180 },
 ];
-let dialModeIdx = 0, dialOpen = false;
+var dialModeIdx = 0, dialOpen = false;
 
 function buildDialPositions() {
-  const wrap = document.getElementById('dialPositions');
+  var wrap = document.getElementById('dialPositions');
   if (!wrap) return;
   wrap.innerHTML = '';
-  DISPLAY_MODES.forEach((m, i) => {
-    if (i > 0) { const div = document.createElement('div'); div.className='dial-divider'; wrap.appendChild(div); }
-    const pos = document.createElement('div');
+  DISPLAY_MODES.forEach(function(m, i) {
+    if (i > 0) { var div = document.createElement('div'); div.className='dial-divider'; wrap.appendChild(div); }
+    var pos = document.createElement('div');
     pos.className = 'dial-pos';
-    pos.onclick = (e) => { e.stopPropagation(); setDialMode(i); };
-    const dot = document.createElement('div');
+    pos.onclick = (function(idx) { return function(e) { e.stopPropagation(); setDialMode(idx); }; })(i);
+    var dot = document.createElement('div');
     dot.className = 'dial-pos-dot' + (i===dialModeIdx?' active':'');
     dot.id = 'dpos-'+i;
-    const lbl = document.createElement('div');
+    var lbl = document.createElement('div');
     lbl.className = 'dial-pos-label' + (i===dialModeIdx?' active':'');
     lbl.id = 'dlbl-'+i;
     lbl.textContent = m.label.split(' · ')[1] || m.label;
@@ -975,24 +930,24 @@ function buildDialPositions() {
 }
 
 function applyDisplayMode(idx, animate) {
-  const mode = DISPLAY_MODES[idx];
+  var mode = DISPLAY_MODES[idx];
   document.documentElement.setAttribute('data-theme', mode.key);
   localStorage.setItem('cw2-theme-'+ROOM, mode.key);
-  const needle = document.getElementById('dialNeedle');
-  const name   = document.getElementById('dialModeName');
+  var needle = document.getElementById('dialNeedle');
+  var name   = document.getElementById('dialModeName');
   if (needle) {
     if (animate === false) {
       needle.style.transition = 'none';
-      needle.style.transform  = `translateX(-50%) rotate(${mode.angle}deg)`;
-      setTimeout(() => { needle.style.transition = ''; }, 50);
+      needle.style.transform  = 'translateX(-50%) rotate(' + mode.angle + 'deg)';
+      setTimeout(function() { needle.style.transition = ''; }, 50);
     } else {
-      needle.style.transform = `translateX(-50%) rotate(${mode.angle}deg)`;
+      needle.style.transform = 'translateX(-50%) rotate(' + mode.angle + 'deg)';
     }
   }
   if (name) name.textContent = mode.label;
-  DISPLAY_MODES.forEach((_, i) => {
-    const dot = document.getElementById('dpos-'+i);
-    const lbl = document.getElementById('dlbl-'+i);
+  DISPLAY_MODES.forEach(function(_, i) {
+    var dot = document.getElementById('dpos-'+i);
+    var lbl = document.getElementById('dlbl-'+i);
     if (dot) dot.className = 'dial-pos-dot'+(i===idx?' active':'');
     if (lbl) lbl.className = 'dial-pos-label'+(i===idx?' active':'');
   });
@@ -1001,7 +956,7 @@ function applyDisplayMode(idx, animate) {
 function setDialMode(idx) {
   dialModeIdx = idx;
   applyDisplayMode(idx, true);
-  prevLines = Array.from({ length: ROWS }, () => '\x00'.repeat(COLS));
+  prevLines = Array.from({ length: ROWS }, function() { return '\x00'.repeat(COLS); });
   if (messages.length) showMessage(currentIdx);
 }
 function dialNext() { setDialMode((dialModeIdx+1) % DISPLAY_MODES.length); }
@@ -1009,30 +964,28 @@ function toggleDial() {
   dialOpen = !dialOpen;
   document.getElementById('dial-panel').classList.toggle('open', dialOpen);
 }
-document.addEventListener('click', e => {
+document.addEventListener('click', function(e) {
   if (dialOpen && !e.target.closest('#dial-panel') && !e.target.closest('#dial-trigger') && !e.target.closest('#dial-hint')) {
     dialOpen = false;
     document.getElementById('dial-panel').classList.remove('open');
   }
 });
 
-// ── KEYBOARD ─────────────────────────────────────────
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown', function(e) {
   if (e.key==='ArrowRight'||e.key==='Enter'||e.key===' ') { e.preventDefault(); nextMsg(); }
   if (e.key==='ArrowLeft')  { e.preventDefault(); prevMsg(); }
-  if (e.key==='f'||e.key==='F') document.documentElement.requestFullscreen?.();
-  if (e.key==='Escape')         document.exitFullscreen?.();
+  if (e.key==='f'||e.key==='F') document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  if (e.key==='Escape')         document.exitFullscreen && document.exitFullscreen();
   if (e.key==='m'||e.key==='M') dialNext();
 });
-window.addEventListener('click', () => {
+window.addEventListener('click', function() {
   if (typeof enableSound === 'function') {
-    const sp = document.getElementById('sound-prompt');
+    var sp = document.getElementById('sound-prompt');
     if (sp) enableSound(sp);
   }
 }, { once: true });
 
-// ── INIT ─────────────────────────────────────────────
-(async () => {
+(async function() {
   buildBoard();
   buildDialPositions();
   updateClock();
@@ -1040,13 +993,13 @@ window.addEventListener('click', () => {
   setInterval(updatePeriodTimer, 1000);
   updatePeriodTimer();
   updateSoundBtn();
-  setTimeout(() => {
-    const sp = document.getElementById('sound-prompt');
-    if (sp) { sp.style.opacity = '0'; setTimeout(() => sp.remove(), 600); }
+  setTimeout(function() {
+    var sp = document.getElementById('sound-prompt');
+    if (sp) { sp.style.opacity = '0'; setTimeout(function(){sp.remove();}, 600); }
   }, 8000);
   await startBoard();
-  setTimeout(() => loadHonorRoll(), 2000);
-  setInterval(() => loadHonorRoll(), 30*60*1000);
+  setTimeout(function() { loadHonorRoll(); }, 2000);
+  setInterval(function() { loadHonorRoll(); }, 30*60*1000);
 })();
 </script>
 </body>
