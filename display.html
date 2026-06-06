@@ -713,12 +713,56 @@ function setSyncStatus(state, label) {
 }
 
 async function loadScreens() {
-  var rows = await sbFetch('cw2_screens', 'room=eq.' + ROOM + '&enabled=eq.true&order=sort_order.asc');
-  if (!rows || !rows.length) return null;
-  return rows.map(function(r) {
+  // Load local screens, global screens, and room prefs in parallel
+  var results = await Promise.all([
+    sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc'),
+    sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc'),
+    sbFetch('cw2_room_screen_prefs', 'room=eq.' + ROOM + '&select=*'),
+  ]);
+
+  var localScreens  = results[0] || [];
+  var globalScreens = results[1] || [];
+  var prefs         = results[2] || [];
+
+  // Build prefs lookup by screen_id
+  var prefsMap = {};
+  prefs.forEach(function(p) { prefsMap[p.screen_id] = p; });
+
+  // Process all screens — apply prefs overrides
+  function processScreen(r, isGlobal) {
+    var pref = prefsMap[r.id];
+    // If teacher has disabled this screen for their room, skip it
+    if (pref && pref.enabled === false) return null;
     var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
-    return { lines: lines, speed: r.speed || 10, id: r.id, align: r.align || 'center' };
+    return {
+      lines:      lines,
+      speed:      r.speed || 10,
+      id:         r.id,
+      align:      r.align || 'center',
+      isGlobal:   isGlobal,
+      sort_order: pref ? pref.sort_order : r.sort_order
+    };
+  }
+
+  var allScreens = [];
+  localScreens.forEach(function(r) {
+    // Local screens respect their own enabled flag
+    if (!r.enabled) return;
+    var s = processScreen(r, false);
+    if (s) allScreens.push(s);
   });
+  globalScreens.forEach(function(r) {
+    // Global screens are always enabled unless teacher has explicitly disabled
+    var s = processScreen(r, true);
+    if (s) allScreens.push(s);
+  });
+
+  if (!allScreens.length) return null;
+
+  // Sort by sort_order
+  allScreens.sort(function(a, b) { return a.sort_order - b.sort_order; });
+
+  return allScreens;
 }
 
 async function loadHonorRoll() {
