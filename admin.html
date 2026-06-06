@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=1200">
-<title>Cowboy Wire 2.0 · Admin</title>
+<title>The Switchboard · Cowboy Wire 2.0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-  /* ── LIGHT THEME (default) ── */
   [data-theme="light"] {
     --bg:          #f5f5f5;
     --surface:     #ffffff;
@@ -26,20 +25,17 @@
     --danger:      #dc2626;
     --danger-bg:   #fef2f2;
     --warning:     #d97706;
-    --success:     #16a34a;
-    --btn-primary-bg:   #005640;
-    --btn-primary-text: #ffffff;
-    --btn-secondary-bg: #ffffff;
+    --btn-primary-bg:     #005640;
+    --btn-primary-text:   #ffffff;
+    --btn-secondary-bg:   #ffffff;
     --btn-secondary-border: #d0d0d0;
     --btn-secondary-text: #333;
     --input-bg:    #ffffff;
     --shadow:      0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md:   0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.04);
     --header-bg:   #ffffff;
-    --pin-bg:      #ffffff;
   }
 
-  /* ── DARK THEME ── */
   [data-theme="dark"] {
     --bg:          #0f0f0f;
     --surface:     #1a1a1a;
@@ -55,17 +51,15 @@
     --danger:      #f87171;
     --danger-bg:   #2a0a0a;
     --warning:     #fbbf24;
-    --success:     #4ade80;
-    --btn-primary-bg:   #005640;
-    --btn-primary-text: #ffffff;
-    --btn-secondary-bg: #2a2a2a;
+    --btn-primary-bg:     #005640;
+    --btn-primary-text:   #ffffff;
+    --btn-secondary-bg:   #2a2a2a;
     --btn-secondary-border: #3a3a3a;
     --btn-secondary-text: #cccccc;
     --input-bg:    #111111;
     --shadow:      0 1px 3px rgba(0,0,0,0.4);
     --shadow-md:   0 4px 6px rgba(0,0,0,0.5);
     --header-bg:   #111111;
-    --pin-bg:      #1a1a1a;
   }
 
   html, body {
@@ -78,7 +72,7 @@
     transition: background 0.2s, color 0.2s;
   }
 
-  /* ── HEADER ── */
+  /* HEADER */
   #header {
     position: sticky; top: 0; z-index: 50;
     background: var(--header-bg);
@@ -87,41 +81,28 @@
     padding: 0 1.5rem; gap: 1rem; height: 56px;
     box-shadow: var(--shadow);
   }
-  .h-logo {
-    display: flex; align-items: center; gap: 8px;
-  }
+  .h-logo { display: flex; align-items: center; gap: 8px; }
   .h-logo-badge {
     background: var(--accent); color: #fff;
     font-size: 11px; font-weight: 700;
     padding: 3px 8px; border-radius: 4px;
     letter-spacing: 0.05em;
   }
-  .h-logo-name {
-    font-size: 14px; font-weight: 600;
-    color: var(--text);
-  }
-  .h-sep {
-    width: 1px; height: 20px;
-    background: var(--border); flex-shrink: 0;
-  }
-  .h-room-tag {
-    font-size: 12px; color: var(--text-2);
-    font-weight: 500;
-  }
+  .h-logo-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .h-logo-sub  { font-size: 11px; color: var(--text-3); font-weight: 400; }
+  .h-sep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+  .h-room-tag { font-size: 12px; color: var(--text-2); font-weight: 500; }
   .h-spacer { flex: 1; }
   .h-actions { display: flex; align-items: center; gap: 8px; }
-
-  /* Theme toggle */
   .theme-toggle {
     display: flex; align-items: center; gap: 6px;
     background: var(--surface2); border: 1px solid var(--border);
     border-radius: 6px; padding: 5px 10px;
     cursor: pointer; font-size: 12px; color: var(--text-2);
-    font-weight: 500; transition: all 0.15s;
-    white-space: nowrap;
+    font-weight: 500; transition: all 0.15s; white-space: nowrap;
+    font-family: inherit;
   }
   .theme-toggle:hover { border-color: var(--border2); color: var(--text); }
-
   .btn-ghost {
     background: none; border: 1px solid var(--border);
     color: var(--text-2); font-size: 12px; font-weight: 500;
@@ -130,19 +111,13 @@
   }
   .btn-ghost:hover { border-color: var(--danger); color: var(--danger); }
 
-  /* ── MAIN LAYOUT ── */
+  /* PIN SCREEN */
   #pin-screen {
     min-height: calc(100vh - 56px);
     display: flex; align-items: center; justify-content: center;
   }
-  #main {
-    max-width: 860px; margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-  }
-
-  /* ── PIN CARD ── */
   .pin-card {
-    background: var(--pin-bg);
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: var(--shadow-md);
@@ -151,16 +126,14 @@
     display: flex; flex-direction: column; gap: 1.25rem;
   }
   .pin-header { display: flex; flex-direction: column; gap: 4px; }
-  .pin-title {
-    font-size: 20px; font-weight: 700; color: var(--text);
-  }
-  .pin-sub {
-    font-size: 13px; color: var(--text-2);
-  }
+  .pin-title { font-size: 20px; font-weight: 700; color: var(--text); }
+  .pin-sub   { font-size: 13px; color: var(--text-2); }
+
+  /* FIELDS */
+  .field-group { display: flex; flex-direction: column; }
   .field-label {
     display: block; font-size: 12px; font-weight: 600;
-    color: var(--text-2); margin-bottom: 5px;
-    letter-spacing: 0.02em;
+    color: var(--text-2); margin-bottom: 5px; letter-spacing: 0.02em;
   }
   .field-input {
     width: 100%; background: var(--input-bg);
@@ -174,7 +147,7 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-bg);
   }
-  .field-input.error {
+  .field-input.shake {
     border-color: var(--danger);
     box-shadow: 0 0 0 3px var(--danger-bg);
     animation: shake 0.3s;
@@ -184,16 +157,24 @@
     25%{transform:translateX(-5px)}
     75%{transform:translateX(5px)}
   }
-  .pin-field-input {
-    font-size: 22px; letter-spacing: 0.25em; text-align: center;
+  .pin-digits { font-size: 22px; letter-spacing: 0.25em; text-align: center; }
+  .field-select {
+    width: 100%; background: var(--input-bg);
+    border: 1px solid var(--border2);
+    border-radius: 6px; color: var(--text);
+    font-family: inherit; font-size: 14px;
+    padding: 9px 12px; outline: none; cursor: pointer;
+    transition: border-color 0.15s;
   }
+  .field-select:focus { border-color: var(--accent); }
+  .field-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+
   .btn-primary {
     width: 100%; background: var(--btn-primary-bg);
     border: none; border-radius: 6px;
     color: var(--btn-primary-text);
     font-family: inherit; font-size: 14px; font-weight: 600;
-    padding: 10px; cursor: pointer;
-    transition: opacity 0.15s;
+    padding: 10px; cursor: pointer; transition: opacity 0.15s;
   }
   .btn-primary:hover { opacity: 0.88; }
   .error-text {
@@ -202,27 +183,27 @@
   }
   .forgot-link {
     font-size: 12px; color: var(--text-3);
-    text-align: center; cursor: pointer;
-    transition: color 0.15s;
+    text-align: center; cursor: pointer; transition: color 0.15s;
   }
   .forgot-link:hover { color: var(--text-2); }
 
-  /* ── SECTION ── */
+  /* MAIN */
+  #main { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  /* SECTIONS */
   .section { margin-bottom: 2rem; }
   .section-head {
     display: flex; align-items: center;
     justify-content: space-between;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
+    margin-bottom: 1rem; padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--border);
   }
   .section-title {
-    font-size: 13px; font-weight: 700;
-    color: var(--text); letter-spacing: 0.02em;
-    text-transform: uppercase;
+    font-size: 13px; font-weight: 700; color: var(--text);
+    letter-spacing: 0.02em; text-transform: uppercase;
   }
 
-  /* ── BUTTONS ── */
+  /* BUTTONS */
   .btn {
     background: var(--btn-secondary-bg);
     border: 1px solid var(--btn-secondary-border);
@@ -232,27 +213,27 @@
     transition: all 0.15s; white-space: nowrap;
   }
   .btn:hover { border-color: var(--border2); color: var(--text); }
-  .btn.accent { background: var(--btn-primary-bg); border-color: var(--btn-primary-bg); color: #fff; }
+  .btn.accent {
+    background: var(--btn-primary-bg);
+    border-color: var(--btn-primary-bg);
+    color: #fff;
+  }
   .btn.accent:hover { opacity: 0.88; }
   .btn.danger:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
-  .btn.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-text); }
 
-  /* ── SCREEN CARDS ── */
+  /* SCREEN CARDS */
   .screens-list { display: flex; flex-direction: column; gap: 8px; }
   .screen-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 14px 16px;
     display: flex; align-items: center; gap: 12px;
-    box-shadow: var(--shadow);
-    transition: border-color 0.15s;
+    box-shadow: var(--shadow); transition: border-color 0.15s;
   }
   .screen-card:hover { border-color: var(--border2); }
   .screen-card.disabled { opacity: 0.5; }
   .screen-num {
-    font-size: 12px; color: var(--text-3);
-    font-weight: 600; width: 20px;
-    text-align: center; flex-shrink: 0;
+    font-size: 12px; color: var(--text-3); font-weight: 600;
+    width: 20px; text-align: center; flex-shrink: 0;
   }
   .screen-info { flex: 1; min-width: 0; }
   .screen-title {
@@ -260,87 +241,63 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .screen-desc {
-    font-size: 11px; color: var(--text-3);
-    margin-top: 2px; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
+    font-size: 11px; color: var(--text-3); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .screen-meta {
-    font-size: 11px; color: var(--text-3);
-    flex-shrink: 0; font-weight: 500;
-  }
+  .screen-meta { font-size: 11px; color: var(--text-3); flex-shrink: 0; font-weight: 500; }
   .screen-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
   .status-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    font-size: 11px; font-weight: 600; padding: 2px 8px;
-    border-radius: 20px;
+    font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px;
   }
   .status-badge.on  { background: #dcfce7; color: #15803d; }
   .status-badge.off { background: var(--surface2); color: var(--text-3); border: 1px solid var(--border); }
   [data-theme="dark"] .status-badge.on { background: #052e16; color: #4ade80; }
 
-  /* ── SETTINGS GRID ── */
+  /* SETTINGS GRID */
   .settings-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
   }
-  @media (max-width: 700px) { .settings-grid { grid-template-columns: 1fr 1fr; } }
   .setting-card {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 14px 16px;
-    box-shadow: var(--shadow);
+    border-radius: 8px; padding: 14px 16px; box-shadow: var(--shadow);
   }
   .setting-label {
-    font-size: 11px; color: var(--text-3);
-    font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.05em; margin-bottom: 4px;
+    font-size: 11px; color: var(--text-3); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;
   }
-  .setting-value {
-    font-size: 18px; font-weight: 700; color: var(--text);
-  }
+  .setting-value { font-size: 18px; font-weight: 700; color: var(--text); }
 
-  /* ── PIN CHANGE ── */
-  .pin-change-row {
-    display: flex; gap: 8px; align-items: flex-end;
-  }
+  /* PIN CHANGE */
+  .pin-change-row { display: flex; gap: 8px; align-items: flex-end; }
   .pin-change-row .field-group { flex: 1; }
-  .field-group { display: flex; flex-direction: column; }
 
-  /* ── DISPLAY URL ── */
+  /* DISPLAY URL */
   .url-row {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 12px 16px;
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: var(--shadow);
+    display: flex; align-items: center; gap: 10px; box-shadow: var(--shadow);
   }
   .url-text {
     flex: 1; font-size: 13px; color: var(--accent);
-    font-weight: 500; overflow: hidden;
-    text-overflow: ellipsis; white-space: nowrap;
+    font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
-  /* ── MODAL ── */
+  /* MODAL */
   #modal-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
     z-index: 100; display: none;
-    align-items: center; justify-content: center;
-    backdrop-filter: blur(3px);
+    align-items: center; justify-content: center; backdrop-filter: blur(3px);
   }
   #modal-overlay.open { display: flex; }
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: var(--shadow-md);
-    padding: 1.75rem;
-    width: 100%; max-width: 540px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; box-shadow: var(--shadow-md);
+    padding: 1.75rem; width: 100%; max-width: 540px;
     max-height: 90vh; overflow-y: auto;
     display: flex; flex-direction: column; gap: 1.25rem;
   }
-  .modal-title {
-    font-size: 16px; font-weight: 700; color: var(--text);
-  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
   .modal-row { display: flex; gap: 10px; }
   .modal-row .field-group { flex: 1; }
   .modal-actions {
@@ -348,52 +305,27 @@
     padding-top: 0.75rem; border-top: 1px solid var(--border);
   }
 
-  /* Lines editor */
+  /* LINES EDITOR */
   .lines-editor { display: flex; flex-direction: column; gap: 5px; }
   .line-row { display: flex; align-items: center; gap: 8px; }
-  .line-num {
-    font-size: 11px; color: var(--text-3);
-    width: 16px; text-align: right; flex-shrink: 0; font-weight: 600;
-  }
+  .line-num { font-size: 11px; color: var(--text-3); width: 16px; text-align: right; flex-shrink: 0; font-weight: 600; }
   .line-input {
-    flex: 1; background: var(--input-bg);
-    border: 1px solid var(--border);
+    flex: 1; background: var(--input-bg); border: 1px solid var(--border);
     border-radius: 5px; color: var(--text);
     font-family: 'Courier New', monospace; font-size: 13px;
     padding: 7px 10px; outline: none;
-    text-transform: uppercase; letter-spacing: 0.03em;
-    transition: border-color 0.15s;
+    text-transform: uppercase; letter-spacing: 0.03em; transition: border-color 0.15s;
   }
   .line-input:focus { border-color: var(--accent); }
   .line-input::placeholder { color: var(--text-3); text-transform: none; font-family: inherit; }
-  .line-cc {
-    font-size: 10px; color: var(--text-3);
-    width: 30px; text-align: right; flex-shrink: 0;
-  }
+  .line-cc { font-size: 10px; color: var(--text-3); width: 30px; text-align: right; flex-shrink: 0; }
   .line-cc.warn { color: var(--warning); }
   .line-cc.over { color: var(--danger); }
 
-  .field-hint {
-    font-size: 11px; color: var(--text-3); margin-top: 4px;
-  }
-  .field-select {
-    width: 100%; background: var(--input-bg);
-    border: 1px solid var(--border2);
-    border-radius: 6px; color: var(--text);
-    font-family: inherit; font-size: 14px;
-    padding: 9px 12px; outline: none;
-    transition: border-color 0.15s;
-    cursor: pointer;
-  }
-  .field-select:focus { border-color: var(--accent); }
+  /* EMPTY */
+  .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-3); font-size: 13px; }
 
-  /* ── EMPTY ── */
-  .empty {
-    text-align: center; padding: 2.5rem 1rem;
-    color: var(--text-3); font-size: 13px;
-  }
-
-  /* ── TOAST ── */
+  /* TOAST */
   #toast {
     position: fixed; bottom: 1.5rem; left: 50%;
     transform: translateX(-50%) translateY(12px);
@@ -406,7 +338,7 @@
   }
   [data-theme="dark"] #toast { background: #f0f0f0; color: #111; }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-  #toast.err { background: var(--danger); color: #fff; }
+  #toast.err  { background: var(--danger); color: #fff; }
 </style>
 </head>
 <body>
@@ -414,13 +346,16 @@
 <div id="header">
   <div class="h-logo">
     <div class="h-logo-badge">CW</div>
-    <div class="h-logo-name">Cowboy Wire 2.0</div>
+    <div>
+      <div class="h-logo-name">The Switchboard</div>
+      <div class="h-logo-sub">Cowboy Wire 2.0</div>
+    </div>
   </div>
   <div class="h-sep"></div>
   <div class="h-room-tag" id="headerRoom" style="display:none"></div>
   <div class="h-spacer"></div>
   <div class="h-actions">
-    <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark mode</div>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark mode</button>
     <button class="btn-ghost" id="logoutBtn" onclick="logout()" style="display:none">Lock</button>
   </div>
 </div>
@@ -429,7 +364,7 @@
 <div id="pin-screen">
   <div class="pin-card">
     <div class="pin-header">
-      <div class="pin-title">Admin Sign In</div>
+      <div class="pin-title">Sign In</div>
       <div class="pin-sub">Enter your room number and PIN to continue.</div>
     </div>
     <div class="field-group">
@@ -439,7 +374,7 @@
     </div>
     <div class="field-group">
       <label class="field-label" for="pinInput">PIN</label>
-      <input class="field-input pin-field-input" id="pinInput" type="password"
+      <input class="field-input pin-digits" id="pinInput" type="password"
         placeholder="••••" maxlength="8"
         onkeydown="if(event.key==='Enter')verifyPin()">
     </div>
@@ -452,7 +387,6 @@
 <!-- ADMIN PANEL -->
 <div id="main" style="display:none">
 
-  <!-- SCREENS -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">Screens</div>
@@ -463,7 +397,6 @@
     </div>
   </div>
 
-  <!-- ROOM INFO -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">Room Info</div>
@@ -488,7 +421,6 @@
     </div>
   </div>
 
-  <!-- DISPLAY URL -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">Display URL</div>
@@ -500,7 +432,6 @@
     </div>
   </div>
 
-  <!-- CHANGE PIN -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">Change PIN</div>
@@ -514,7 +445,7 @@
         <label class="field-label">Confirm PIN</label>
         <input class="field-input" id="confirmPinInput" type="password" maxlength="8" placeholder="••••••••">
       </div>
-      <button class="btn accent" onclick="changePin()" style="height:38px;margin-bottom:0">Save PIN</button>
+      <button class="btn accent" onclick="changePin()" style="height:38px">Save PIN</button>
     </div>
     <div class="error-text" id="pinChangeError" style="text-align:left;margin-top:6px"></div>
   </div>
@@ -525,13 +456,11 @@
 <div id="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">Add Screen</div>
-
     <div class="field-group">
       <label class="field-label">Screen Content (7 rows · max 21 characters each)</label>
       <div class="lines-editor" id="linesEditor"></div>
       <div class="field-hint">Text is automatically centered on the display board.</div>
     </div>
-
     <div class="modal-row">
       <div class="field-group">
         <label class="field-label">Duration (seconds)</label>
@@ -549,7 +478,6 @@
         </select>
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Cancel</button>
       <button class="btn accent" onclick="saveScreen()">Save Screen</button>
@@ -563,10 +491,9 @@
 const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
-
 let ROOM = '', classroom = null, screens = [], editingId = null;
 
-// ── THEME ──────────────────────────────────────────
+// ── THEME ─────────────────────────────────────────
 let darkMode = localStorage.getItem('cw2-admin-theme') === 'dark';
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
@@ -577,132 +504,125 @@ function toggleTheme() { darkMode = !darkMode; applyTheme(); }
 applyTheme();
 
 // ── SUPABASE ──────────────────────────────────────
-async function sbFetch(table, query = '') {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+async function sbFetch(table, query) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
   });
   if (!res.ok) return null;
   return res.json();
 }
 async function sbInsert(table, data) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
     method: 'POST',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    headers: {
+      'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation'
+    },
     body: JSON.stringify(data)
   });
   if (!res.ok) return null;
   return res.json();
 }
 async function sbUpdate(table, id, data) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
     method: 'PATCH',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    headers: {
+      'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation'
+    },
     body: JSON.stringify(data)
   });
   if (!res.ok) return null;
   return res.json();
 }
 async function sbDelete(table, id) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
     method: 'DELETE',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
   });
   return res.ok;
 }
 
 // ── PIN AUTH ──────────────────────────────────────
-const params = new URLSearchParams(location.search);
-const urlRoom = params.get('room') || '';
+var urlParams = new URLSearchParams(location.search);
+var urlRoom   = urlParams.get('room') || '';
 
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', function() {
   if (urlRoom) document.getElementById('pinRoom').value = urlRoom;
   document.getElementById(urlRoom ? 'pinInput' : 'pinRoom').focus();
 });
 
 async function verifyPin() {
-  const roomVal = document.getElementById('pinRoom').value.trim();
-  const pinVal  = document.getElementById('pinInput').value.trim();
+  var roomVal = document.getElementById('pinRoom').value.trim();
+  var pinVal  = document.getElementById('pinInput').value.trim();
+
   if (!roomVal) { showPinError('Enter a room number'); return; }
   if (!pinVal)  { showPinError('Enter your PIN'); return; }
 
   // Fetch master PIN from Supabase
-  const adminRow = await sbFetch('cw2_settings', `room=eq.admin&select=master_pin`);
-  const masterPin = adminRow?.[0]?.master_pin || null;
+  var adminRows = await sbFetch('cw2_settings', 'room=eq.admin&select=master_pin');
+  var masterPin = (adminRows && adminRows[0]) ? adminRows[0].master_pin : null;
 
-  // Master override — only works if room has no PIN set
+  // Check if master PIN — only works when room has no PIN set yet
   if (masterPin && pinVal === masterPin) {
-    const check = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=config`);
-    const hasPin = check?.[0]?.config?.admin_pin;
-    if (hasPin) { showPinError('Incorrect PIN'); return; }
-    ROOM = roomVal; await unlockAdmin(); return;
+    var checkRows = await sbFetch('cw2_classrooms', 'room=eq.' + roomVal + '&select=config');
+    var hasPin = checkRows && checkRows[0] && checkRows[0].config && checkRows[0].config.admin_pin;
+    if (hasPin) {
+      showPinError('Incorrect PIN');
+      shakeInput();
+      return;
+    }
+    ROOM = roomVal;
+    await unlockAdmin();
+    return;
   }
 
   // Normal room PIN check
-  const rows = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=*`);
+  var rows = await sbFetch('cw2_classrooms', 'room=eq.' + roomVal + '&select=*');
   if (!rows || !rows.length) { showPinError('Room not found'); return; }
-  const cls = rows[0];
-  const storedPin = cls.config?.admin_pin || null;
+
+  var cls = rows[0];
+  var storedPin = cls.config && cls.config.admin_pin ? cls.config.admin_pin : null;
+
   if (!storedPin) { showPinError('No PIN set — contact your admin'); return; }
+
   if (pinVal !== String(storedPin)) {
     showPinError('Incorrect PIN');
-    const inp = document.getElementById('pinInput');
-    inp.classList.add('error');
-    setTimeout(() => inp.classList.remove('error'), 400);
+    shakeInput();
     return;
   }
-  ROOM = roomVal; classroom = cls;
+
+  ROOM = roomVal;
+  classroom = cls;
   await unlockAdmin();
 }
-  const roomVal = document.getElementById('pinRoom').value.trim();
-  const pinVal  = document.getElementById('pinInput').value.trim();
-  if (!roomVal) { showPinError('Enter a room number'); return; }
-  if (!pinVal)  { showPinError('Enter your PIN'); return; }
 
-  if (pinVal === MASTER_PIN) {
-  // Master only works if no PIN is set yet
-  const check = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=config`);
-  const hasPin = check?.[0]?.config?.admin_pin;
-  if (hasPin) { showPinError('Incorrect PIN'); return; }
-  ROOM = roomVal; await unlockAdmin(); return;
-}
-
-  const rows = await sbFetch('cw2_classrooms', `room=eq.${roomVal}&select=*`);
-  if (!rows || !rows.length) { showPinError('Room not found'); return; }
-
-  const cls = rows[0];
-  const storedPin = cls.config?.admin_pin || cls.config?.pin || null;
-  if (!storedPin) { showPinError('No PIN set — use master PIN to access'); return; }
-  if (pinVal !== String(storedPin)) {
-    showPinError('Incorrect PIN');
-    const inp = document.getElementById('pinInput');
-    inp.classList.add('error');
-    setTimeout(() => inp.classList.remove('error'), 400);
-    return;
-  }
-  ROOM = roomVal; classroom = cls;
-  await unlockAdmin();
+function shakeInput() {
+  var inp = document.getElementById('pinInput');
+  inp.classList.add('shake');
+  setTimeout(function() { inp.classList.remove('shake'); }, 400);
 }
 
 function showPinError(msg) {
-  const el = document.getElementById('pinError');
+  var el = document.getElementById('pinError');
   el.textContent = msg;
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.textContent = '', 3500);
+  el._t = setTimeout(function() { el.textContent = ''; }, 3500);
 }
-function showMasterHint() { showPinError('Contact your admin for master PIN access'); }
+
+function showMasterHint() { showPinError('Contact your admin for access'); }
 
 async function unlockAdmin() {
   document.getElementById('pin-screen').style.display = 'none';
   document.getElementById('main').style.display = 'block';
   document.getElementById('logoutBtn').style.display = 'block';
-  const roomTag = document.getElementById('headerRoom');
-  roomTag.textContent = `Room ${ROOM}`; roomTag.style.display = 'block';
+  var tag = document.getElementById('headerRoom');
+  tag.textContent = 'Room ' + ROOM;
+  tag.style.display = 'block';
 
   if (!classroom) {
-    const rows = await sbFetch('cw2_classrooms', `room=eq.${ROOM}&select=*`);
-    classroom = rows?.[0] || null;
+    var rows = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
+    classroom = (rows && rows[0]) ? rows[0] : null;
   }
   updateRoomInfo();
   await loadScreens();
@@ -721,51 +641,50 @@ function logout() {
 // ── ROOM INFO ─────────────────────────────────────
 function updateRoomInfo() {
   document.getElementById('settingRoom').textContent    = ROOM;
-  document.getElementById('settingTeacher').textContent = classroom?.teacher_name || '—';
-  document.getElementById('settingBadge').textContent   = classroom?.badge || '—';
-  document.getElementById('displayUrl').textContent     = `${location.origin}/display.html?room=${ROOM}`;
+  document.getElementById('settingTeacher').textContent = classroom ? (classroom.teacher_name || '—') : '—';
+  document.getElementById('settingBadge').textContent   = classroom ? (classroom.badge || '—') : '—';
+  document.getElementById('displayUrl').textContent     = location.origin + '/display.html?room=' + ROOM;
 }
 function copyDisplayUrl() {
-  navigator.clipboard.writeText(`${location.origin}/display.html?room=${ROOM}`)
-    .then(() => toast('URL copied'));
+  navigator.clipboard.writeText(location.origin + '/display.html?room=' + ROOM)
+    .then(function() { toast('URL copied'); });
 }
-function openDisplay() { window.open(`/display.html?room=${ROOM}`, '_blank'); }
+function openDisplay() { window.open('/display.html?room=' + ROOM, '_blank'); }
 
 // ── SCREENS ───────────────────────────────────────
 async function loadScreens() {
-  const rows = await sbFetch('cw2_screens', `room=eq.${ROOM}&order=sort_order.asc`);
+  var rows = await sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc');
   screens = rows || [];
   renderScreens();
-  document.getElementById('settingScreenCount').textContent =
-    screens.filter(s => s.enabled).length + ' / ' + screens.length;
+  var active = screens.filter(function(s) { return s.enabled; }).length;
+  document.getElementById('settingScreenCount').textContent = active + ' / ' + screens.length;
 }
 
 function renderScreens() {
-  const list = document.getElementById('screensList');
+  var list = document.getElementById('screensList');
   if (!screens.length) {
     list.innerHTML = '<div class="empty">No screens yet — click Add Screen to get started.</div>';
     return;
   }
-  list.innerHTML = screens.map((s, i) => {
-    const lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
-    const line1 = lines.find(l => l && l.trim()) || 'Empty screen';
-    const rest  = lines.filter(l => l && l.trim()).slice(1, 3).join(' · ');
-    const on    = s.enabled;
-    return `
-      <div class="screen-card ${on ? '' : 'disabled'}">
-        <div class="screen-num">${s.sort_order || i+1}</div>
-        <div class="screen-info">
-          <div class="screen-title">${line1}</div>
-          ${rest ? `<div class="screen-desc">${rest}</div>` : ''}
-        </div>
-        <div class="screen-meta">${s.speed || 10}s</div>
-        <span class="status-badge ${on ? 'on' : 'off'}">${on ? '● On' : '○ Off'}</span>
-        <div class="screen-actions">
-          <button class="btn" onclick="toggleScreen('${s.id}', ${on})">${on ? 'Disable' : 'Enable'}</button>
-          <button class="btn" onclick="openEditScreen('${s.id}')">Edit</button>
-          <button class="btn danger" onclick="deleteScreen('${s.id}')">Delete</button>
-        </div>
-      </div>`;
+  list.innerHTML = screens.map(function(s, i) {
+    var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
+    var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
+    var rest  = lines.filter(function(l) { return l && l.trim(); }).slice(1, 3).join(' · ');
+    var on = s.enabled;
+    return '<div class="screen-card ' + (on ? '' : 'disabled') + '">' +
+      '<div class="screen-num">' + (s.sort_order || i+1) + '</div>' +
+      '<div class="screen-info">' +
+        '<div class="screen-title">' + line1 + '</div>' +
+        (rest ? '<div class="screen-desc">' + rest + '</div>' : '') +
+      '</div>' +
+      '<div class="screen-meta">' + (s.speed || 10) + 's</div>' +
+      '<span class="status-badge ' + (on ? 'on' : 'off') + '">' + (on ? '● On' : '○ Off') + '</span>' +
+      '<div class="screen-actions">' +
+        '<button class="btn" onclick="toggleScreen(\'' + s.id + '\',' + on + ')">' + (on ? 'Disable' : 'Enable') + '</button>' +
+        '<button class="btn" onclick="openEditScreen(\'' + s.id + '\')">Edit</button>' +
+        '<button class="btn danger" onclick="deleteScreen(\'' + s.id + '\')">Delete</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
 }
 
@@ -782,33 +701,37 @@ async function deleteScreen(id) {
 }
 
 // ── MODAL ─────────────────────────────────────────
-function buildLinesEditor(values = []) {
-  const ed = document.getElementById('linesEditor');
+function buildLinesEditor(values) {
+  values = values || [];
+  var ed = document.getElementById('linesEditor');
   ed.innerHTML = '';
-  for (let i = 0; i < 7; i++) {
-    const val = (values[i] || '').toUpperCase();
-    const row = document.createElement('div');
+  for (var i = 0; i < 7; i++) {
+    var val = (values[i] || '').toUpperCase();
+    var row = document.createElement('div');
     row.className = 'line-row';
-    row.innerHTML = `
-      <div class="line-num">${i+1}</div>
-      <input class="line-input" id="line${i}" type="text" maxlength="21"
-        value="${val.replace(/"/g,'&quot;')}"
-        placeholder="${i===0?'Main headline':i===3?'Subtitle':''}"
-        oninput="updateCC(${i})">
-      <div class="line-cc" id="cc${i}">${val.length}/21</div>`;
+    row.innerHTML =
+      '<div class="line-num">' + (i+1) + '</div>' +
+      '<input class="line-input" id="line' + i + '" type="text" maxlength="21"' +
+        ' value="' + val.replace(/"/g, '&quot;') + '"' +
+        ' placeholder="' + (i===0 ? 'Main headline' : i===3 ? 'Subtitle' : '') + '"' +
+        ' oninput="updateCC(' + i + ')">' +
+      '<div class="line-cc" id="cc' + i + '">' + val.length + '/21</div>';
     ed.appendChild(row);
   }
 }
 function updateCC(i) {
-  const len = document.getElementById('line'+i).value.length;
-  const el  = document.getElementById('cc'+i);
-  el.textContent = len+'/21';
-  el.className = 'line-cc'+(len>21?' over':len>17?' warn':'');
+  var len = document.getElementById('line' + i).value.length;
+  var el  = document.getElementById('cc' + i);
+  el.textContent = len + '/21';
+  el.className = 'line-cc' + (len > 21 ? ' over' : len > 17 ? ' warn' : '');
 }
 function getLines() {
-  return Array.from({length:7}, (_,i) => document.getElementById('line'+i).value.toUpperCase().trim());
+  var out = [];
+  for (var i = 0; i < 7; i++) {
+    out.push(document.getElementById('line' + i).value.toUpperCase().trim());
+  }
+  return out;
 }
-
 function openNewScreen() {
   editingId = null;
   document.getElementById('modalTitle').textContent = 'Add Screen';
@@ -819,10 +742,11 @@ function openNewScreen() {
   document.getElementById('modal-overlay').classList.add('open');
 }
 function openEditScreen(id) {
-  const s = screens.find(x => x.id === id); if (!s) return;
+  var s = screens.find(function(x) { return x.id === id; });
+  if (!s) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = 'Edit Screen';
-  const lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
+  var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
   buildLinesEditor(lines);
   document.getElementById('screenSpeed').value = s.speed || 10;
   document.getElementById('screenOrder').value = s.sort_order || 1;
@@ -834,48 +758,57 @@ function closeModal() {
   editingId = null;
 }
 async function saveScreen() {
-  const lines   = getLines();
-  const speed   = parseInt(document.getElementById('screenSpeed').value) || 10;
-  const order   = parseInt(document.getElementById('screenOrder').value) || 1;
-  const enabled = document.getElementById('screenEnabled').value === 'true';
-  if (!lines.some(l => l.trim())) { toast('Add at least one line of text', true); return; }
-  const data = { room: ROOM, lines: JSON.stringify(lines), speed, sort_order: order, enabled };
-  if (editingId) { await sbUpdate('cw2_screens', editingId, data); toast('Screen updated'); }
-  else           { await sbInsert('cw2_screens', data); toast('Screen added'); }
+  var lines   = getLines();
+  var speed   = parseInt(document.getElementById('screenSpeed').value) || 10;
+  var order   = parseInt(document.getElementById('screenOrder').value) || 1;
+  var enabled = document.getElementById('screenEnabled').value === 'true';
+  var hasContent = lines.some(function(l) { return l.trim(); });
+  if (!hasContent) { toast('Add at least one line of text', true); return; }
+  var data = { room: ROOM, lines: JSON.stringify(lines), speed: speed, sort_order: order, enabled: enabled };
+  if (editingId) {
+    await sbUpdate('cw2_screens', editingId, data);
+    toast('Screen updated');
+  } else {
+    await sbInsert('cw2_screens', data);
+    toast('Screen added');
+  }
   closeModal();
   await loadScreens();
 }
 
 // ── CHANGE PIN ────────────────────────────────────
 async function changePin() {
-  const newPin  = document.getElementById('newPinInput').value.trim();
-  const confirm = document.getElementById('confirmPinInput').value.trim();
-  const errEl   = document.getElementById('pinChangeError');
+  var newPin  = document.getElementById('newPinInput').value.trim();
+  var confirm = document.getElementById('confirmPinInput').value.trim();
+  var errEl   = document.getElementById('pinChangeError');
   if (!newPin || newPin.length < 4) { errEl.textContent = 'PIN must be 4–8 digits'; return; }
   if (newPin !== confirm)           { errEl.textContent = 'PINs do not match'; return; }
   if (!/^\d+$/.test(newPin))       { errEl.textContent = 'Numbers only'; return; }
   errEl.textContent = '';
-  const newConfig = { ...(classroom?.config || {}), admin_pin: newPin };
-  if (classroom?.id) {
-    await sbUpdate('cw2_classrooms', classroom.id, { config: newConfig });
-    classroom.config = newConfig;
+  var currentConfig = (classroom && classroom.config) ? classroom.config : {};
+  currentConfig.admin_pin = newPin;
+  if (classroom && classroom.id) {
+    await sbUpdate('cw2_classrooms', classroom.id, { config: currentConfig });
+    classroom.config = currentConfig;
     document.getElementById('newPinInput').value = '';
     document.getElementById('confirmPinInput').value = '';
-    toast('PIN updated successfully');
-  } else { errEl.textContent = 'Classroom record not found'; }
+    toast('PIN updated');
+  } else {
+    errEl.textContent = 'Classroom record not found';
+  }
 }
 
 // ── TOAST ─────────────────────────────────────────
-function toast(msg, isErr = false) {
-  const el = document.getElementById('toast');
+function toast(msg, isErr) {
+  var el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'show' + (isErr ? ' err' : '');
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = '', 2500);
+  el._t = setTimeout(function() { el.className = ''; }, 2500);
 }
 
 // ── OUTSIDE CLICK ─────────────────────────────────
-document.getElementById('modal-overlay').addEventListener('click', e => {
+document.getElementById('modal-overlay').addEventListener('click', function(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
 </script>
