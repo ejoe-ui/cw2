@@ -257,7 +257,6 @@
       <div class="setting-card"><div class="setting-label">Teacher</div><div class="setting-value" id="settingTeacher" style="font-size:14px;padding-top:3px">—</div></div>
       <div class="setting-card"><div class="setting-label">Badge</div><div class="setting-value" id="settingBadge" style="font-size:14px;padding-top:3px">—</div></div>
       <div class="setting-card"><div class="setting-label">Active</div><div class="setting-value" id="settingScreenCount">—</div></div>
-      <div class="setting-card" style="cursor:pointer" onclick="toggleHonorRoll()" title="Toggle honor roll ticker"><div class="setting-label">Honor Roll</div><div class="setting-value" id="settingHonorRoll" style="font-size:14px;padding-top:3px">—</div></div>
     </div>
   </div>
 
@@ -508,6 +507,33 @@
     <div id="msg-list"><div class="bday-empty">Loading...</div></div>
   </div>
 
+
+  <!-- QUIET COMPETITION -->
+  <div class="sb-section" id="section-quiet">
+    <div class="sb-section-header">
+      <span>🤫 Quiet Competition</span>
+      <span class="sb-count" id="quiet-week-label">—</span>
+    </div>
+
+    <!-- Period Name Editor -->
+    <div style="margin-bottom:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em;">Period Display Names</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Students name their own period — periods sharing the same name compete as one team.</div>
+      <div id="quiet-name-editor" style="display:flex;flex-direction:column;gap:6px;">
+        <div class="empty">Loading...</div>
+      </div>
+      <button class="sb-btn-primary" style="margin-top:10px" onclick="quietSaveNames()">Save Names</button>
+      <div id="quiet-name-status" style="font-size:11px;color:var(--text-3);margin-top:6px;min-height:16px;"></div>
+    </div>
+
+    <!-- Weekly Standings -->
+    <div class="bday-list-header">
+      <span>This Week's Standings</span>
+      <button class="sb-btn-danger-sm" onclick="quietResetWeek()">Reset Week</button>
+    </div>
+    <div id="quiet-standings"><div class="bday-empty">Loading...</div></div>
+  </div>
+
   <!-- DISPLAY URL -->
   <div class="section">
     <div class="section-head"><div class="section-title">Display URL</div></div>
@@ -723,14 +749,13 @@ async function unlockAdmin() {
     classroom = (rows && rows[0]) ? rows[0] : null;
   }
   updateRoomInfo();
-  var hrRows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=show_honor_roll');
-  var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
-  document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
   await loadScreens();
   await loadGlobalScreens();
   await loadObjectives();
   await bdayLoadList();
   await msgLoadList();
+  await quietLoadNames();
+  await quietLoadStandings();
 
   document.getElementById('roomMgmtSection').style.display = isMasterSession ? 'block' : 'none';
   document.getElementById('addGlobalBtn').style.display = isMasterSession ? 'inline-flex' : 'none';
@@ -1489,16 +1514,140 @@ async function msgClearAll() {
     await msgLoadList();
   } catch(e) { alert('Clear failed: ' + e.message); }
 }
-async function toggleHonorRoll() {
-  var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,show_honor_roll');
-  if (!rows || !rows.length) { toast('Settings record not found', true); return; }
-  var current = rows[0].show_honor_roll;
-  var next = current === false ? true : false;
-  await sbUpdate('cw2_settings', rows[0].id, { show_honor_roll: next });
-  document.getElementById('settingHonorRoll').textContent = next ? '✓ On' : '✗ Off';
-  toast('Honor roll ' + (next ? 'enabled' : 'disabled'));
+
+// ── QUIET COMPETITION ─────────────────────────────────────────
+function quietWeekStart() {
+  var d = new Date();
+  d.setDate(d.getDate() - d.getDay());
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
 }
- 
+
+async function quietLoadNames() {
+  var rows = await sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name&order=period.asc');
+  var nameMap = {};
+  (rows || []).forEach(function(r) { nameMap[r.period] = r.display_name; });
+
+  var editor = document.getElementById('quiet-name-editor');
+  if (!editor) return;
+  editor.innerHTML = '';
+
+  ['1','2','3','4','5','6','7'].forEach(function(p) {
+    var row = document.createElement('div');
+    row.className = 'quiet-name-row';
+    row.innerHTML =
+      '<div class="quiet-period-label">P' + p + '</div>' +
+      '<input class="sb-input" type="text" id="quiet-name-' + p + '" ' +
+        'placeholder="e.g. Silent Assassins" maxlength="40" ' +
+        'value="' + (nameMap[p] || '').replace(/"/g,'&quot;') + '">';
+    editor.appendChild(row);
+  });
+
+  var ws = quietWeekStart();
+  var d = new Date(ws + 'T00:00:00');
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var label = document.getElementById('quiet-week-label');
+  if (label) label.textContent = 'Week of ' + months[d.getMonth()] + ' ' + d.getDate();
+}
+
+async function quietSaveNames() {
+  var status = document.getElementById('quiet-name-status');
+  status.textContent = 'Saving...';
+  var promises = [];
+  ['1','2','3','4','5','6','7'].forEach(function(p) {
+    var input = document.getElementById('quiet-name-' + p);
+    if (!input) return;
+    var name = input.value.trim();
+    // Delete existing then insert (upsert workaround)
+    promises.push(
+      fetch(SUPABASE_URL + '/rest/v1/cw2_period_names?room=eq.' + ROOM + '&period=eq.' + p, {
+        method: 'DELETE',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+      }).then(function() {
+        if (!name) return; // empty = just delete, no replacement
+        return fetch(SUPABASE_URL + '/rest/v1/cw2_period_names', {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+            'Content-Type': 'application/json', 'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ room: ROOM, period: p, display_name: name })
+        });
+      })
+    );
+  });
+  try {
+    await Promise.all(promises);
+    status.textContent = '✓ Names saved. Board updates within 5 minutes.';
+    toast('Period names saved');
+    await quietLoadStandings();
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function quietLoadStandings() {
+  var ws = quietWeekStart();
+  var results = await Promise.all([
+    sbFetch('cw2_quiet_points', 'room=eq.' + ROOM + '&week_start=eq.' + ws + '&select=*'),
+    sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name')
+  ]);
+  var pointRows = results[0] || [];
+  var nameRows  = results[1] || [];
+
+  var nameMap = {};
+  nameRows.forEach(function(r) { nameMap[r.period] = r.display_name; });
+
+  var grouped = {};
+  pointRows.forEach(function(r) {
+    var name = nameMap[r.period] || ('Period ' + r.period);
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+    grouped[name].points  += r.points_earned || 0;
+    grouped[name].minutes += r.minutes_quiet  || 0;
+  });
+
+  // Include named periods with zero points so they show on board
+  Object.values(nameMap).forEach(function(name) {
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+  });
+
+  var ranked = Object.values(grouped).sort(function(a, b) { return b.points - a.points; });
+  var el = document.getElementById('quiet-standings');
+  if (!el) return;
+
+  if (!ranked.length) {
+    el.innerHTML = '<div class="bday-empty">No data yet. Points accumulate when the noise meter is on during class periods.</div>';
+    return;
+  }
+
+  var medals = ['🥇','🥈','🥉','4.','5.','6.','7.'];
+  el.innerHTML = ranked.map(function(entry, i) {
+    return '<div class="quiet-standing-row">' +
+      '<div class="quiet-standing-rank">' + (medals[i] || (i+1)+'.') + '</div>' +
+      '<div class="quiet-standing-name">' + entry.name + '</div>' +
+      '<div style="display:flex;align-items:center;gap:8px">' +
+        '<div class="quiet-standing-pts">' + entry.points.toLocaleString() + ' pts</div>' +
+        '<div class="quiet-standing-mins">' + entry.minutes + ' min quiet</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function quietResetWeek() {
+  if (!confirm('Reset all quiet competition points for this week? This cannot be undone.')) return;
+  var ws = quietWeekStart();
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points?room=eq.' + ROOM + '&week_start=eq.' + ws, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    toast('Week reset — all points cleared');
+    await quietLoadStandings();
+  } catch(e) { alert('Reset failed: ' + e.message); }
+}
+
 </script>
 </body>
 </html>
