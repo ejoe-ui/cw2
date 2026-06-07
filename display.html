@@ -878,8 +878,7 @@ async function loadScreens() {
   mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
 
   // ── Global boards — filter by enabled categories ──
-  var enabledCats = SETTINGS && SETTINGS.global_categories ? SETTINGS.global_categories : { cowboy_code: true, fun_facts: true, business: true, word_of_day: true, positive_thoughts: true, this_week: true };
-  // Default: if no category set, treat as cowboy_code
+  var enabledCats = SETTINGS && SETTINGS.global_categories ? SETTINGS.global_categories : { cowboy_code: true, fun_facts: true };
   var eligibleGlobals = globalScreens.filter(function(r) {
     if (!r.enabled) return false;
     var pref = prefsMap[r.id];
@@ -888,28 +887,26 @@ async function loadScreens() {
     return enabledCats[cat] !== false;
   });
 
-  // Shuffle globals so rotation order varies each load
-  for (var i = eligibleGlobals.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = eligibleGlobals[i]; eligibleGlobals[i] = eligibleGlobals[j]; eligibleGlobals[j] = tmp;
+  // Pick 2 random globals per rotation cycle — fresh each sync
+  var picks = [];
+  if (eligibleGlobals.length) {
+    var shuffled = eligibleGlobals.slice();
+    for (var i = shuffled.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
+    }
+    picks = shuffled.slice(0, 2);
   }
 
-  // Interleave: inject one global board every 3 local boards
-  var finalList = [];
-  var gi = 0;
-  mapped.forEach(function(local, i) {
-    finalList.push(local);
-    if ((i + 1) % 3 === 0 && gi < eligibleGlobals.length) {
-      var g = eligibleGlobals[gi++];
-      var glines = Array.isArray(g.lines) ? g.lines : JSON.parse(g.lines || '[]');
-      finalList.push({ lines: glines, speed: g.speed || 12, id: g.id, align: g.align || 'center', isGlobal: true, sort_order: 9000 + gi, _isGlobal: true });
-    }
-  });
-  // Append remaining globals after all local boards
-  while (gi < eligibleGlobals.length) {
-    var g2 = eligibleGlobals[gi++];
-    var g2lines = Array.isArray(g2.lines) ? g2.lines : JSON.parse(g2.lines || '[]');
-    finalList.push({ lines: g2lines, speed: g2.speed || 12, id: g2.id, align: g2.align || 'center', isGlobal: true, sort_order: 9000 + gi, _isGlobal: true });
+  // Inject: one global after position 2, one at the end
+  var finalList = mapped.slice();
+  if (picks[0]) {
+    var g0lines = Array.isArray(picks[0].lines) ? picks[0].lines : JSON.parse(picks[0].lines || '[]');
+    finalList.splice(Math.min(2, finalList.length), 0, { lines: g0lines, speed: picks[0].speed || 12, id: picks[0].id, align: picks[0].align || 'center', _isGlobal: true });
+  }
+  if (picks[1]) {
+    var g1lines = Array.isArray(picks[1].lines) ? picks[1].lines : JSON.parse(picks[1].lines || '[]');
+    finalList.push({ lines: g1lines, speed: picks[1].speed || 12, id: picks[1].id, align: picks[1].align || 'center', _isGlobal: true });
   }
 
   return finalList.length ? finalList : null;
