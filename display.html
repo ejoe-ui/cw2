@@ -878,7 +878,10 @@ async function loadScreens() {
   mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
 
   // ── Global boards — filter by enabled categories ──
-  var enabledCats = SETTINGS && SETTINGS.global_categories ? SETTINGS.global_categories : { cowboy_code: true, fun_facts: true };
+  var enabledCats = SETTINGS && SETTINGS.global_categories
+    ? SETTINGS.global_categories
+    : { cowboy_code: true, fun_facts: true, word_of_day: true, positive_thoughts: true, business: true };
+
   var eligibleGlobals = globalScreens.filter(function(r) {
     if (!r.enabled) return false;
     var pref = prefsMap[r.id];
@@ -887,7 +890,7 @@ async function loadScreens() {
     return enabledCats[cat] !== false;
   });
 
-  // Pick 1 random per enabled category — guarantees variety each rotation
+  // ── Pick 1 random per enabled category ───────────
   var picks = [];
   var byCategory = {};
   eligibleGlobals.forEach(function(r) {
@@ -900,13 +903,14 @@ async function loadScreens() {
     var pick = pool[Math.floor(Math.random() * pool.length)];
     picks.push(pick);
   });
-  // Shuffle picks so category order varies
+
+  // ── Shuffle picks so category order varies each cycle ──
   for (var pi = picks.length - 1; pi > 0; pi--) {
     var pj = Math.floor(Math.random() * (pi + 1));
     var pt = picks[pi]; picks[pi] = picks[pj]; picks[pj] = pt;
   }
 
-  // Inject: one per enabled category, spread evenly through local boards
+  // ── Inject: one per enabled category, spread evenly ──
   var finalList = mapped.slice();
   if (picks.length) {
     var localLen = finalList.length;
@@ -914,8 +918,16 @@ async function loadScreens() {
     var inserted = 0;
     picks.forEach(function(pick, i) {
       var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines || '[]');
-      var pos = step > 0 ? Math.min((i + 1) * step + inserted, finalList.length) : finalList.length;
-      finalList.splice(pos, 0, { lines: glines, speed: pick.speed || 12, id: pick.id, align: pick.align || 'left', _isGlobal: true });
+      var pos = step > 0
+        ? Math.min((i + 1) * step + inserted, finalList.length)
+        : finalList.length;
+      finalList.splice(pos, 0, {
+        lines: glines,
+        speed: pick.speed || 12,
+        id: pick.id,
+        align: pick.align || 'left',
+        _isGlobal: true
+      });
       inserted++;
     });
   }
