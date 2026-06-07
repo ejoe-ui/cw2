@@ -587,6 +587,20 @@ function toast(msg, isErr) {
   clearTimeout(el._t);
   el._t = setTimeout(function() { el.className = ''; }, 2500);
 }
+ function showAdminLogin() {
+  document.getElementById('pinRoom').value = 'admin';
+  document.getElementById('pinRoom').style.display = 'none';
+  document.querySelector('label[for="pinRoom"]').style.display = 'none';
+  document.getElementById('pinInput').focus();
+  document.querySelector('.pin-sub').textContent = 'Enter your admin PIN to continue.';
+}
+
+function resetLoginForm() {
+  document.getElementById('pinRoom').value = urlRoom || '';
+  document.getElementById('pinRoom').style.display = '';
+  document.querySelector('label[for="pinRoom"]').style.display = '';
+  document.querySelector('.pin-sub').textContent = 'Enter your room number and PIN to continue.';
+}
 
 document.getElementById('modal-overlay').addEventListener('click', function(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
