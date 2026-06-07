@@ -1166,6 +1166,64 @@ function buildWeatherScreen() {
   return { lines: lines, speed: 18, id: 'weather', align: 'center', sort_order: 0.8 };
 }
 
+ var CW_OBJECTIVES = {};
+
+async function loadObjectives() {
+  var today = dateStr(new Date());
+  var rows = await sbFetch('cw2_objectives', 'room=eq.' + ROOM + '&active=eq.true&select=*');
+  CW_OBJECTIVES = {};
+  (rows || []).forEach(function(r) {
+    if (r.scheduled_date && r.scheduled_date !== today) return;
+    CW_OBJECTIVES[r.period] = r;
+  });
+}
+
+function buildObjectivesScreen() {
+  var sched = getSchedule();
+  if (!sched) return null;
+
+  var nm = nowMins();
+  var currentPeriod = null;
+  var minutesIn = 0;
+
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm >= s && nm < e) {
+      // Extract period number from label e.g. "P1" → "1", "P1/2" → "1"
+      var match = (p.label || '').match(/\d+/);
+      if (match) { currentPeriod = match[0]; minutesIn = nm - s; }
+    }
+  });
+
+  if (!currentPeriod) return null;
+
+  var obj = CW_OBJECTIVES[currentPeriod];
+  if (!obj || !obj.title) return null;
+
+  // Respect display_mode
+  if (obj.display_mode === 'timed') {
+    var limit = obj.timed_minutes || 10;
+    if (minutesIn > limit) return null;
+  }
+
+  var lines = [
+    'P' + currentPeriod + '  NOW LEARNING',
+    obj.title ? obj.title.toUpperCase() : '',
+    '',
+    obj.line1 ? '> ' + obj.line1.toUpperCase() : '',
+    '',
+    obj.line2 ? '/ ' + obj.line2.toUpperCase() : '',
+    '',
+    '',
+  ];
+
+  while (lines.length < ROWS) lines.push('');
+  lines = lines.slice(0, ROWS);
+
+  return { lines: lines, speed: 15, id: 'objectives', align: 'left', sort_order: 0.2 };
+}
+ 
 async function loadHonorRoll() {
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
@@ -1222,6 +1280,7 @@ async function startBoard() {
   setInterval(async function() {
     await loadCwEvents();
     await loadWeather();
+    await loadObjectives();
     injectDynamicScreens();
     buildDots();
   }, 5 * 60 * 1000);
@@ -1230,7 +1289,7 @@ async function startBoard() {
 function injectDynamicScreens() {
   // Remove previously injected dynamic screens
   messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' && m.id !== 'bell';
+    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' && m.id !== 'bell' && m.id !== 'objectives';
   });
 
   // Calendar screen — first in rotation
@@ -1251,11 +1310,10 @@ function injectDynamicScreens() {
     messages.splice(wxAt, 0, wxScreen);
   }
 
-  // Bell schedule screen — school days only, correct schedule auto-selected
-  var bellScreen = buildBellScreen();
-  if (bellScreen) {
-    var bellAt = Math.min(4, messages.length);
-    messages.splice(bellAt, 0, bellScreen);
+ // Objectives screen — current period only, respects display_mode
+  var objScreen = buildObjectivesScreen();
+  if (objScreen) {
+    messages.splice(1, 0, objScreen);
   }
 
 // ── NOISE METER ──────────────────────────────────────
@@ -1488,6 +1546,7 @@ window.addEventListener('click', function() {
     if (sp) { sp.style.opacity = '0'; setTimeout(function(){sp.remove();}, 600); }
   }, 8000);
   await startBoard();
+  await loadObjectives();
   setTimeout(function() { loadHonorRoll(); }, 2000);
   setInterval(function() { loadHonorRoll(); }, 30*60*1000);
 })();
