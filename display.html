@@ -948,7 +948,11 @@ function buildCountdownScreen() {
     var title = (e.title || '').toUpperCase();
     var maxTitle = COLS - suffix.length - 2;
     if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
-    lines.push(title + '  ' + suffix);
+    // Right-align the day count by padding title to fill the row
+    var totalLen = title.length + 2 + suffix.length;
+    var extra = COLS - totalLen;
+    var padding = extra > 0 ? ' '.repeat(extra) : '';
+    lines.push(title + padding + '  ' + suffix);
   });
 
   while (lines.length < ROWS) lines.push('');
