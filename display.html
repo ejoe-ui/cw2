@@ -503,6 +503,29 @@ const SCHEDULES = {
     { id:'6', label:'P6', start:'14:21', end:'15:01' },
     { id:'7', label:'P7', start:'15:05', end:'15:45' },
   ]},
+  activity: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },
+    { id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },
+    { id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'5', label:'P5', start:'11:39', end:'12:23' },
+    { id:'lunch', label:'Lunch', start:'12:23', end:'12:57', break:true },
+    { id:'6', label:'P6', start:'13:01', end:'13:45' },
+    { id:'7', label:'P7', start:'13:49', end:'14:33' },
+  ]},
+  codeDay: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },
+    { id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },
+    { id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'rally', label:'Rally', start:'11:39', end:'12:17', break:true },
+    { id:'lunch', label:'Lunch', start:'12:17', end:'12:51', break:true },
+    { id:'5', label:'P5', start:'12:55', end:'13:39' },
+    { id:'6', label:'P6', start:'13:43', end:'14:27' },
+    { id:'7', label:'P7', start:'14:31', end:'15:15' },
+  ]},
 };
 
 const NO_SCHOOL = [
@@ -513,6 +536,8 @@ const NO_SCHOOL = [
   '2027-04-06','2027-04-07','2027-04-08','2027-04-09',
 ];
 
+// Manual date overrides — add special days here as needed
+// e.g. DATE_OVERRIDES['2026-10-23'] = 'activity';
 const DATE_OVERRIDES = {};
 
 function toMins(t) { var p = t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
@@ -524,16 +549,55 @@ function dateStr(d) {
   return y+'-'+m+'-'+day;
 }
 
+// Count actual school days in the current week (Mon-Fri, excluding NO_SCHOOL)
+function schoolDaysThisWeek(date) {
+  var dow = date.getDay();
+  var mon = new Date(date);
+  mon.setDate(date.getDate() - (dow === 0 ? 6 : dow - 1));
+  var count = 0;
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    if (!NO_SCHOOL.includes(dateStr(d))) count++;
+  }
+  return count;
+}
+
 function getSchedule() {
   var now = new Date();
   var ds  = dateStr(now);
   var dow = now.getDay();
+
+  // Weekends and no-school days
   if (dow === 0 || dow === 6 || NO_SCHOOL.includes(ds)) return null;
+
+  // Manual date overrides first
   if (DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
-  if (dow === 3) return SCHEDULES.blockWed;
-  if (dow === 4) return SCHEDULES.blockThu;
-  if (dow === 1) return SCHEDULES.earlyRelease;
-  return SCHEDULES.regular;
+
+  // Calendar event keyword overrides (set by Supabase cw_events or similar)
+  var events = window._cwCalEvents || [];
+  var todayTitles = events
+    .filter(function(e) { return e.start && e.start.substring(0,10) === ds; })
+    .map(function(e) { return (e.title || '').toLowerCase(); });
+  var has = function(kw) { return todayTitles.some(function(t) { return t.includes(kw); }); };
+
+  if (has('foggy') || has('late arrival'))  return SCHEDULES.foggy;
+  if (has('minimum'))                        return SCHEDULES.minimum;
+  if (has('code day'))                       return SCHEDULES.codeDay;
+  if (has('activity'))                       return SCHEDULES.activity;
+  if (has('early release'))                  return SCHEDULES.earlyRelease;
+  if (has('block')) {
+    return dow === 3 ? SCHEDULES.blockWed : SCHEDULES.blockThu;
+  }
+
+  // 4-day week rule: if only 4 or fewer school days this week, all days are regular
+  if (schoolDaysThisWeek(now) <= 4) return SCHEDULES.regular;
+
+  // Normal 5-day week rules
+  if (dow === 1) return SCHEDULES.earlyRelease;  // Monday
+  if (dow === 3) return SCHEDULES.blockWed;       // Wednesday
+  if (dow === 4) return SCHEDULES.blockThu;       // Thursday
+  return SCHEDULES.regular;                        // Tuesday, Friday
 }
 
 function updatePeriodTimer() {
