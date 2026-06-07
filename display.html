@@ -1473,6 +1473,11 @@ function buildQuietScreen() {
 
 // ── HONOR ROLL ───────────────────────────────────────
 async function loadHonorRoll() {
+  if (SETTINGS && SETTINGS.show_honor_roll === false) {
+    document.getElementById('honor-ticker-wrap').style.display = 'none';
+    document.getElementById('honor-ticker-inner').innerHTML = '';
+    return;
+  }
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
   var inner = document.getElementById('honor-ticker-inner');
