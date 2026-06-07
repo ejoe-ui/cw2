@@ -257,6 +257,7 @@
       <div class="setting-card"><div class="setting-label">Teacher</div><div class="setting-value" id="settingTeacher" style="font-size:14px;padding-top:3px">—</div></div>
       <div class="setting-card"><div class="setting-label">Badge</div><div class="setting-value" id="settingBadge" style="font-size:14px;padding-top:3px">—</div></div>
       <div class="setting-card"><div class="setting-label">Active</div><div class="setting-value" id="settingScreenCount">—</div></div>
+      <div class="setting-card" style="cursor:pointer" onclick="toggleHonorRoll()" title="Toggle honor roll ticker"><div class="setting-label">Honor Roll</div><div class="setting-value" id="settingHonorRoll" style="font-size:14px;padding-top:3px">—</div></div>
     </div>
   </div>
 
@@ -722,6 +723,9 @@ async function unlockAdmin() {
     classroom = (rows && rows[0]) ? rows[0] : null;
   }
   updateRoomInfo();
+  var hrRows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=show_honor_roll');
+  var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
+  document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
   await loadScreens();
   await loadGlobalScreens();
   await loadObjectives();
@@ -1485,7 +1489,16 @@ async function msgClearAll() {
     await msgLoadList();
   } catch(e) { alert('Clear failed: ' + e.message); }
 }
-
+async function toggleHonorRoll() {
+  var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,show_honor_roll');
+  if (!rows || !rows.length) { toast('Settings record not found', true); return; }
+  var current = rows[0].show_honor_roll;
+  var next = current === false ? true : false;
+  await sbUpdate('cw2_settings', rows[0].id, { show_honor_roll: next });
+  document.getElementById('settingHonorRoll').textContent = next ? '✓ On' : '✗ Off';
+  toast('Honor roll ' + (next ? 'enabled' : 'disabled'));
+}
+ 
 </script>
 </body>
 </html>
