@@ -787,7 +787,10 @@ function showMessage(idx) {
   currentIdx = idx;
   var msg = messages[idx];
   var align = msg.align || 'center';
-  var newLines = Array.from({ length: ROWS }, function(_, r) { return padLine(msg.lines[r] || '', COLS, align); });
+  var newLines = Array.from({ length: ROWS }, function(_, r) {
+    var lineAlign = (msg.alignLines && msg.alignLines[r]) ? msg.alignLines[r] : align;
+    return padLine(msg.lines[r] || '', COLS, lineAlign);
+  });
   updateDots();
   var changedTiles = 0;
   for (var r = 0; r < ROWS; r++)
@@ -1150,7 +1153,9 @@ function buildWeatherScreen() {
     }
   }
   while (lines.length < ROWS) lines.push('');
-  return { lines: lines, speed: 18, id: 'weather', align: 'center', sort_order: 0.8 };
+  // Top 5 lines left-aligned (stats), bottom 3 centered (forecast)
+  var alignLines = lines.map(function(_, i) { return i < 5 ? 'left' : 'center'; });
+  return { lines: lines, speed: 18, id: 'weather', align: 'left', alignLines: alignLines, sort_order: 0.8 };
 }
 
 // ── OBJECTIVES ───────────────────────────────────────
