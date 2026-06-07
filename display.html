@@ -834,6 +834,151 @@ async function loadScreens() {
   return mapped.length ? mapped : null;
 }
 
+// ── CALENDAR & EVENTS ────────────────────────────
+var CW_EVENTS = [];
+
+async function loadCwEvents() {
+  var now = new Date();
+  var ds = dateStr(now);
+  // Fetch events from today onward, active only
+  var rows = await sbFetch('cw2_events', 'active=eq.true&end_date=gte.' + ds + '&order=start_date.asc');
+  CW_EVENTS = rows || [];
+  window._cwCalEvents = CW_EVENTS; // makes getSchedule() keyword logic work
+  return CW_EVENTS;
+}
+
+function daysBetween(a, b) {
+  var msPerDay = 24 * 60 * 60 * 1000;
+  var da = new Date(a + 'T00:00:00');
+  var db = new Date(b + 'T00:00:00');
+  return Math.round((da - db) / msPerDay);
+}
+
+function buildCalendarScreen() {
+  var now = new Date();
+  var ds = dateStr(now);
+  var dow = now.getDay();
+  var sched = getSchedule();
+
+  var lines = [];
+
+  // Line 1: Today header
+  var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var dayName = days[dow];
+  var mon = months[now.getMonth()];
+  var dayNum = now.getDate();
+
+  if (!sched) {
+    // No school today
+    lines.push('NO SCHOOL TODAY');
+    lines.push(dayName + '  ' + mon + '  ' + dayNum);
+    lines.push('');
+    // Find next school day
+    var next = new Date(now);
+    for (var i = 1; i <= 14; i++) {
+      next.setDate(next.getDate() + 1);
+      var nd = dateStr(next);
+      var ndow = next.getDay();
+      if (ndow !== 0 && ndow !== 6 && !NO_SCHOOL.includes(nd)) {
+        var nextDays = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+        var nextMons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        lines.push('NEXT SCHOOL DAY');
+        lines.push(nextDays[ndow] + '  ' + nextMons[next.getMonth()] + '  ' + next.getDate());
+        // What schedule?
+        var nextSched = getScheduleForDate(next);
+        if (nextSched === 'earlyRelease') lines.push('EARLY RELEASE');
+        else if (nextSched === 'blockWed' || nextSched === 'blockThu') lines.push('BLOCK DAY');
+        else if (nextSched === 'minimum') lines.push('MINIMUM DAY');
+        else if (nextSched === 'activity') lines.push('ACTIVITY DAY');
+        else lines.push('REGULAR BELL');
+        break;
+      }
+    }
+  } else {
+    // School day — show today + schedule type
+    lines.push('TODAY  ' + dayName + '  ' + mon + '  ' + dayNum);
+    var schedName = getScheduleForDate(now);
+    if (schedName === 'earlyRelease')      lines.push('EARLY RELEASE DAY');
+    else if (schedName === 'blockWed')     lines.push('BLOCK DAY  P1 P3 P5 P7');
+    else if (schedName === 'blockThu')     lines.push('BLOCK DAY  P2 P4 P6 P7');
+    else if (schedName === 'minimum')      lines.push('MINIMUM DAY');
+    else if (schedName === 'activity')     lines.push('ACTIVITY DAY');
+    else if (schedName === 'codeDay')      lines.push('CODE DAY');
+    else if (schedName === 'foggy')        lines.push('LATE ARRIVAL DAY');
+    else                                   lines.push('REGULAR DAY');
+    lines.push('');
+  }
+
+  // Fill remaining rows with upcoming events
+  var upcoming = CW_EVENTS.filter(function(e) {
+    return e.start_date >= ds;
+  }).slice(0, ROWS - lines.length);
+
+  upcoming.forEach(function(e) {
+    var daysAway = daysBetween(e.start_date, ds);
+    var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : daysAway + ' DAYS';
+    var title = (e.title || '').toUpperCase();
+    // Truncate title to fit with suffix
+    var maxTitle = COLS - suffix.length - 2;
+    if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
+    lines.push(title + '  ' + suffix);
+  });
+
+  // Pad to ROWS
+  while (lines.length < ROWS) lines.push('');
+
+  return { lines: lines, speed: 15, id: 'calendar', align: 'center', sort_order: 0 };
+}
+
+function buildCountdownScreen() {
+  var now = new Date();
+  var ds = dateStr(now);
+
+  var upcoming = CW_EVENTS.filter(function(e) {
+    return e.start_date >= ds && e.show_countdown !== false;
+  }).slice(0, ROWS - 1);
+
+  if (!upcoming.length) return null;
+
+  var lines = ['COMING UP AT RHS'];
+  upcoming.forEach(function(e) {
+    var daysAway = daysBetween(e.start_date, ds);
+    var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? '1 DAY' : daysAway + ' DAYS';
+    var title = (e.title || '').toUpperCase();
+    var maxTitle = COLS - suffix.length - 2;
+    if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
+    lines.push(title + '  ' + suffix);
+  });
+
+  while (lines.length < ROWS) lines.push('');
+
+  return { lines: lines, speed: 15, id: 'countdown', align: 'left', sort_order: 0.5 };
+}
+
+// Helper — get schedule TYPE name for a given date without using global now
+function getScheduleForDate(date) {
+  var ds = dateStr(date);
+  var dow = date.getDay();
+  if (DATE_OVERRIDES[ds]) return DATE_OVERRIDES[ds];
+  var events = window._cwCalEvents || [];
+  var titles = events
+    .filter(function(e) { return e.start_date && e.start_date.substring(0,10) === ds; })
+    .map(function(e) { return (e.title || '').toLowerCase(); });
+  var has = function(kw) { return titles.some(function(t) { return t.includes(kw); }); };
+  if (has('foggy') || has('late arrival')) return 'foggy';
+  if (has('minimum'))    return 'minimum';
+  if (has('code day'))   return 'codeDay';
+  if (has('activity'))   return 'activity';
+  if (has('early release')) return 'earlyRelease';
+  if (has('block')) return dow === 3 ? 'blockWed' : 'blockThu';
+  if (schoolDaysThisWeek(date) <= 4) return 'regular';
+  if (dow === 1) return 'earlyRelease';
+  if (dow === 3) return 'blockWed';
+  if (dow === 4) return 'blockThu';
+  return 'regular';
+}
+
 async function loadHonorRoll() {
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.' + ROOM + '&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
@@ -848,6 +993,7 @@ async function loadHonorRoll() {
 async function startBoard() {
   setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
+  await loadCwEvents();
 
   var screens = await loadScreens();
   if (screens && screens.length) {
@@ -859,6 +1005,7 @@ async function startBoard() {
     }];
   }
 
+  injectDynamicScreens();
   prevLines = Array.from({ length: ROWS }, function() { return '\x00'.repeat(COLS); });
   buildDots();
   showMessage(0);
@@ -867,9 +1014,11 @@ async function startBoard() {
   clearInterval(syncTimer);
   syncTimer = setInterval(async function() {
     var fresh = await loadScreens();
+    await loadCwEvents();
     if (fresh) {
       var savedLine = (messages[currentIdx] && messages[currentIdx].lines) ? messages[currentIdx].lines[0] : '';
       messages = fresh;
+      injectDynamicScreens();
       var ni = messages.findIndex(function(m) { return m.lines && m.lines[0] === savedLine; });
       if (ni >= 0) currentIdx = ni;
       buildDots();
@@ -880,6 +1029,31 @@ async function startBoard() {
       setSyncStatus('error', 'SYNC FAILED');
     }
   }, SYNC_SEC * 1000);
+
+  // Refresh calendar every 5 minutes
+  setInterval(async function() {
+    await loadCwEvents();
+    injectDynamicScreens();
+    buildDots();
+  }, 5 * 60 * 1000);
+}
+
+function injectDynamicScreens() {
+  // Remove previously injected dynamic screens
+  messages = messages.filter(function(m) {
+    return m.id !== 'calendar' && m.id !== 'countdown';
+  });
+
+  // Calendar screen — first in rotation
+  var calScreen = buildCalendarScreen();
+  if (calScreen) messages.unshift(calScreen);
+
+  // Countdown screen — after welcome screen (position 2)
+  var countScreen = buildCountdownScreen();
+  if (countScreen) {
+    var insertAt = Math.min(2, messages.length);
+    messages.splice(insertAt, 0, countScreen);
+  }
 }
 
 // ── NOISE METER ──────────────────────────────────────
