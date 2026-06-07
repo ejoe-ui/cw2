@@ -992,22 +992,92 @@ var WEATHER_CODES = {
   95:'THUNDERSTORM', 96:'THUNDERSTORM', 99:'THUNDERSTORM'
 };
 
+var WEATHER_COMMENTS = {
+  scorching: ['HYDRATE OR HIBERNATE COWBOYS','ITS AN OVEN OUT THERE TODAY','STAY IN THE SHADE COWBOYS','HOT ENOUGH TO FRY AN EGG','DRINK WATER BEFORE YOU GO OUT','THIS IS WHAT SUMMER FEELS LIKE','SUNSCREEN IS NOT OPTIONAL TODAY','TRIPLE DIGITS ARE NO JOKE','COWBOYS DO NOT MELT STAY COOL','HEAT ADVISORY IN EFFECT TODAY','STAY HYDRATED OUT THERE','AC IS YOUR BEST FRIEND TODAY','VALLEY HEAT IS NO JOKE COWBOYS','TAKE IT EASY OUT THERE TODAY','WATER FIRST EVERYTHING ELSE SECOND'],
+  hot: ['HOT ONE TODAY COWBOYS','STAY COOL OUT THERE','CLASSIC VALLEY SUMMER DAY','DRINK PLENTY OF WATER TODAY','SUNSCREEN UP BEFORE YOU HEAD OUT','PERFECT WEATHER FOR STAYING INSIDE','HOT BUT WE HAVE BEEN THROUGH WORSE','KEEP THAT WATER BOTTLE HANDY','SHADE IS YOUR FRIEND TODAY','VALLEY HEAT DOING ITS THING','STAY HYDRATED COWBOYS','WARM ONE OUT THERE TODAY','SUMMER IN THE VALLEY IS REAL','COWBOYS HANDLE THE HEAT','HOT OUTSIDE COOL INSIDE LETS GO','PROTECT YOUR SKIN OUT THERE','FIND THE SHADE WHEN YOU CAN','HEAT INDEX IS UP TODAY','BRING WATER TO PRACTICE TODAY','THAT CENTRAL VALLEY SUN IS NO JOKE'],
+  warm: ['NICE DAY OUT THERE COWBOYS','BEAUTIFUL VALLEY WEATHER TODAY','PERFECT WEATHER FOR COWBOYS','GET OUTSIDE AND ENJOY IT','NOT TOO HOT NOT TOO COLD','GREAT DAY TO BE A COWBOY','SUNSHINE AND GOOD VIBES TODAY','ENJOY THE WEATHER OUT THERE','VALLEY WEATHER AT ITS FINEST','GOOD WEATHER FOR A GREAT DAY','MAKE THE MOST OF TODAY COWBOYS','GOLDEN STATE LIVING TODAY','PERFECT GAME DAY WEATHER','APPRECIATE DAYS LIKE THIS','OUTSIDE IS CALLING YOUR NAME','CALIFORNIA WEATHER DOING ITS THING','GREAT DAY TO BE AT RIVERDALE','SUNSHINE ON THE COWBOYS TODAY','ENJOY EVERY MINUTE OF TODAY','WEATHER LIKE THIS DOES NOT LAST'],
+  mild: ['MILD AND BEAUTIFUL OUT THERE','PERFECT HOODIE WEATHER','JACKET WEATHER IS HERE COWBOYS','FRESH AIR AND GOOD VIBES','NICE AND COMFORTABLE TODAY','LIGHT JACKET WEATHER TODAY','VALLEY SHOWING OFF TODAY','GREAT WEATHER FOR LEARNING','COMFORTABLE DAY OUT THERE','PERFECT DAY FOR OUTDOOR CLASS','ENJOY THE MILD WEATHER COWBOYS','NOT TOO WARM NOT TOO COOL','CALIFORNIA FALL FEELING TODAY','CRISP AND CLEAR OUT THERE','LAYERING WEATHER TODAY','REFRESHING DAY OUT THERE','GOOD WEATHER GOOD VIBES','MILD ENOUGH TO ENJOY OUTSIDE','SWEATER WEATHER IS HERE','PLEASANT DAY AT RIVERDALE'],
+  cool: ['A LITTLE CHILLY OUT THERE','BUNDLE UP BEFORE YOU HEAD OUT','JACKET RECOMMENDED TODAY COWBOYS','COOL MORNING WARM UP INSIDE','BRING A LAYER TODAY','CHILLY BUT MANAGEABLE','COOLER THAN USUAL OUT THERE','BREAK OUT THE HOODIE TODAY','GOOD COFFEE WEATHER OUT THERE','CRISP MORNING OUT THERE COWBOYS','FEELS LIKE FALL TODAY','LAYER UP BEFORE YOU HEAD OUTSIDE','COLD ENOUGH FOR A JACKET TODAY','VALLEY WINTER VIBES TODAY','WARM UP INSIDE BEFORE HEADING OUT','GRAB SOMETHING WARM TODAY','COOLER START TO THE DAY','BUNDLE UP COWBOYS','JACKET WEATHER FOR SURE TODAY','FRESH AND COOL OUT THERE'],
+  cold: ['BUNDLE UP OUT THERE COWBOYS','COLD ONE TODAY STAY WARM','WINTER IS HERE COWBOYS','LAYER UP BEFORE YOU HEAD OUT','COLD OUTSIDE WARM INSIDE LETS GO','BREAK OUT THE HEAVY JACKET','CHILLY START TO THE DAY','COLD BUT COWBOYS PUSH THROUGH','STAY WARM OUT THERE TODAY','EXTRA LAYER RECOMMENDED TODAY','FROST ON THE FIELDS THIS MORNING','VALLEY COLD IS REAL BUNDLE UP','HOT DRINK WEATHER OUT THERE','COLD START WARM FINISH COWBOYS','TOUGHEN UP COWBOYS ITS COLD'],
+  rainy: ['UMBRELLA WEATHER OUT THERE','GRAB YOUR RAIN GEAR TODAY','RAINY DAY COWBOYS STAY DRY','WET OUT THERE WATCH YOUR STEP','RAIN DOES NOT STOP COWBOYS','PUDDLE WATCH IS IN EFFECT','STAY DRY OUT THERE TODAY','RAIN BOOTS WOULD NOT HURT TODAY','LIQUID SUNSHINE OUT THERE','RAIN MAKES THE VALLEY GREEN','COWBOYS PLAY IN ANY WEATHER','DRIZZLY OUT THERE STAY COVERED','RAINY DAYS MAKE GREAT STUDY DAYS','WET WEATHER GOOD ATTITUDES','RAIN FALLS COWBOYS RISE'],
+  foggy: ['FOGGY MORNING OUT THERE COWBOYS','TULE FOG IN THE VALLEY TODAY','VISIBILITY LOW DRIVE SLOW','CLASSIC VALLEY FOG THIS MORNING','FOGGY BUT WE STILL SHOW UP','TULE FOG SEASON IS REAL','DRIVE CAREFUL IN THE FOG TODAY','MISTY MORNING AT RIVERDALE','FOG WILL LIFT COWBOYS PERSIST','HEADLIGHTS ON IN THE FOG','VALLEY FOG DOING ITS THING','SLOW DOWN IN THE FOG TODAY','FOGGY START CLEAR FINISH','TULE FOG WATCH OUT THERE','DRIVE SAFE IN THIS MORNING FOG'],
+  windy: ['WINDY OUT THERE HOLD YOUR HAT','BREEZY DAY IN THE VALLEY','HOLD ONTO YOUR STUFF OUT THERE','WIND IS PICKING UP TODAY','GUSTY OUT THERE COWBOYS','WINDY DAY IN THE CENTRAL VALLEY','GOOD KITE FLYING WEATHER','WIND IN YOUR FACE COWBOYS PUSH','HAIR DAY IS CANCELLED TODAY','NATURE IS BLOWING TODAY','BREEZY BUT WE SHOW UP','WIND CANNOT STOP COWBOYS','HOLD THOSE PAPERS DOWN TODAY','GUSTY CONDITIONS OUT THERE','WIND ADVISORY IN EFFECT'],
+  aqi_poor: ['AIR QUALITY IS MODERATE TODAY','SENSITIVE GROUPS LIMIT TIME OUTSIDE','CHECK THE AQI BEFORE HEADING OUT','MODERATE AIR QUALITY TODAY','THOSE WITH ASTHMA TAKE PRECAUTIONS','AQI IS UP LIMIT OUTDOOR ACTIVITY','MODERATE AIR QUALITY OUT THERE','SENSITIVE TO AIR QUALITY STAY IN','VALLEY AIR IS A BIT HEAVY TODAY','LIMIT STRENUOUS OUTDOOR ACTIVITY'],
+  aqi_bad: ['POOR AIR QUALITY TODAY STAY INSIDE','LIMIT TIME OUTDOORS TODAY','HIGH AQI AVOID OUTDOOR EXERCISE','AIR QUALITY IS POOR OUT THERE','STAY INDOORS IF POSSIBLE TODAY','AQI IS HIGH PROTECT YOUR LUNGS','UNHEALTHY AIR TODAY STAY INSIDE','MASK UP IF HEADING OUTSIDE','AIR QUALITY ALERT IN EFFECT','PROTECT YOUR HEALTH STAY INSIDE'],
+  humid: ['MUGGY OUT THERE TODAY','HUMID AND HEAVY AIR OUT THERE','FEELS STICKIER THAN IT LOOKS','HIGH HUMIDITY STAY HYDRATED','MUGGY MORNING OUT THERE COWBOYS','HUMIDITY IS HIGH TODAY','FEELS LIKE A SAUNA OUT THERE','HEAVY AIR OUT THERE TODAY','HUMIDITY MAKING IT FEEL HOTTER','STICKY DAY IN THE VALLEY'],
+};
+
+function pickWeatherComment(temp, feels, humidity, wind, code, aqi) {
+  // Priority: hazardous conditions first
+  var pool = [];
+  if (aqi !== null && aqi > 150)         pool = WEATHER_COMMENTS.aqi_bad;
+  else if (aqi !== null && aqi > 100)    pool = WEATHER_COMMENTS.aqi_poor;
+  else if ([45,48].includes(code))       pool = WEATHER_COMMENTS.foggy;
+  else if (code >= 61 && code <= 82)     pool = WEATHER_COMMENTS.rainy;
+  else if (wind > 20)                    pool = WEATHER_COMMENTS.windy;
+  else if (humidity > 70)                pool = WEATHER_COMMENTS.humid;
+  else if (feels >= 105)                 pool = WEATHER_COMMENTS.scorching;
+  else if (feels >= 90)                  pool = WEATHER_COMMENTS.hot;
+  else if (feels >= 75)                  pool = WEATHER_COMMENTS.warm;
+  else if (feels >= 60)                  pool = WEATHER_COMMENTS.mild;
+  else if (feels >= 45)                  pool = WEATHER_COMMENTS.cool;
+  else                                   pool = WEATHER_COMMENTS.cold;
+
+  if (!pool || !pool.length) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+var AQI_LABELS = [
+  [50,  'GOOD'],
+  [100, 'MODERATE'],
+  [150, 'UNHEALTHY FOR SOME'],
+  [200, 'UNHEALTHY'],
+  [300, 'VERY UNHEALTHY'],
+  [999, 'HAZARDOUS']
+];
+
+function aqiLabel(val) {
+  for (var i = 0; i < AQI_LABELS.length; i++) {
+    if (val <= AQI_LABELS[i][0]) return AQI_LABELS[i][1];
+  }
+  return 'HAZARDOUS';
+}
+
+var CW_WEATHER_DAILY = null;
+var CW_AQI = null;
+
 async function loadWeather() {
   try {
+    // Current conditions + 3-day forecast
     var url = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=36.4327&longitude=-119.8668' +
       '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature' +
-      '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Los_Angeles';
+      '&daily=temperature_2m_max,temperature_2m_min,weather_code' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph' +
+      '&timezone=America/Los_Angeles&forecast_days=4';
     var res = await fetch(url);
     if (!res.ok) return null;
     var data = await res.json();
     CW_WEATHER = data.current;
+    CW_WEATHER_DAILY = data.daily;
+
+    // Air quality — separate endpoint
+    var aqUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality' +
+      '?latitude=36.4327&longitude=-119.8668' +
+      '&current=us_aqi&timezone=America/Los_Angeles';
+    var aqRes = await fetch(aqUrl);
+    if (aqRes.ok) {
+      var aqData = await aqRes.json();
+      CW_AQI = aqData.current ? aqData.current.us_aqi : null;
+    }
+
     return CW_WEATHER;
   } catch(e) { return null; }
 }
 
 function buildWeatherScreen() {
   if (!CW_WEATHER) return null;
+
   var temp     = Math.round(CW_WEATHER.temperature_2m);
   var feels    = Math.round(CW_WEATHER.apparent_temperature);
   var humidity = Math.round(CW_WEATHER.relative_humidity_2m);
@@ -1015,22 +1085,45 @@ function buildWeatherScreen() {
   var code     = CW_WEATHER.weather_code;
   var desc     = WEATHER_CODES[code] || 'CONDITIONS UNKNOWN';
 
-  var tempLine = temp + ' F  FEELS LIKE  ' + feels + ' F';
-  var humLine  = 'HUMIDITY  ' + humidity + '%';
-  var windLine = 'WIND  ' + wind + ' MPH';
+  var aqiVal = CW_AQI !== null ? Math.round(CW_AQI) : null;
+  var aqiStr = aqiVal !== null ? aqiLabel(aqiVal) : '';
+  var comment = pickWeatherComment(temp, feels, humidity, wind, code, aqiVal);
+
+  var line1 = temp + ' F  FEELS LIKE  ' + feels + ' F';
+  var line2 = desc + '  HUMIDITY ' + humidity + '%';
+  var line3 = 'WIND ' + wind + ' MPH' + (aqiVal !== null ? '  AQI ' + aqiVal + ' ' + aqiStr.split(' ')[0] : '');
 
   var lines = [
     'WEATHER  RIVERDALE CA',
-    '',
-    tempLine,
-    desc,
-    humLine,
-    windLine,
-    '',
-    'SOURCE  OPEN-METEO.COM',
+    line1,
+    line2,
+    line3,
+    comment,
   ];
 
-  return { lines: lines, speed: 15, id: 'weather', align: 'center', sort_order: 0.8 };
+  // Add daily forecast rows
+  if (CW_WEATHER_DAILY && CW_WEATHER_DAILY.time) {
+    var dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    var times = CW_WEATHER_DAILY.time;
+    var highs = CW_WEATHER_DAILY.temperature_2m_max;
+    var lows  = CW_WEATHER_DAILY.temperature_2m_min;
+    var count = 0;
+    for (var i = 0; i < times.length && count < 3; i++) {
+      var d = new Date(times[i] + 'T12:00:00');
+      var label = i === 0 ? 'TODAY' : dayNames[d.getDay()];
+      var hi = Math.round(highs[i]);
+      var lo = Math.round(lows[i]);
+      // Pad label to 5 chars
+      while (label.length < 5) label += ' ';
+      lines.push(label + '  HI ' + hi + '  LO ' + lo);
+      count++;
+    }
+  }
+
+  // Pad to ROWS
+  while (lines.length < ROWS) lines.push('');
+
+  return { lines: lines, speed: 18, id: 'weather', align: 'center', sort_order: 0.8 };
 }
 
 async function loadHonorRoll() {
