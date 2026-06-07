@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
   [data-theme="light"] {
@@ -18,6 +19,7 @@
     --btn-secondary-border:#d0d0d0;--btn-secondary-text:#333;--input-bg:#ffffff;
     --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
     --shadow-md:0 4px 6px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);--header-bg:#ffffff;
+    --green:#005640;--font-retro:'Courier New',Courier,monospace;
   }
   [data-theme="dark"] {
     --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:#2e2e2e;--border2:#3a3a3a;
@@ -26,6 +28,7 @@
     --btn-primary-bg:#005640;--btn-primary-text:#ffffff;--btn-secondary-bg:#2a2a2a;
     --btn-secondary-border:#3a3a3a;--btn-secondary-text:#cccccc;--input-bg:#111111;
     --shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-md:0 4px 6px rgba(0,0,0,0.5);--header-bg:#111111;
+    --green:#00a86b;--font-retro:'Courier New',Courier,monospace;
   }
   html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;transition:background 0.2s,color 0.2s;}
   #header{position:sticky;top:0;z-index:50;background:var(--header-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;height:56px;box-shadow:var(--shadow);}
@@ -70,6 +73,18 @@
   .btn.accent{background:var(--btn-primary-bg);border-color:var(--btn-primary-bg);color:#fff;}
   .btn.accent:hover{opacity:0.88;}
   .btn.danger:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .sb-btn-primary{background:var(--btn-primary-bg);border:1px solid var(--btn-primary-bg);color:#fff;font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;border-radius:6px;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;}
+  .sb-btn-primary:hover{opacity:0.88;}
+  .sb-btn-primary:disabled{opacity:0.5;cursor:not-allowed;}
+  .sb-btn-secondary{background:var(--btn-secondary-bg);border:1px solid var(--btn-secondary-border);color:var(--btn-secondary-text);font-family:inherit;font-size:12px;font-weight:500;padding:7px 14px;border-radius:6px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .sb-btn-secondary:hover{border-color:var(--border2);color:var(--text);}
+  .sb-btn-danger-sm{padding:4px 10px;border-radius:4px;border:1px solid var(--border2);background:transparent;color:var(--text-3);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+  .sb-btn-danger-sm:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .sb-input{width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;outline:none;transition:border-color 0.15s,box-shadow 0.15s;}
+  .sb-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg);}
+  .sb-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);margin-bottom:2rem;}
+  .sb-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.02em;text-transform:uppercase;}
+  .sb-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text);}
   .screens-list{display:flex;flex-direction:column;gap:8px;}
   .screen-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:border-color 0.15s;}
   .screen-card:hover{border-color:var(--border2);}
@@ -118,6 +133,68 @@
   [data-theme="dark"] #toast{background:#f0f0f0;color:#111;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   #toast.err{background:var(--danger);color:#fff;}
+
+  /* ── BIRTHDAY MANAGER ── */
+  .bday-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .bday-tab{flex:1;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-3);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;text-align:center;}
+  .bday-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+  .bday-tab:hover:not(.active){color:var(--text);border-color:var(--border2);}
+  .bday-pane{display:block;}
+  .bday-format-info{font-size:11px;color:var(--text-3);line-height:1.6;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:12px;}
+  .bday-format-info strong{color:var(--text-2);}
+  .bday-dropzone{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:24px 16px;border:2px dashed var(--border2);border-radius:8px;cursor:pointer;transition:all 0.2s;background:var(--surface2);margin-bottom:12px;}
+  .bday-dropzone:hover,.bday-dropzone.drag-over{border-color:var(--accent);background:var(--accent-bg);}
+  .bday-drop-icon{font-size:28px;}
+  .bday-drop-label{font-size:13px;font-weight:500;color:var(--text-2);}
+  .bday-drop-sub{font-size:11px;color:var(--text-3);}
+  .bday-preview-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:12px;color:var(--text-2);font-weight:500;}
+  .bday-preview-scroll{max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:10px;}
+  .bday-preview-table{width:100%;border-collapse:collapse;}
+  .bday-preview-table th{background:var(--surface2);font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-3);padding:7px 10px;text-align:left;position:sticky;top:0;}
+  .bday-preview-table td{font-size:12px;color:var(--text);padding:6px 10px;border-top:1px solid var(--border);}
+  .bday-preview-table tr:hover td{background:var(--surface2);}
+  .bday-status-ok{color:#15803d;font-weight:600;}
+  .bday-status-dup{color:var(--text-3);}
+  .bday-status{font-size:11px;color:var(--text-3);padding:4px 0;min-height:18px;}
+  .bday-manual-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:8px;}
+  .bday-manual-row .sb-input{flex:1;min-width:80px;}
+  .bday-list-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--text-2);border-top:1px solid var(--border);padding-top:14px;margin-top:8px;margin-bottom:10px;}
+  .bday-list-scroll{max-height:280px;overflow-y:auto;}
+  .bday-empty{font-size:12px;color:var(--text-3);padding:12px 0;text-align:center;}
+  .bday-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);}
+  .bday-row-name{font-size:13px;font-weight:500;color:var(--text);}
+  .bday-row-date{font-size:11px;color:var(--text-3);margin-top:1px;}
+  .bday-del-btn{width:24px;height:24px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-size:12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+  .bday-del-btn:hover{border-color:var(--danger);color:var(--danger);}
+
+  /* ── MESSAGE SECTION ── */
+  .msg-compose{display:flex;flex-direction:column;gap:12px;}
+  .msg-field-group{display:flex;flex-direction:column;gap:5px;}
+  .msg-lines-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+  .msg-label{font-size:11px;font-weight:600;color:var(--text-2);letter-spacing:0.03em;text-transform:uppercase;}
+  .msg-label-sub{color:var(--text-3);font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;}
+  .msg-line-row{display:flex;align-items:center;gap:6px;}
+  .msg-line{flex:1;font-family:'Courier New',monospace !important;letter-spacing:0.08em;font-size:13px !important;}
+  .msg-align-btn{width:30px;height:30px;flex-shrink:0;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-3);font-size:11px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+  .msg-align-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+  .msg-align-btn:hover{border-color:var(--border2);color:var(--text);}
+  .msg-preview-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:12px 14px;}
+  .msg-preview-label{font-size:10px;font-weight:600;letter-spacing:0.15em;color:var(--text-3);text-transform:uppercase;margin-bottom:10px;}
+  .msg-preview-board{display:flex;flex-direction:column;min-height:110px;justify-content:center;gap:2px;background:#0d0d0d;border-radius:4px;padding:10px 12px;}
+  .msg-preview-empty{font-family:'Courier New',monospace;font-size:10px;color:#333;text-align:center;letter-spacing:0.1em;}
+  .msg-preview-row-center{font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.1em;color:#f0ebe0;text-align:center;text-transform:uppercase;white-space:pre;line-height:1.5;}
+  .msg-preview-row-left{font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.1em;color:#b0a898;text-align:left;text-transform:uppercase;white-space:pre;line-height:1.5;}
+  .msg-actions{display:flex;gap:8px;justify-content:flex-end;align-items:center;}
+  .msg-status{font-size:11px;color:var(--text-3);min-height:16px;text-align:right;padding-top:2px;}
+  .msg-list-header{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--text-2);border-top:1px solid var(--border);padding-top:14px;margin-top:16px;margin-bottom:10px;}
+  .msg-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+  .msg-card-body{flex:1;display:flex;flex-direction:column;gap:2px;}
+  .msg-card-line{font-family:'Courier New',monospace;font-size:11px;letter-spacing:0.08em;color:var(--text);text-transform:uppercase;}
+  .msg-card-line.left{color:var(--text-2);}
+  .msg-card-meta{font-size:10px;color:var(--text-3);margin-top:5px;}
+  .msg-del-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+  .msg-del-btn:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+  .msg-expires-soon{color:var(--warning) !important;font-weight:600;}
 </style>
 </head>
 <body>
@@ -162,6 +239,8 @@
 </div>
 
 <div id="main" style="display:none">
+
+  <!-- SCREENS -->
   <div class="section">
     <div class="section-head">
       <div class="section-title">Screens</div>
@@ -169,6 +248,8 @@
     </div>
     <div class="screens-list" id="screensList"><div class="empty">Loading...</div></div>
   </div>
+
+  <!-- ROOM INFO -->
   <div class="section">
     <div class="section-head"><div class="section-title">Room Info</div></div>
     <div class="settings-grid">
@@ -178,7 +259,8 @@
       <div class="setting-card"><div class="setting-label">Active</div><div class="setting-value" id="settingScreenCount">—</div></div>
     </div>
   </div>
-  <!-- GLOBAL SCREENS — read-only for teachers, editable for master session -->
+
+  <!-- GLOBAL SCREENS -->
   <div class="section" id="globalScreensSection">
     <div class="section-head">
       <div style="display:flex;align-items:center;gap:8px;">
@@ -189,7 +271,9 @@
     </div>
     <div id="globalScreensList"><div class="empty">Loading...</div></div>
   </div>
-<div class="section">
+
+  <!-- PERIOD OBJECTIVES -->
+  <div class="section">
     <div class="section-head">
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="section-title">Period Objectives</div>
@@ -197,11 +281,9 @@
       </div>
       <span style="font-size:11px;color:var(--text-3);" id="objStatusLabel">NOT SET</span>
     </div>
-
     <div style="background:var(--accent-bg);border:1px solid var(--accent);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--accent-text);margin-bottom:12px;font-family:'Courier New',monospace;letter-spacing:0.02em;">
       UDL best practice: State what students are doing today and what success looks like so they can self-assess.
     </div>
-
     <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="objPeriodTabs">
       <button class="obj-tab active" id="objtab-1" onclick="objSelectPeriod('1')">P1</button>
       <button class="obj-tab" id="objtab-2" onclick="objSelectPeriod('2')">P2</button>
@@ -211,28 +293,23 @@
       <button class="obj-tab" id="objtab-6" onclick="objSelectPeriod('6')">P6</button>
       <button class="obj-tab" id="objtab-7" onclick="objSelectPeriod('7')">P7</button>
     </div>
-
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem;">
       <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;" id="objPeriodHeading">P1 OBJECTIVES</div>
-
       <div class="field-group">
         <label class="field-label">PERIOD TITLE <span style="font-weight:400;color:var(--text-3)">(28 chars)</span></label>
         <input class="field-input" id="objTitle" type="text" maxlength="28" placeholder="e.g. Light fields" oninput="objUpdateCC('objTitle','objTitleCC',28)">
         <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objTitleCC">0/28</div>
       </div>
-
       <div class="field-group">
         <label class="field-label">TODAY'S OBJECTIVE <span style="font-weight:400;color:var(--text-3)">(80 chars)</span></label>
         <input class="field-input" id="objLine1" type="text" maxlength="80" placeholder="▶ Analyze light fields" oninput="objUpdateCC('objLine1','objLine1CC',80)">
         <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objLine1CC">0/80</div>
       </div>
-
       <div class="field-group">
         <label class="field-label">YOU'VE GOT IT WHEN... <span style="font-weight:400;color:var(--text-3)">(80 chars)</span></label>
         <input class="field-input" id="objLine2" type="text" maxlength="80" placeholder="✓ Able to describe when light is absorbed" oninput="objUpdateCC('objLine2','objLine2CC',80)">
         <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objLine2CC">0/80</div>
       </div>
-
       <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
         <div class="field-group" style="flex:1;min-width:140px;">
           <label class="field-label">DATE</label>
@@ -252,7 +329,6 @@
           <input class="field-input" id="objMinutes" type="number" min="1" max="60" value="10">
         </div>
       </div>
-
       <div style="display:flex;gap:8px;margin-top:4px;">
         <button class="btn accent" style="flex:1;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;" onclick="objSave()">▶ SAVE &amp; GO LIVE</button>
         <button class="btn danger" style="padding:10px 16px;" onclick="objClear()">CLEAR</button>
@@ -260,7 +336,178 @@
       <div class="error-text" id="objError" style="text-align:left;min-height:0;"></div>
     </div>
   </div>
- 
+
+  <!-- ══════════════════════════════════════════
+       BIRTHDAY MANAGER
+       ══════════════════════════════════════════ -->
+  <div class="sb-section" id="section-birthdays">
+    <div class="sb-section-header">
+      <span>🎂 Birthday Manager</span>
+      <span class="sb-count" id="bday-count">—</span>
+    </div>
+
+    <div class="bday-tabs">
+      <button class="bday-tab active" id="bday-tab-upload" onclick="bdayTab('upload',this)">📁 Upload from Aeries</button>
+      <button class="bday-tab" id="bday-tab-manual" onclick="bdayTab('manual',this)">✏️ Add Manually</button>
+    </div>
+
+    <!-- Upload tab -->
+    <div class="bday-pane" id="bday-pane-upload">
+      <div class="bday-format-info">
+        Accepts two Aeries export formats:
+        <strong>Student Birthday Listing</strong> (one month per file, multiple files OK)
+        or <strong>Student Directory</strong> (full roster, one file).
+      </div>
+      <label class="bday-dropzone" id="bday-dropzone">
+        <input type="file" id="bday-file-input" accept=".xlsx" multiple style="display:none" onchange="bdayHandleFiles(this.files)">
+        <div class="bday-drop-icon">📂</div>
+        <div class="bday-drop-label">Drop .xlsx files here or click to browse</div>
+        <div class="bday-drop-sub">Birthday Listing: multiple files OK · Student Directory: single file</div>
+      </label>
+      <div id="bday-preview-wrap" style="display:none">
+        <div class="bday-preview-header">
+          <span id="bday-preview-count"></span>
+          <div style="display:flex;gap:8px">
+            <button class="sb-btn-secondary" onclick="bdayClearPreview()">✕ Clear</button>
+            <button class="sb-btn-primary" id="bday-commit-btn" onclick="bdayCommit()">⬆ Upload to Board</button>
+          </div>
+        </div>
+        <div class="bday-preview-scroll">
+          <table class="bday-preview-table">
+            <thead><tr><th>#</th><th>Name</th><th>Month</th><th>Day</th><th>Status</th></tr></thead>
+            <tbody id="bday-preview-body"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="bday-upload-status" class="bday-status"></div>
+    </div>
+
+    <!-- Manual tab -->
+    <div class="bday-pane" id="bday-pane-manual" style="display:none">
+      <div class="bday-manual-row">
+        <input class="sb-input" type="text" id="bday-name" placeholder="Full name" maxlength="60">
+        <select class="sb-input" id="bday-month">
+          <option value="">Month</option>
+          <option value="1">January</option><option value="2">February</option>
+          <option value="3">March</option><option value="4">April</option>
+          <option value="5">May</option><option value="6">June</option>
+          <option value="7">July</option><option value="8">August</option>
+          <option value="9">September</option><option value="10">October</option>
+          <option value="11">November</option><option value="12">December</option>
+        </select>
+        <select class="sb-input" id="bday-day">
+          <option value="">Day</option>
+          <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+          <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+          <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+          <option value="13">13</option><option value="14">14</option><option value="15">15</option>
+          <option value="16">16</option><option value="17">17</option><option value="18">18</option>
+          <option value="19">19</option><option value="20">20</option><option value="21">21</option>
+          <option value="22">22</option><option value="23">23</option><option value="24">24</option>
+          <option value="25">25</option><option value="26">26</option><option value="27">27</option>
+          <option value="28">28</option><option value="29">29</option><option value="30">30</option>
+          <option value="31">31</option>
+        </select>
+        <button class="sb-btn-primary" onclick="bdayAddManual()">Add</button>
+      </div>
+      <div id="bday-manual-status" class="bday-status"></div>
+    </div>
+
+    <div class="bday-list-header">
+      <span>Current Birthdays</span>
+      <button class="sb-btn-danger-sm" onclick="bdayClearAll()">Clear All</button>
+    </div>
+    <div class="bday-list-scroll" id="bday-list">
+      <div class="bday-empty">Loading...</div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       POST DIRECT MESSAGE
+       ══════════════════════════════════════════ -->
+  <div class="sb-section" id="section-messages">
+    <div class="sb-section-header">
+      <span>📣 Post Direct Message</span>
+      <span class="sb-count" id="msg-active-count">—</span>
+    </div>
+
+    <div class="msg-compose">
+      <div class="msg-field-group">
+        <div class="msg-lines-header">
+          <span class="msg-label">Message <span class="msg-label-sub">28 chars max per line</span></span>
+          <span class="msg-label msg-label-sub">ALIGN</span>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line1" placeholder="Line 1" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align1" onclick="msgToggleAlign(1)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line2" placeholder="Line 2" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align2" onclick="msgToggleAlign(2)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line3" placeholder="Line 3" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align3" onclick="msgToggleAlign(3)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line4" placeholder="Line 4" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align4" onclick="msgToggleAlign(4)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line5" placeholder="Line 5" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align5" onclick="msgToggleAlign(5)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line6" placeholder="Line 6" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align6" onclick="msgToggleAlign(6)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line7" placeholder="Line 7" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align7" onclick="msgToggleAlign(7)">C</button>
+        </div>
+        <div class="msg-line-row">
+          <input class="sb-input msg-line" type="text" id="msg-line8" placeholder="Line 8" maxlength="28" oninput="msgUpdatePreview()">
+          <button class="msg-align-btn active" id="msg-align8" onclick="msgToggleAlign(8)">C</button>
+        </div>
+      </div>
+
+      <div class="msg-field-group">
+        <label class="msg-label">Expires After</label>
+        <select class="sb-input" id="msg-expire" style="max-width:180px">
+          <option value="1">1 hour</option>
+          <option value="2">2 hours</option>
+          <option value="4">4 hours</option>
+          <option value="8">8 hours</option>
+          <option value="24" selected>1 day</option>
+          <option value="48">2 days</option>
+          <option value="72">3 days</option>
+          <option value="168">1 week</option>
+        </select>
+      </div>
+
+      <div class="msg-preview-wrap">
+        <div class="msg-preview-label">Board Preview</div>
+        <div class="msg-preview-board" id="msg-preview-board">
+          <div class="msg-preview-empty">Start typing to preview</div>
+        </div>
+      </div>
+
+      <div class="msg-actions">
+        <button class="sb-btn-secondary" onclick="msgClearForm()">Clear</button>
+        <button class="sb-btn-primary" id="msg-post-btn" onclick="msgPost()">📣 Post to Board Now</button>
+      </div>
+      <div class="msg-status" id="msg-status"></div>
+    </div>
+
+    <div class="msg-list-header">
+      <span>Active Messages</span>
+      <button class="sb-btn-danger-sm" onclick="msgClearAll()">Clear All</button>
+    </div>
+    <div id="msg-list"><div class="bday-empty">Loading...</div></div>
+  </div>
+
+  <!-- DISPLAY URL -->
   <div class="section">
     <div class="section-head"><div class="section-title">Display URL</div></div>
     <div class="url-row">
@@ -269,6 +516,8 @@
       <button class="btn" onclick="openDisplay()">Open ↗</button>
     </div>
   </div>
+
+  <!-- CHANGE PIN -->
   <div class="section">
     <div class="section-head"><div class="section-title">Change PIN</div></div>
     <div class="pin-change-row">
@@ -285,7 +534,7 @@
     <div class="error-text" id="pinChangeError" style="text-align:left;margin-top:6px"></div>
   </div>
 
-  <!-- ROOM MANAGEMENT — master PIN sessions only -->
+  <!-- ROOM MANAGEMENT (master only) -->
   <div class="section" id="roomMgmtSection" style="display:none">
     <div class="section-head"><div class="section-title">Room Management</div></div>
     <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem;">
@@ -306,7 +555,7 @@
           </div>
           <button class="btn accent" onclick="onboardRoom()" style="height:38px;white-space:nowrap">Add Room</button>
         </div>
-        <div class="field-hint" style="margin-top:6px">Default PIN will be set to the room number doubled. Teacher will be prompted to change it on first login.</div>
+        <div class="field-hint" style="margin-top:6px">Default PIN will be set to the room number doubled.</div>
         <div class="error-text" id="onboardError" style="text-align:left;margin-top:4px"></div>
       </div>
       <div style="height:1px;background:var(--border);"></div>
@@ -319,12 +568,13 @@
           </div>
           <button class="btn" onclick="resetRoomPin()" style="height:38px;border-color:var(--warning);color:var(--warning)">Reset PIN</button>
         </div>
-        <div class="field-hint" style="margin-top:6px">Resets PIN back to room number doubled. Teacher logs in with that as their PIN.</div>
+        <div class="field-hint" style="margin-top:6px">Resets PIN back to room number doubled.</div>
         <div class="error-text" id="resetError" style="text-align:left;margin-top:4px"></div>
       </div>
     </div>
   </div>
-</div>
+
+</div><!-- /#main -->
 
 <div id="modal-overlay">
   <div class="modal">
@@ -364,9 +614,9 @@
 const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
-let ROOM = '', classroom = null, screens = [], editingId = null, isMasterSession = false;
+var ROOM = '', classroom = null, screens = [], editingId = null, isMasterSession = false;
 
-let darkMode = localStorage.getItem('cw2-admin-theme') === 'dark';
+var darkMode = localStorage.getItem('cw2-admin-theme') === 'dark';
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
   document.getElementById('themeBtn').textContent = darkMode ? '☀️ Light mode' : '🌙 Dark mode';
@@ -376,14 +626,14 @@ function toggleTheme() { darkMode = !darkMode; applyTheme(); }
 applyTheme();
 
 async function sbFetch(table, query) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
   });
   if (!res.ok) return null;
   return res.json();
 }
 async function sbInsert(table, data) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
     method: 'POST',
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
@@ -392,7 +642,7 @@ async function sbInsert(table, data) {
   return res.json();
 }
 async function sbUpdate(table, id, data) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
     method: 'PATCH',
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
@@ -401,7 +651,7 @@ async function sbUpdate(table, id, data) {
   return res.json();
 }
 async function sbDelete(table, id) {
-  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
     method: 'DELETE',
     headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
   });
@@ -475,12 +725,12 @@ async function unlockAdmin() {
   await loadScreens();
   await loadGlobalScreens();
   await loadObjectives();
+  await bdayLoadList();
+  await msgLoadList();
 
-  // Show Room Management and Add Global button only for master PIN sessions
   document.getElementById('roomMgmtSection').style.display = isMasterSession ? 'block' : 'none';
   document.getElementById('addGlobalBtn').style.display = isMasterSession ? 'inline-flex' : 'none';
 
-  // If default PIN, prompt to change it
   if (classroom && classroom.config && classroom.config.pin_is_default) {
     setTimeout(function() {
       document.getElementById('pinChangeError').textContent = '';
@@ -491,7 +741,9 @@ async function unlockAdmin() {
 }
 
 function logout() {
-  ROOM = ''; classroom = null; screens = []; globalScreens = []; editingId = null; editingGlobalId = null; isMasterSession = false;
+  ROOM = ''; classroom = null; screens = []; globalScreens = []; editingId = null;
+  editingGlobalId = null; isMasterSession = false;
+  bdayData = []; bdayExisting = [];
   document.getElementById('pin-screen').style.display = 'flex';
   document.getElementById('main').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
@@ -603,26 +855,27 @@ function openEditScreen(id) {
   document.getElementById('screenEnabled').value = s.enabled ? 'true' : 'false';
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); editingId = null; editingGlobalId = null; document._savingGlobal = false; }
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null; editingGlobalId = null; document._savingGlobal = false;
+}
 async function saveScreen() {
   var lines   = getLines();
   var speed   = parseInt(document.getElementById('screenSpeed').value) || 10;
   var order   = parseInt(document.getElementById('screenOrder').value) || 1;
   var enabled = document.getElementById('screenEnabled').value === 'true';
   if (!lines.some(function(l) { return l.trim(); })) { toast('Add at least one line of text', true); return; }
-  var isGlobal = document._savingGlobal || false;
+  var isGlobal   = document._savingGlobal || false;
   var roomTarget = isGlobal ? 'global' : ROOM;
   var data = { room: roomTarget, lines: JSON.stringify(lines), speed: speed, sort_order: order, enabled: enabled };
   if (isGlobal) {
     if (editingGlobalId) { await sbUpdate('cw2_screens', editingGlobalId, data); toast('Global screen updated'); }
     else                 { await sbInsert('cw2_screens', data); toast('Global screen added'); }
-    closeModal();
-    await loadGlobalScreens();
+    closeModal(); await loadGlobalScreens();
   } else {
     if (editingId) { await sbUpdate('cw2_screens', editingId, data); toast('Screen updated'); }
     else           { await sbInsert('cw2_screens', data); toast('Screen added'); }
-    closeModal();
-    await loadScreens();
+    closeModal(); await loadScreens();
   }
 }
 
@@ -680,7 +933,7 @@ async function resetRoomPin() {
   toast('Room ' + roomNum + ' PIN reset — new PIN: ' + defaultPin);
 }
 
-// ── GLOBAL SCREENS ────────────────────────────────
+// ── GLOBAL SCREENS ────────────────────────────────────────────
 var globalScreens = [];
 var editingGlobalId = null;
 
@@ -692,10 +945,7 @@ async function loadGlobalScreens() {
 
 function renderGlobalScreens() {
   var list = document.getElementById('globalScreensList');
-  if (!globalScreens.length) {
-    list.innerHTML = '<div class="empty">No global screens yet.</div>';
-    return;
-  }
+  if (!globalScreens.length) { list.innerHTML = '<div class="empty">No global screens yet.</div>'; return; }
   list.innerHTML = globalScreens.map(function(s, i) {
     var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
     var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
@@ -718,8 +968,7 @@ function renderGlobalScreens() {
 }
 
 function openNewGlobalScreen() {
-  editingGlobalId = null;
-  document._savingGlobal = true;
+  editingGlobalId = null; document._savingGlobal = true;
   document.getElementById('modalTitle').textContent = 'Add Global Screen';
   buildLinesEditor([]);
   document.getElementById('screenSpeed').value = 12;
@@ -727,12 +976,10 @@ function openNewGlobalScreen() {
   document.getElementById('screenEnabled').value = 'true';
   document.getElementById('modal-overlay').classList.add('open');
 }
-
 function openEditGlobalScreen(id) {
   var s = globalScreens.find(function(x) { return x.id === id; });
   if (!s) return;
-  editingGlobalId = id;
-  document._savingGlobal = true;
+  editingGlobalId = id; document._savingGlobal = true;
   document.getElementById('modalTitle').textContent = 'Edit Global Screen';
   var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
   buildLinesEditor(lines);
@@ -741,7 +988,6 @@ function openEditGlobalScreen(id) {
   document.getElementById('screenEnabled').value = s.enabled ? 'true' : 'false';
   document.getElementById('modal-overlay').classList.add('open');
 }
-
 async function deleteGlobalScreen(id) {
   if (!confirm('Delete this global screen? It will be removed from all rooms.')) return;
   await sbDelete('cw2_screens', id);
@@ -760,7 +1006,8 @@ function toast(msg, isErr) {
 document.getElementById('modal-overlay').addEventListener('click', function(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
-// ── OBJECTIVES ───────────────────────────────────────
+
+// ── OBJECTIVES ────────────────────────────────────────────────
 var OBJ_PERIOD = '1';
 var objCache = {};
 
@@ -787,32 +1034,8 @@ function objUpdateActivePeriod() {
   var badge = document.getElementById('objActivePeriod');
   var label = document.getElementById('objStatusLabel');
   if (!badge || !label) return;
-  var now = new Date();
-  var today = now.toISOString().split('T')[0];
-  var nm = now.getHours() * 60 + now.getMinutes();
-  var active = null;
-  Object.keys(objCache).forEach(function(p) {
-    var r = objCache[p];
-    if (!r || !r.active || !r.title) return;
-    if (r.scheduled_date && r.scheduled_date !== today) return;
-    // Check period time
-    var sched = getSchedule();
-    if (!sched) return;
-    sched.periods.forEach(function(sp) {
-      if (sp.id === p || sp.label === 'P' + p) {
-        var s = toMins(sp.start), e = toMins(sp.end);
-        if (nm >= s && nm < e) active = p;
-      }
-    });
-  });
-  if (active) {
-    badge.textContent = 'P' + active + ' ACTIVE';
-    badge.style.display = 'inline-flex';
-    label.textContent = 'LIVE';
-  } else {
-    badge.style.display = 'none';
-    label.textContent = 'NOT SET';
-  }
+  badge.style.display = 'none';
+  label.textContent = 'NOT SET';
 }
 
 function objSelectPeriod(p) {
@@ -860,18 +1083,13 @@ async function objSave() {
   var mode  = document.getElementById('objMode').value;
   var mins  = parseInt(document.getElementById('objMinutes').value) || 10;
   var errEl = document.getElementById('objError');
-
   if (!title && !line1) { errEl.textContent = 'Add at least a title or objective'; return; }
   errEl.textContent = '';
-
   var data = {
-    room: ROOM, period: OBJ_PERIOD,
-    title: title, line1: line1, line2: line2,
-    display_mode: mode, timed_minutes: mins,
-    scheduled_date: date, active: true,
+    room: ROOM, period: OBJ_PERIOD, title: title, line1: line1, line2: line2,
+    display_mode: mode, timed_minutes: mins, scheduled_date: date, active: true,
     updated_at: new Date().toISOString()
   };
-
   var existing = objCache[OBJ_PERIOD];
   if (existing && existing.id) {
     await sbUpdate('cw2_objectives', existing.id, data);
@@ -898,6 +1116,374 @@ async function objClear() {
     objUpdateCC(id, id + 'CC', max);
   });
   await loadObjectives();
+}
+
+// ── BIRTHDAY MANAGER ──────────────────────────────────────────
+var MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var bdayData     = [];
+var bdayExisting = [];
+
+function bdayTab(tab, btn) {
+  document.querySelectorAll('.bday-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.bday-pane').forEach(function(p) { p.style.display = 'none'; });
+  btn.classList.add('active');
+  document.getElementById('bday-pane-' + tab).style.display = 'block';
+}
+
+(function initDrop() {
+  var dz = document.getElementById('bday-dropzone');
+  if (!dz) return;
+  dz.addEventListener('dragover',  function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function()  { dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e) {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    bdayHandleFiles(e.dataTransfer.files);
+  });
+})();
+
+async function bdayHandleFiles(files) {
+  if (!files || !files.length) return;
+  bdayData = [];
+  var status = document.getElementById('bday-upload-status');
+  status.textContent = 'Parsing ' + files.length + ' file(s)...';
+  for (var i = 0; i < files.length; i++) {
+    try {
+      var parsed = await bdayParseFile(files[i]);
+      bdayData = bdayData.concat(parsed);
+    } catch(e) {
+      status.textContent = 'Error reading ' + files[i].name + ': ' + e.message;
+      return;
+    }
+  }
+  var seen = {};
+  bdayData = bdayData.filter(function(r) {
+    var key = r.name.toUpperCase() + '|' + r.month + '|' + r.day;
+    if (seen[key]) return false;
+    seen[key] = true; return true;
+  });
+  bdayRenderPreview();
+  status.textContent = '';
+}
+
+async function bdayParseFile(file) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        var wb   = XLSX.read(e.target.result, { type:'array', cellDates:true });
+        var ws   = wb.Sheets[wb.SheetNames[0]];
+        var rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
+        var format  = bdayDetectFormat(rows);
+        var results = [];
+        for (var i = 4; i < rows.length; i++) {
+          var row = rows[i];
+          if (!row || row.every(function(c) { return c === null || c === undefined || c === ''; })) continue;
+          var name = null, month = null, day = null;
+          if (format === 'birthday') {
+            var rawName = row[3]; var rawDate = row[5];
+            if (!rawName || !rawDate) continue;
+            name = bdayFlipName(String(rawName).trim());
+            var p = bdayParseDate(rawDate);
+            if (!p) continue;
+            month = p.month; day = p.day;
+          } else {
+            var last = row[4]; var first = row[7]; var rawDate2 = row[16];
+            if (!last || !first || !rawDate2) continue;
+            name = String(first).trim() + ' ' + String(last).trim();
+            var p2 = bdayParseDate(rawDate2);
+            if (!p2) continue;
+            month = p2.month; day = p2.day;
+          }
+          if (name && month && day) results.push({ name:name, month:month, day:day });
+        }
+        resolve(results);
+      } catch(err) { reject(err); }
+    };
+    reader.onerror = function() { reject(new Error('File read failed')); };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function bdayDetectFormat(rows) {
+  for (var r = 0; r < Math.min(4, rows.length); r++) {
+    for (var c = 0; c < (rows[r] || []).length; c++) {
+      var val = String(rows[r][c] || '');
+      if (val.includes('STUDENT BIRTHDAYS')) return 'birthday';
+      if (val.includes('STUDENT DIRECTORY')) return 'directory';
+    }
+  }
+  return 'birthday';
+}
+
+function bdayFlipName(raw) {
+  var comma = raw.indexOf(',');
+  if (comma === -1) return raw;
+  var last  = raw.substring(0, comma).trim();
+  var rest  = raw.substring(comma + 1).trim();
+  var first = rest.split(' ')[0];
+  return first + ' ' + last;
+}
+
+function bdayParseDate(raw) {
+  if (!raw) return null;
+  if (raw instanceof Date) return { month: raw.getMonth() + 1, day: raw.getDate() };
+  var s = String(raw).trim();
+  var parts = s.split('/');
+  if (parts.length >= 2) {
+    var m = parseInt(parts[0]), d = parseInt(parts[1]);
+    if (m >= 1 && m <= 12 && d >= 1 && d <= 31) return { month:m, day:d };
+  }
+  return null;
+}
+
+function bdayRenderPreview() {
+  var tbody   = document.getElementById('bday-preview-body');
+  var wrap    = document.getElementById('bday-preview-wrap');
+  var countEl = document.getElementById('bday-preview-count');
+  tbody.innerHTML = '';
+  var existingKeys = {};
+  bdayExisting.forEach(function(r) { existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day] = true; });
+  var newCount = 0;
+  bdayData.forEach(function(r, i) {
+    var key   = r.name.toUpperCase() + '|' + r.month + '|' + r.day;
+    var isDup = !!existingKeys[key];
+    if (!isDup) newCount++;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + (i+1) + '</td><td>' + r.name + '</td><td>' + MONTH_NAMES[r.month] + '</td><td>' + r.day + '</td>' +
+      '<td class="' + (isDup ? 'bday-status-dup' : 'bday-status-ok') + '">' + (isDup ? 'already exists' : '✓ new') + '</td>';
+    tbody.appendChild(tr);
+  });
+  countEl.textContent = bdayData.length + ' students parsed · ' + newCount + ' new';
+  wrap.style.display = 'block';
+  var btn = document.getElementById('bday-commit-btn');
+  btn.textContent = newCount > 0 ? '⬆ Upload ' + newCount + ' New Students' : '✓ All Already Exist';
+  btn.disabled = newCount === 0;
+}
+
+function bdayClearPreview() {
+  bdayData = [];
+  document.getElementById('bday-preview-wrap').style.display = 'none';
+  document.getElementById('bday-file-input').value = '';
+}
+
+async function bdayCommit() {
+  var btn    = document.getElementById('bday-commit-btn');
+  var status = document.getElementById('bday-upload-status');
+  btn.disabled = true; btn.textContent = 'Uploading...';
+  var existingKeys = {};
+  bdayExisting.forEach(function(r) { existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day] = true; });
+  var toInsert = bdayData.filter(function(r) { return !existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day]; });
+  if (!toInsert.length) { status.textContent = 'Nothing new to upload.'; btn.textContent = '✓ Done'; return; }
+  var payload = toInsert.map(function(r) { return { room: ROOM, name: r.name, month: r.month, day: r.day, active: true }; });
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    status.textContent = '✓ ' + toInsert.length + ' students uploaded.';
+    btn.textContent = '✓ Done';
+    bdayData = [];
+    document.getElementById('bday-preview-wrap').style.display = 'none';
+    document.getElementById('bday-file-input').value = '';
+    await bdayLoadList();
+  } catch(e) {
+    status.textContent = 'Upload failed: ' + e.message;
+    btn.disabled = false; btn.textContent = '⬆ Retry Upload';
+  }
+}
+
+async function bdayAddManual() {
+  var name   = (document.getElementById('bday-name').value || '').trim();
+  var month  = parseInt(document.getElementById('bday-month').value);
+  var day    = parseInt(document.getElementById('bday-day').value);
+  var status = document.getElementById('bday-manual-status');
+  if (!name || !month || !day) { status.textContent = 'Fill in all fields.'; return; }
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify([{ room: ROOM, name: name, month: month, day: day, active: true }])
+    });
+    if (!res.ok) throw new Error(await res.text());
+    document.getElementById('bday-name').value = '';
+    document.getElementById('bday-month').value = '';
+    document.getElementById('bday-day').value = '';
+    status.textContent = '✓ ' + name + ' added.';
+    await bdayLoadList();
+  } catch(e) { status.textContent = 'Error: ' + e.message; }
+}
+
+async function bdayLoadList() {
+  var rows = await sbFetch('cw2_birthdays', 'room=eq.' + ROOM + '&active=eq.true&order=month.asc,day.asc');
+  bdayExisting = rows || [];
+  var list    = document.getElementById('bday-list');
+  var countEl = document.getElementById('bday-count');
+  if (countEl) countEl.textContent = bdayExisting.length;
+  if (!bdayExisting.length) { list.innerHTML = '<div class="bday-empty">No birthdays yet. Upload a file or add manually.</div>'; return; }
+  list.innerHTML = bdayExisting.map(function(r) {
+    return '<div class="bday-row">' +
+      '<div><div class="bday-row-name">' + r.name + '</div><div class="bday-row-date">' + MONTH_NAMES[r.month] + ' ' + r.day + '</div></div>' +
+      '<button class="bday-del-btn" onclick="bdayDelete(\'' + r.id + '\')">✕</button>' +
+    '</div>';
+  }).join('');
+}
+
+async function bdayDelete(id) {
+  if (!confirm('Remove this birthday?')) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays?id=eq.' + id, {
+      method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await bdayLoadList();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+async function bdayClearAll() {
+  if (!confirm('Remove ALL birthdays for Room ' + ROOM + '? This cannot be undone.')) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays?room=eq.' + ROOM, {
+      method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await bdayLoadList();
+  } catch(e) { alert('Clear failed: ' + e.message); }
+}
+
+// ── POST DIRECT MESSAGE ───────────────────────────────────────
+var msgAligns = [true,true,true,true,true,true,true,true];
+
+function msgToggleAlign(n) {
+  msgAligns[n-1] = !msgAligns[n-1];
+  var btn = document.getElementById('msg-align' + n);
+  btn.textContent = msgAligns[n-1] ? 'C' : 'L';
+  btn.classList.toggle('active', msgAligns[n-1]);
+  msgUpdatePreview();
+}
+
+function msgGetLines() {
+  return [1,2,3,4,5,6,7,8].map(function(n) {
+    return document.getElementById('msg-line' + n).value || '';
+  });
+}
+
+function msgUpdatePreview() {
+  var lines = msgGetLines();
+  var board = document.getElementById('msg-preview-board');
+  if (lines.every(function(l) { return !l.trim(); })) {
+    board.innerHTML = '<div class="msg-preview-empty">Start typing to preview</div>';
+    return;
+  }
+  board.innerHTML = lines.map(function(l, i) {
+    var cls = msgAligns[i] ? 'msg-preview-row-center' : 'msg-preview-row-left';
+    return '<div class="' + cls + '">' + (l ? l.toUpperCase() : '') + '</div>';
+  }).join('');
+}
+
+function msgClearForm() {
+  [1,2,3,4,5,6,7,8].forEach(function(n) {
+    document.getElementById('msg-line' + n).value = '';
+    msgAligns[n-1] = true;
+    var btn = document.getElementById('msg-align' + n);
+    btn.textContent = 'C'; btn.classList.add('active');
+  });
+  document.getElementById('msg-expire').value = '24';
+  document.getElementById('msg-status').textContent = '';
+  msgUpdatePreview();
+}
+
+async function msgPost() {
+  var lines  = msgGetLines();
+  var hours  = parseInt(document.getElementById('msg-expire').value) || 24;
+  var status = document.getElementById('msg-status');
+  var btn    = document.getElementById('msg-post-btn');
+  if (lines.every(function(l) { return !l.trim(); })) { status.textContent = 'Enter at least one line of text.'; return; }
+  btn.disabled = true; btn.textContent = 'Posting...'; status.textContent = '';
+  var expiresAt = new Date(Date.now() + hours * 3600000).toISOString();
+  var alignStr  = msgAligns.map(function(a) { return a ? 'C' : 'L'; }).join(',');
+  var payload = {
+    room:         ROOM,
+    sender:       null,
+    line1:        lines[0] || null,
+    line2:        lines[1] || null,
+    line3:        lines[2] || null,
+    line4:        lines[3] || null,
+    line5:        lines[4] || null,
+    line6:        lines[5] || null,
+    line7:        lines[6] || null,
+    line8:        lines[7] || null,
+    status:       alignStr,
+    active:       true,
+    expires_at:   expiresAt,
+    expire_hours: hours
+  };
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error(await res.text());
+    status.textContent = '✓ Posted. Appears on board within 5 minutes.';
+    btn.textContent = '📣 Post to Board Now'; btn.disabled = false;
+    msgClearForm();
+    await msgLoadList();
+  } catch(e) {
+    status.textContent = 'Error: ' + e.message;
+    btn.textContent = '📣 Post to Board Now'; btn.disabled = false;
+  }
+}
+
+async function msgLoadList() {
+  var now  = new Date().toISOString();
+  var rows = await sbFetch('cw2_messages', 'room=eq.' + ROOM + '&active=eq.true&expires_at=gte.' + now + '&order=created_at.desc');
+  rows = rows || [];
+  var countEl = document.getElementById('msg-active-count');
+  if (countEl) countEl.textContent = rows.length;
+  var list = document.getElementById('msg-list');
+  if (!rows.length) { list.innerHTML = '<div class="bday-empty">No active messages.</div>'; return; }
+  list.innerHTML = rows.map(function(m) {
+    var aligns   = (m.status || '').split(',');
+    var allLines = [m.line1,m.line2,m.line3,m.line4,m.line5,m.line6,m.line7||'',m.line8||''];
+    var linesHtml = allLines.map(function(l, i) {
+      if (!l || !l.trim()) return '';
+      var isLeft = aligns[i] === 'L';
+      return '<div class="msg-card-line' + (isLeft?' left':'') + '">' + (isLeft?'← ':'') + l.toUpperCase() + '</div>';
+    }).filter(Boolean).join('');
+    var hoursLeft = Math.round((new Date(m.expires_at) - new Date()) / 3600000);
+    var expLabel  = hoursLeft < 1 ? 'expires soon' : hoursLeft < 24 ? 'in '+hoursLeft+'h' : 'in '+Math.round(hoursLeft/24)+'d';
+    var expClass  = hoursLeft < 2 ? 'msg-expires-soon' : '';
+    return '<div class="msg-card">' +
+      '<div class="msg-card-body">' + linesHtml +
+        '<div class="msg-card-meta"><span class="'+expClass+'">Expires '+expLabel+'</span></div>' +
+      '</div>' +
+      '<button class="msg-del-btn" onclick="msgDelete(\''+m.id+'\')">✕ Remove</button>' +
+    '</div>';
+  }).join('');
+}
+
+async function msgDelete(id) {
+  if (!confirm('Remove this message from the board?')) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages?id=eq.' + id, {
+      method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await msgLoadList();
+  } catch(e) { alert('Delete failed: ' + e.message); }
+}
+
+async function msgClearAll() {
+  if (!confirm('Remove ALL active messages for Room ' + ROOM + '?')) return;
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages?room=eq.' + ROOM + '&active=eq.true', {
+      method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    });
+    if (!res.ok) throw new Error(await res.text());
+    await msgLoadList();
+  } catch(e) { alert('Clear failed: ' + e.message); }
 }
 
 </script>
