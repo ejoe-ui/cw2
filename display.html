@@ -1175,18 +1175,18 @@ async function loadMessages() {
 
 function buildMessageScreens() {
   return CW_MESSAGES.map(function(m) {
-    var lines = [
-      m.line1 || '',
-      m.line2 || '',
-      m.line3 || '',
-      m.line4 || '',
-      m.line5 || '',
-      m.line6 || '',
-      '',
-      m.sender ? 'FROM  ' + (m.sender).toUpperCase() : ''
-    ];
-    while (lines.length < ROWS) lines.push('');
-    return { lines: lines, speed: 12, id: 'message-' + m.id, align: 'center', sort_order: 0.1 };
+    var aligns = (m.status || '').split(',');
+    var lines = [m.line1,m.line2,m.line3,m.line4,m.line5,m.line6,m.line7,m.line8];
+
+    var paddedLines = lines.map(function(l, i) {
+      var text = (l || '').toUpperCase().substring(0, COLS);
+      var isLeft = aligns[i] === 'L';
+      if (isLeft) return text + ' '.repeat(COLS - text.length);
+      var total = COLS - text.length, left = Math.floor(total / 2);
+      return ' '.repeat(left) + text + ' '.repeat(total - left);
+    });
+
+    return { lines: paddedLines, speed: 12, id: 'message-' + m.id, align: 'left', sort_order: 0.1 };
   });
 }
 
