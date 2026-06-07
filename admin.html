@@ -732,7 +732,7 @@ async function loadBoards() {
   boards = rows || [];
   renderBoards();
   var active = boards.filter(function(s) { return s.enabled; }).length;
-  document.getElementById('settingBoardCount').textContent = active + ' / ' + screens.length;
+  document.getElementById('settingBoardCount').textContent = active + ' / ' + boards.length;
 }
 
 function renderBoards() {
@@ -984,7 +984,7 @@ function openEditGlobalBoard(id) {
 }
 async function deleteGlobalBoard(id) {
   if (!confirm('Delete this global screen? It will be removed from all rooms.')) return;
-  await sbDelete('cw2_screens', id); await loadGlobalBoards(); toast('Global screen deleted');
+  await sbDelete('cw2_screens', id); await loadGlobalBoards(); toast('Global board deleted');
 }
 
 async function toggleHonorRoll() {
