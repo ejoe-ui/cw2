@@ -1310,11 +1310,19 @@ function injectDynamicScreens() {
     messages.splice(wxAt, 0, wxScreen);
   }
 
- // Objectives screen — current period only, respects display_mode
+// Bell schedule screen — school days only, correct schedule auto-selected
+  var bellScreen = buildBellScreen();
+  if (bellScreen) {
+    var bellAt = Math.min(4, messages.length);
+    messages.splice(bellAt, 0, bellScreen);
+  }
+
+  // Objectives screen — current period only, respects display_mode
   var objScreen = buildObjectivesScreen();
   if (objScreen) {
     messages.splice(1, 0, objScreen);
   }
+}
 
 // ── NOISE METER ──────────────────────────────────────
 var nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
