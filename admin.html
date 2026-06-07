@@ -111,6 +111,9 @@
   .empty{text-align:center;padding:2.5rem 1rem;color:var(--text-3);font-size:13px;}
   .global-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent-text);flex-shrink:0;}
   .screen-card.global-card{border-left:3px solid var(--accent);}
+  .obj-tab{background:var(--btn-secondary-bg);border:1px solid var(--btn-secondary-border);color:var(--btn-secondary-text);font-family:inherit;font-size:12px;font-weight:600;padding:5px 14px;border-radius:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
+  .obj-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .obj-tab.set{border-color:var(--accent);color:var(--accent);}
   #toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(12px);background:#111;color:#fff;font-size:12px;font-weight:500;padding:9px 18px;border-radius:6px;opacity:0;transition:all 0.25s;z-index:200;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,0.25);}
   [data-theme="dark"] #toast{background:#f0f0f0;color:#111;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -186,7 +189,78 @@
     </div>
     <div id="globalScreensList"><div class="empty">Loading...</div></div>
   </div>
+<div class="section">
+    <div class="section-head">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="section-title">Period Objectives</div>
+        <span id="objActivePeriod" style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;background:var(--accent-bg);color:var(--accent-text);display:none"></span>
+      </div>
+      <span style="font-size:11px;color:var(--text-3);" id="objStatusLabel">NOT SET</span>
+    </div>
 
+    <div style="background:var(--accent-bg);border:1px solid var(--accent);border-radius:6px;padding:10px 14px;font-size:11px;color:var(--accent-text);margin-bottom:12px;font-family:'Courier New',monospace;letter-spacing:0.02em;">
+      UDL best practice: State what students are doing today and what success looks like so they can self-assess.
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;" id="objPeriodTabs">
+      <button class="obj-tab active" id="objtab-1" onclick="objSelectPeriod('1')">P1</button>
+      <button class="obj-tab" id="objtab-2" onclick="objSelectPeriod('2')">P2</button>
+      <button class="obj-tab" id="objtab-3" onclick="objSelectPeriod('3')">P3</button>
+      <button class="obj-tab" id="objtab-4" onclick="objSelectPeriod('4')">P4</button>
+      <button class="obj-tab" id="objtab-5" onclick="objSelectPeriod('5')">P5</button>
+      <button class="obj-tab" id="objtab-6" onclick="objSelectPeriod('6')">P6</button>
+      <button class="obj-tab" id="objtab-7" onclick="objSelectPeriod('7')">P7</button>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:1rem;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-3);letter-spacing:0.08em;text-transform:uppercase;" id="objPeriodHeading">P1 OBJECTIVES</div>
+
+      <div class="field-group">
+        <label class="field-label">PERIOD TITLE <span style="font-weight:400;color:var(--text-3)">(28 chars)</span></label>
+        <input class="field-input" id="objTitle" type="text" maxlength="28" placeholder="e.g. Light fields" oninput="objUpdateCC('objTitle','objTitleCC',28)">
+        <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objTitleCC">0/28</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">TODAY'S OBJECTIVE <span style="font-weight:400;color:var(--text-3)">(80 chars)</span></label>
+        <input class="field-input" id="objLine1" type="text" maxlength="80" placeholder="▶ Analyze light fields" oninput="objUpdateCC('objLine1','objLine1CC',80)">
+        <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objLine1CC">0/80</div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">YOU'VE GOT IT WHEN... <span style="font-weight:400;color:var(--text-3)">(80 chars)</span></label>
+        <input class="field-input" id="objLine2" type="text" maxlength="80" placeholder="✓ Able to describe when light is absorbed" oninput="objUpdateCC('objLine2','objLine2CC',80)">
+        <div style="font-size:10px;color:var(--text-3);text-align:right;margin-top:3px;" id="objLine2CC">0/80</div>
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="field-group" style="flex:1;min-width:140px;">
+          <label class="field-label">DATE</label>
+          <input class="field-input" id="objDate" type="date">
+          <div class="field-hint">Today = live now · future = pre-load</div>
+        </div>
+        <div class="field-group" style="flex:1;min-width:160px;">
+          <label class="field-label">SHOW MODE</label>
+          <select class="field-select" id="objMode" onchange="objToggleTimed()">
+            <option value="always">Always — full period</option>
+            <option value="timed">Timed — first X minutes</option>
+            <option value="manual">Manual — until I turn it off</option>
+          </select>
+        </div>
+        <div class="field-group" id="objTimedGroup" style="width:80px;display:none;">
+          <label class="field-label">MINUTES</label>
+          <input class="field-input" id="objMinutes" type="number" min="1" max="60" value="10">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn accent" style="flex:1;padding:10px;font-size:13px;font-weight:700;letter-spacing:0.05em;" onclick="objSave()">▶ SAVE &amp; GO LIVE</button>
+        <button class="btn danger" style="padding:10px 16px;" onclick="objClear()">CLEAR</button>
+      </div>
+      <div class="error-text" id="objError" style="text-align:left;min-height:0;"></div>
+    </div>
+  </div>
+ 
   <div class="section">
     <div class="section-head"><div class="section-title">Display URL</div></div>
     <div class="url-row">
@@ -400,6 +474,7 @@ async function unlockAdmin() {
   updateRoomInfo();
   await loadScreens();
   await loadGlobalScreens();
+  await loadObjectives();
 
   // Show Room Management and Add Global button only for master PIN sessions
   document.getElementById('roomMgmtSection').style.display = isMasterSession ? 'block' : 'none';
@@ -685,6 +760,146 @@ function toast(msg, isErr) {
 document.getElementById('modal-overlay').addEventListener('click', function(e) {
   if (e.target === document.getElementById('modal-overlay')) closeModal();
 });
+// ── OBJECTIVES ───────────────────────────────────────
+var OBJ_PERIOD = '1';
+var objCache = {};
+
+async function loadObjectives() {
+  var rows = await sbFetch('cw2_objectives', 'room=eq.' + ROOM + '&select=*');
+  objCache = {};
+  (rows || []).forEach(function(r) { objCache[r.period] = r; });
+  objRefreshTabs();
+  objLoadPeriod(OBJ_PERIOD);
+  objUpdateActivePeriod();
+}
+
+function objRefreshTabs() {
+  ['1','2','3','4','5','6','7'].forEach(function(p) {
+    var btn = document.getElementById('objtab-' + p);
+    if (!btn) return;
+    var rec = objCache[p];
+    var isSet = rec && rec.active && rec.title;
+    btn.className = 'obj-tab' + (p === OBJ_PERIOD ? ' active' : (isSet ? ' set' : ''));
+  });
+}
+
+function objUpdateActivePeriod() {
+  var badge = document.getElementById('objActivePeriod');
+  var label = document.getElementById('objStatusLabel');
+  if (!badge || !label) return;
+  var now = new Date();
+  var today = now.toISOString().split('T')[0];
+  var nm = now.getHours() * 60 + now.getMinutes();
+  var active = null;
+  Object.keys(objCache).forEach(function(p) {
+    var r = objCache[p];
+    if (!r || !r.active || !r.title) return;
+    if (r.scheduled_date && r.scheduled_date !== today) return;
+    // Check period time
+    var sched = getSchedule();
+    if (!sched) return;
+    sched.periods.forEach(function(sp) {
+      if (sp.id === p || sp.label === 'P' + p) {
+        var s = toMins(sp.start), e = toMins(sp.end);
+        if (nm >= s && nm < e) active = p;
+      }
+    });
+  });
+  if (active) {
+    badge.textContent = 'P' + active + ' ACTIVE';
+    badge.style.display = 'inline-flex';
+    label.textContent = 'LIVE';
+  } else {
+    badge.style.display = 'none';
+    label.textContent = 'NOT SET';
+  }
+}
+
+function objSelectPeriod(p) {
+  OBJ_PERIOD = p;
+  objRefreshTabs();
+  objLoadPeriod(p);
+  document.getElementById('objPeriodHeading').textContent = 'P' + p + ' OBJECTIVES';
+}
+
+function objLoadPeriod(p) {
+  var rec = objCache[p];
+  var today = new Date().toISOString().split('T')[0];
+  document.getElementById('objTitle').value   = rec ? (rec.title || '') : '';
+  document.getElementById('objLine1').value   = rec ? (rec.line1 || '') : '';
+  document.getElementById('objLine2').value   = rec ? (rec.line2 || '') : '';
+  document.getElementById('objDate').value    = rec ? (rec.scheduled_date || today) : today;
+  document.getElementById('objMode').value    = rec ? (rec.display_mode || 'always') : 'always';
+  document.getElementById('objMinutes').value = rec ? (rec.timed_minutes || 10) : 10;
+  ['objTitle','objLine1','objLine2'].forEach(function(id) {
+    var max = id === 'objTitle' ? 28 : 80;
+    objUpdateCC(id, id + 'CC', max);
+  });
+  objToggleTimed();
+  document.getElementById('objError').textContent = '';
+}
+
+function objUpdateCC(inputId, ccId, max) {
+  var len = document.getElementById(inputId).value.length;
+  var el  = document.getElementById(ccId);
+  if (!el) return;
+  el.textContent = len + '/' + max;
+  el.style.color = len > max * 0.9 ? 'var(--warning)' : 'var(--text-3)';
+}
+
+function objToggleTimed() {
+  var mode = document.getElementById('objMode').value;
+  document.getElementById('objTimedGroup').style.display = mode === 'timed' ? 'block' : 'none';
+}
+
+async function objSave() {
+  var title = document.getElementById('objTitle').value.trim();
+  var line1 = document.getElementById('objLine1').value.trim();
+  var line2 = document.getElementById('objLine2').value.trim();
+  var date  = document.getElementById('objDate').value;
+  var mode  = document.getElementById('objMode').value;
+  var mins  = parseInt(document.getElementById('objMinutes').value) || 10;
+  var errEl = document.getElementById('objError');
+
+  if (!title && !line1) { errEl.textContent = 'Add at least a title or objective'; return; }
+  errEl.textContent = '';
+
+  var data = {
+    room: ROOM, period: OBJ_PERIOD,
+    title: title, line1: line1, line2: line2,
+    display_mode: mode, timed_minutes: mins,
+    scheduled_date: date, active: true,
+    updated_at: new Date().toISOString()
+  };
+
+  var existing = objCache[OBJ_PERIOD];
+  if (existing && existing.id) {
+    await sbUpdate('cw2_objectives', existing.id, data);
+    toast('P' + OBJ_PERIOD + ' objectives saved');
+  } else {
+    var result = await sbInsert('cw2_objectives', data);
+    if (result && result[0]) objCache[OBJ_PERIOD] = result[0];
+    toast('P' + OBJ_PERIOD + ' objectives live');
+  }
+  await loadObjectives();
+}
+
+async function objClear() {
+  var existing = objCache[OBJ_PERIOD];
+  if (existing && existing.id) {
+    await sbUpdate('cw2_objectives', existing.id, { active: false, title: '', line1: '', line2: '' });
+    toast('P' + OBJ_PERIOD + ' cleared');
+  }
+  document.getElementById('objTitle').value = '';
+  document.getElementById('objLine1').value = '';
+  document.getElementById('objLine2').value = '';
+  ['objTitle','objLine1','objLine2'].forEach(function(id) {
+    var max = id === 'objTitle' ? 28 : 80;
+    objUpdateCC(id, id + 'CC', max);
+  });
+  await loadObjectives();
+}
+
 </script>
 </body>
 </html>
