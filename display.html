@@ -1285,9 +1285,157 @@ function buildMessageScreens() {
   });
 }
 
+
+// ── QUIET COMPETITION ─────────────────────────────────────────
+var CW_QUIET_POINTS  = [];
+var CW_PERIOD_NAMES  = {};
+var CW_QUIET_CURRENT = null;
+var cwQuietTimer     = null;
+var cwQuietLevel     = 0;
+
+function cwWeekStart() {
+  var d = new Date();
+  d.setDate(d.getDate() - d.getDay());
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
+}
+
+async function loadPeriodNames() {
+  var rows = await sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name');
+  CW_PERIOD_NAMES = {};
+  (rows || []).forEach(function(r) { CW_PERIOD_NAMES[r.period] = r.display_name; });
+}
+
+async function loadQuietPoints() {
+  var ws = cwWeekStart();
+  var rows = await sbFetch('cw2_quiet_points',
+    'room=eq.' + ROOM + '&week_start=eq.' + ws + '&select=*');
+  CW_QUIET_POINTS = rows || [];
+}
+
+async function cwAwardQuietPoints() {
+  var sched = getSchedule();
+  if (!sched) return;
+  var nm = nowMins();
+  var currentPeriod = null;
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm >= s && nm < e) {
+      var match = (p.label || '').match(/[0-9]+/);
+      if (match) currentPeriod = match[0];
+    }
+  });
+  if (!currentPeriod) return;
+  if (!nmOn || cwQuietLevel >= nmRed) return;
+
+  var ws = cwWeekStart();
+  var existing = CW_QUIET_POINTS.find(function(r) {
+    return r.period === currentPeriod && r.week_start === ws;
+  });
+
+  var newPoints  = (existing ? existing.points_earned : 0) + 10;
+  var newMinutes = (existing ? existing.minutes_quiet  : 0) + 1;
+
+  if (existing) {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points?id=eq.' + existing.id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ points_earned: newPoints, minutes_quiet: newMinutes, updated_at: new Date().toISOString() })
+    });
+    if (res.ok) {
+      var updated = await res.json();
+      var idx = CW_QUIET_POINTS.findIndex(function(r) { return r.id === existing.id; });
+      if (idx >= 0 && updated[0]) CW_QUIET_POINTS[idx] = updated[0];
+    }
+  } else {
+    var res2 = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ room: ROOM, period: currentPeriod, week_start: ws, points_earned: newPoints, minutes_quiet: newMinutes })
+    });
+    if (res2.ok) {
+      var inserted = await res2.json();
+      if (inserted && inserted[0]) CW_QUIET_POINTS.push(inserted[0]);
+    }
+  }
+  CW_QUIET_CURRENT = { period: currentPeriod, points: newPoints, minutes: newMinutes };
+}
+
+function cwStartQuietTimer() {
+  if (cwQuietTimer) clearInterval(cwQuietTimer);
+  cwQuietTimer = setInterval(function() { cwAwardQuietPoints(); }, 60000);
+}
+
+function buildQuietScreen() {
+  if (!nmOn) return null;
+  var sched = getSchedule();
+  if (!sched) return null;
+
+  var ws = cwWeekStart();
+  var grouped = {};
+
+  CW_QUIET_POINTS.forEach(function(r) {
+    if (r.week_start !== ws) return;
+    var name = CW_PERIOD_NAMES[r.period] || ('PERIOD ' + r.period);
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+    grouped[name].points  += r.points_earned || 0;
+    grouped[name].minutes += r.minutes_quiet  || 0;
+  });
+
+  Object.keys(CW_PERIOD_NAMES).forEach(function(p) {
+    var name = CW_PERIOD_NAMES[p];
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+  });
+
+  var ranked = Object.values(grouped).sort(function(a, b) { return b.points - a.points; });
+  if (!ranked.length) return null;
+
+  var nm2 = nowMins();
+  var inClass = false;
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm2 >= s && nm2 < e) inClass = true;
+  });
+
+  var statusLine = '';
+  if (inClass && nmOn && cwQuietLevel < nmRed) {
+    statusLine = 'EARNING POINTS  STAY QUIET';
+  } else if (inClass && nmOn && cwQuietLevel >= nmRed) {
+    statusLine = 'TOO NOISY  POINTS PAUSED';
+  } else {
+    statusLine = 'WEEKLY STANDINGS';
+  }
+
+  var lines = ['QUIET COMPETITION', statusLine, ''];
+  var medals = ['1.','2.','3.','4.','5.','6.','7.'];
+
+  ranked.slice(0, ROWS - 3).forEach(function(entry, i) {
+    var prefix = medals[i] || ((i+1) + '.');
+    var pts    = String(entry.points) + ' PTS';
+    var name   = entry.name.toUpperCase();
+    var maxName = COLS - prefix.length - 1 - pts.length;
+    if (name.length > maxName) name = name.substring(0, maxName);
+    var lineStr = prefix + ' ' + name;
+    var pad = COLS - lineStr.length - pts.length;
+    if (pad > 0) lineStr += ' '.repeat(pad);
+    lines.push((lineStr + pts).substring(0, COLS));
+  });
+
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines.slice(0, ROWS), speed: 14, id: 'quiet', align: 'left', sort_order: 0.7 };
+}
+
 // ── HONOR ROLL ───────────────────────────────────────
 async function loadHonorRoll() {
-  if (SETTINGS && SETTINGS.show_honor_roll === false) return;
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
   var inner = document.getElementById('honor-ticker-inner');
@@ -1347,6 +1495,7 @@ async function startBoard() {
     await loadObjectives();
     await loadBirthdays();
     await loadMessages();
+    await loadQuietPoints();
     injectDynamicScreens();
     buildDots();
   }, 5 * 60 * 1000);
@@ -1357,7 +1506,7 @@ function injectDynamicScreens() {
   messages = messages.filter(function(m) {
     return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' &&
            m.id !== 'bell' && m.id !== 'objectives' && m.id !== 'birthday' &&
-           !m.id.startsWith('message-');
+           m.id !== 'quiet' && !m.id.startsWith('message-');
   });
 
   // Calendar — position 0
@@ -1379,6 +1528,10 @@ function injectDynamicScreens() {
   // Birthday — position 5
   var bdayScreen = buildBirthdayScreen();
   if (bdayScreen) messages.splice(Math.min(5, messages.length), 0, bdayScreen);
+
+  // Quiet Competition — position 6, only when noise meter on
+  var quietScreen = buildQuietScreen();
+  if (quietScreen) messages.splice(Math.min(6, messages.length), 0, quietScreen);
 
   // Objectives — position 1 (current period only)
   var objScreen = buildObjectivesScreen();
@@ -1486,6 +1639,7 @@ function nmTick() {
       else                        b.className = 'nm-bar on-green';
     } else { b.className = 'nm-bar'; }
   }
+  cwQuietLevel = level;
   nmAnimFrame = requestAnimationFrame(nmTick);
 }
 async function toggleNoiseMeter() {
@@ -1971,6 +2125,9 @@ window.addEventListener('click', function() {
   await loadObjectives();
   await loadBirthdays();
   await loadMessages();
+  await loadPeriodNames();
+  await loadQuietPoints();
+  cwStartQuietTimer();
   setTimeout(function() { loadHonorRoll(); }, 2000);
   setInterval(function() { loadHonorRoll(); }, 30*60*1000);
 })();
