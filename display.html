@@ -930,7 +930,43 @@ function buildCalendarScreen() {
 
   return { lines: lines, speed: 15, id: 'calendar', align: 'center', sort_order: 0 };
 }
+function buildBellScreen() {
+  var sched = getSchedule();
+  if (!sched) return null;
 
+  var schedName = getScheduleForDate(new Date());
+  var schedLabels = {
+    regular:     'REGULAR BELL',
+    earlyRelease:'EARLY RELEASE',
+    blockWed:    'BLOCK DAY',
+    blockThu:    'BLOCK DAY',
+    minimum:     'MINIMUM DAY',
+    foggy:       'LATE ARRIVAL',
+    activity:    'ACTIVITY DAY',
+    codeDay:     'CODE DAY'
+  };
+  var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var now = new Date();
+  var header = (schedLabels[schedName] || 'BELL SCHEDULE') + '  ' + days[now.getDay()];
+  var nm = nowMins();
+  var lines = [header];
+
+  sched.periods.forEach(function(p) {
+    var s = toMins(p.start), e = toMins(p.end);
+    var isCurrent = nm >= s && nm < e;
+    var isPast    = nm >= e;
+    var label = p.label;
+    while (label.length < 7) label += ' ';
+    var timeStr = p.start + ' - ' + p.end;
+    var prefix = isCurrent ? 'NOW ' : (isPast && !p.break ? ' .  ' : '    ');
+    var suffix = isCurrent ? '  <' : '';
+    lines.push(prefix + label + ' ' + timeStr + suffix);
+  });
+
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines, speed: 20, id: 'bell', align: 'left', sort_order: 1 };
+}
+ 
 function buildCountdownScreen() {
   var now = new Date();
   var ds = dateStr(now);
@@ -1194,7 +1230,7 @@ async function startBoard() {
 function injectDynamicScreens() {
   // Remove previously injected dynamic screens
   messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather';
+    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' && m.id !== 'bell';
   });
 
   // Calendar screen — first in rotation
@@ -1214,7 +1250,13 @@ function injectDynamicScreens() {
     var wxAt = Math.min(3, messages.length);
     messages.splice(wxAt, 0, wxScreen);
   }
-}
+
+  // Bell schedule screen — school days only, correct schedule auto-selected
+  var bellScreen = buildBellScreen();
+  if (bellScreen) {
+    var bellAt = Math.min(4, messages.length);
+    messages.splice(bellAt, 0, bellScreen);
+  }
 
 // ── NOISE METER ──────────────────────────────────────
 var nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
