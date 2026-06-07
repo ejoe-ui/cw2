@@ -807,19 +807,7 @@ async function loadScreens() {
       sort_order: pref ? pref.sort_order : r.sort_order
     });
   });
-// Hide bell schedule screens on weekends and after school hours
-  var now = new Date();
-  var dow = now.getDay();
-  var nm = nowMins();
-  var isWeekend = (dow === 0 || dow === 6);
-  var isAfterSchool = (nm > toMins('15:15'));
-  var isBeforeSchool = (nm < toMins('07:45'));
-  if (isWeekend || isAfterSchool || isBeforeSchool) {
-    mapped = mapped.filter(function(s) {
-      return s.sort_order !== 2 && s.sort_order !== 3;
-    });
-  }
- 
+
   // Sort local screens by sort_order
   mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
 
@@ -991,6 +979,60 @@ function getScheduleForDate(date) {
   return 'regular';
 }
 
+// ── WEATHER ──────────────────────────────────────
+var CW_WEATHER = null;
+
+var WEATHER_CODES = {
+  0:'CLEAR SKIES', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
+  45:'FOGGY', 48:'FOGGY', 51:'LIGHT DRIZZLE', 53:'DRIZZLE', 55:'HEAVY DRIZZLE',
+  61:'LIGHT RAIN', 63:'RAIN', 65:'HEAVY RAIN',
+  71:'LIGHT SNOW', 73:'SNOW', 75:'HEAVY SNOW', 77:'SNOW GRAINS',
+  80:'RAIN SHOWERS', 81:'RAIN SHOWERS', 82:'HEAVY SHOWERS',
+  85:'SNOW SHOWERS', 86:'HEAVY SNOW SHOWERS',
+  95:'THUNDERSTORM', 96:'THUNDERSTORM', 99:'THUNDERSTORM'
+};
+
+async function loadWeather() {
+  try {
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=36.4327&longitude=-119.8668' +
+      '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Los_Angeles';
+    var res = await fetch(url);
+    if (!res.ok) return null;
+    var data = await res.json();
+    CW_WEATHER = data.current;
+    return CW_WEATHER;
+  } catch(e) { return null; }
+}
+
+function buildWeatherScreen() {
+  if (!CW_WEATHER) return null;
+  var temp     = Math.round(CW_WEATHER.temperature_2m);
+  var feels    = Math.round(CW_WEATHER.apparent_temperature);
+  var humidity = Math.round(CW_WEATHER.relative_humidity_2m);
+  var wind     = Math.round(CW_WEATHER.wind_speed_10m);
+  var code     = CW_WEATHER.weather_code;
+  var desc     = WEATHER_CODES[code] || 'CONDITIONS UNKNOWN';
+
+  var tempLine = temp + ' F  FEELS LIKE  ' + feels + ' F';
+  var humLine  = 'HUMIDITY  ' + humidity + '%';
+  var windLine = 'WIND  ' + wind + ' MPH';
+
+  var lines = [
+    'WEATHER  RIVERDALE CA',
+    '',
+    tempLine,
+    desc,
+    humLine,
+    windLine,
+    '',
+    'SOURCE  OPEN-METEO.COM',
+  ];
+
+  return { lines: lines, speed: 15, id: 'weather', align: 'center', sort_order: 0.8 };
+}
+
 async function loadHonorRoll() {
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.' + ROOM + '&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
@@ -1027,6 +1069,7 @@ async function startBoard() {
   syncTimer = setInterval(async function() {
     var fresh = await loadScreens();
     await loadCwEvents();
+    await loadWeather();
     if (fresh) {
       var savedLine = (messages[currentIdx] && messages[currentIdx].lines) ? messages[currentIdx].lines[0] : '';
       messages = fresh;
@@ -1042,9 +1085,10 @@ async function startBoard() {
     }
   }, SYNC_SEC * 1000);
 
-  // Refresh calendar every 5 minutes
+  // Refresh calendar and weather every 5 minutes
   setInterval(async function() {
     await loadCwEvents();
+    await loadWeather();
     injectDynamicScreens();
     buildDots();
   }, 5 * 60 * 1000);
@@ -1053,18 +1097,25 @@ async function startBoard() {
 function injectDynamicScreens() {
   // Remove previously injected dynamic screens
   messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown';
+    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather';
   });
 
   // Calendar screen — first in rotation
   var calScreen = buildCalendarScreen();
   if (calScreen) messages.unshift(calScreen);
 
-  // Countdown screen — after welcome screen (position 2)
+  // Countdown screen — after welcome (position 2)
   var countScreen = buildCountdownScreen();
   if (countScreen) {
     var insertAt = Math.min(2, messages.length);
     messages.splice(insertAt, 0, countScreen);
+  }
+
+  // Weather screen — after countdown
+  var wxScreen = buildWeatherScreen();
+  if (wxScreen) {
+    var wxAt = Math.min(3, messages.length);
+    messages.splice(wxAt, 0, wxScreen);
   }
 }
 
