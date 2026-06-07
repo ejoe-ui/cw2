@@ -305,7 +305,8 @@
     letter-spacing: 0.15em; text-transform: uppercase;
     color: #222; z-index: 5;
   }
- /* ── TIMER ─────────────────────────────────────────────── */
+
+  /* ── CLASSROOM TIMER ────────────────────────────────────── */
   #timer-hint { position: fixed; bottom: 12px; left: 16px; font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: #2a2a2a; z-index: 59; cursor: pointer; transition: color 0.2s, opacity 0.3s; opacity: 0; }
   body:hover #timer-hint { opacity: 1; color: #2e2e2e; }
   #timer-hint:hover { color: var(--green) !important; }
@@ -423,6 +424,7 @@
 <div id="indicator-bar"></div>
 <div id="version-badge">CW 2.0</div>
 <div id="sound-prompt" onclick="enableSound(this)">▶ Click to enable flip sound</div>
+
 <div id="timer-hint" onclick="openTimerOverlay()">⏱ TIMER</div>
 <div id="timer-trigger" onclick="openTimerOverlay()"></div>
 <div id="timer-board"></div>
@@ -464,7 +466,7 @@
     </div>
   </div>
 </div>
- 
+
 <div id="dial-hint" onclick="toggleDial()">◎ MODE</div>
 <div id="dial-trigger" onclick="toggleDial()"></div>
 <div id="dial-panel">
@@ -1268,18 +1270,18 @@ async function loadMessages() {
 
 function buildMessageScreens() {
   return CW_MESSAGES.map(function(m) {
-    var aligns = (m.status || '').split(',');
-    var lines = [m.line1,m.line2,m.line3,m.line4,m.line5,m.line6,m.line7,m.line8];
-
-    var paddedLines = lines.map(function(l, i) {
-      var text = (l || '').toUpperCase().substring(0, COLS);
-      var isLeft = aligns[i] === 'L';
-      if (isLeft) return text + ' '.repeat(COLS - text.length);
-      var total = COLS - text.length, left = Math.floor(total / 2);
-      return ' '.repeat(left) + text + ' '.repeat(total - left);
-    });
-
-    return { lines: paddedLines, speed: 12, id: 'message-' + m.id, align: 'left', sort_order: 0.1 };
+    var lines = [
+      m.line1 || '',
+      m.line2 || '',
+      m.line3 || '',
+      m.line4 || '',
+      m.line5 || '',
+      m.line6 || '',
+      '',
+      m.sender ? 'FROM  ' + (m.sender).toUpperCase() : ''
+    ];
+    while (lines.length < ROWS) lines.push('');
+    return { lines: lines, speed: 12, id: 'message-' + m.id, align: 'center', sort_order: 0.1 };
   });
 }
 
@@ -1588,34 +1590,43 @@ document.addEventListener('click', function(e) {
     document.getElementById('dial-panel').classList.remove('open');
   }
 });
-// ── TIMER DIGIT MAPS ─────────────────────────────────────────
+
+
+// ── TIMER DIGIT MAPS (8 rows) ────────────────────────────────
 var TD = {
-  '0':[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
-  '1':[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1],[0,0,0]],
-  '2':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,0]],
-  '3':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
-  '4':[[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,0]],
-  '5':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
-  '6':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
-  '7':[[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,0,0]],
-  '8':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
-  '9':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
+  '0':[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '1':[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  '2':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
+  '3':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+  '4':[[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+  '5':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+  '6':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '7':[[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],
+  '8':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '9':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
   ':':[[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,0,0]]
 };
 
-// Word bitmaps for TIME'S UP — 8 rows tall, variable width
-// Each letter pattern is 8 rows × N cols
+// TIME'S bitmaps — 8 rows, fills the full 28-col board
 var TW = {
-  'T':[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
-  'I':[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
-  'M':[[1,0,0,0,1],[1,1,0,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
-  'E':[[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,1,1,1],[0,0,0,0]],
-  "'":[[0,1],[0,1],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],
-  'S':[[0,1,1,1],[1,0,0,0],[1,0,0,0],[0,1,1,0],[0,0,0,1],[0,0,0,1],[1,1,1,0],[0,0,0,0]],
-  'U':[[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
-  'P':[[1,1,1,0],[1,0,0,1],[1,0,0,1],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[0,0,0,0]],
-  ' ':[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+  'T': [[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
+  'I': [[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  'M': [[1,0,0,0,1],[1,1,0,1,1],[1,1,1,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+  'E': [[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[1,1,1,1]],
+  "'": [[1],[1],[0],[0],[0],[0],[0],[0]],
+  'S': [[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,1]],
+  ' ': [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
 };
+
+// UP wide bitmaps — 9 cols each, bold double-stroke, centered in 28 cols
+var TW_U = [
+  [1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],
+  [1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[0,1,1,1,1,1,1,1,0],[0,0,1,1,1,1,1,0,0]
+];
+var TW_P = [
+  [1,1,1,1,1,1,1,0,0],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,1,1,1,1,0,0],
+  [1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0]
+];
 
 // ── TIMER STATE ───────────────────────────────────────────────
 var tMode = 'countdown', tSound = 'westminster';
@@ -1639,13 +1650,11 @@ function bellNote(c, freq, t, dur, vol) {
   g2.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.45);
   osc2.connect(g2); g2.connect(c.destination); osc2.start(t); osc2.stop(t + dur * 0.5);
 }
-
-var _E=659.25, _C=523.25, _D=587.33, _G=392.00, _ND=0.42, _LG=0.75, _GP=0.07;
+var _E=659.25,_C=523.25,_D=587.33,_G=392.00,_ND=0.42,_LG=0.75,_GP=0.07;
 var BELL_SEQS = {
-  westminster: [{f:_E,d:_ND},{f:_D,d:_ND},{f:_C,d:_ND},{f:_G,d:_LG},{f:_G,d:_ND},{f:_D,d:_ND},{f:_E,d:_ND},{f:_C,d:_LG}],
-  ce:          [{f:587.33,d:0.42},{f:659.25,d:0.42},{f:523.25,d:0.42},{f:261.63,d:0.52},{f:392.00,d:0.85}]
+  westminster:[{f:_E,d:_ND},{f:_D,d:_ND},{f:_C,d:_ND},{f:_G,d:_LG},{f:_G,d:_ND},{f:_D,d:_ND},{f:_E,d:_ND},{f:_C,d:_LG}],
+  ce:[{f:587.33,d:0.42},{f:659.25,d:0.42},{f:523.25,d:0.42},{f:261.63,d:0.52},{f:392.00,d:0.85}]
 };
-
 function playTimerBell(key) {
   if (key === 'off') return;
   var c = audioCtx;
@@ -1701,10 +1710,8 @@ function renderTimer(secs, warn, anim) {
   var cacheKey = mStr + ':' + sStr + (warn ? 'w' : 'g');
   if (cacheKey === tPrevDisp && !anim) return;
   tPrevDisp = cacheKey;
-
   var cls = warn ? 'warn' : 'on';
   var chars, positions;
-
   if (m === 0) {
     chars = [sStr[0], sStr[1]];
     positions = [11, 15];
@@ -1715,7 +1722,6 @@ function renderTimer(secs, warn, anim) {
     chars = [mStr[0], mStr[1], ':', sStr[0], sStr[1]];
     positions = [1, 5, 9, 13, 17];
   }
-
   var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
   chars.forEach(function(ch, i) {
     var pat = TD[ch]; if (!pat) return;
@@ -1724,26 +1730,19 @@ function renderTimer(secs, warn, anim) {
       for (var c = 0; c < w; c++)
         if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
   });
-
-  for (var r = 0; r < ROWS; r++) {
-    for (var c = 0; c < COLS; c++) {
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
       setTT(r, c, target[r][c], anim && target[r][c] !== (ttiles[r][c].dataset.state || ''));
-    }
-  }
 }
 
-// ── TIMES UP FLIP SEQUENCE ────────────────────────────────────
-function renderWord(word, cls, anim) {
-  // Render a word centered across all 8 rows using TW bitmaps
-  var letters = word.split('');
-  // Calculate total width
+// ── RENDER WORD (TIME'S) ──────────────────────────────────────
+function renderTimesWord(cls, anim) {
+  var letters = ["T","I","M","E","'","S"];
   var totalW = 0;
   letters.forEach(function(ch) { totalW += (TW[ch] ? TW[ch][0].length : 2) + 1; });
   totalW = Math.max(0, totalW - 1);
-
   var startCol = Math.max(0, Math.floor((COLS - totalW) / 2));
   var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
-
   var col = startCol;
   letters.forEach(function(ch) {
     var pat = TW[ch]; if (!pat) { col += 2; return; }
@@ -1753,48 +1752,56 @@ function renderWord(word, cls, anim) {
         if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
     col += w + 1;
   });
-
   for (var r = 0; r < ROWS; r++)
     for (var c = 0; c < COLS; c++)
       setTT(r, c, target[r][c], anim);
 }
 
-function renderTimesUp() {
-  // Flip TIME'S → UP × 5, then hold until teacher ends
-  var count = 0, maxFlips = 5;
-  var showing = 'times'; // alternates between 'times' and 'up'
+// ── RENDER UP (wide bold letters) ────────────────────────────
+function renderUpWord(cls, anim) {
+  var gap = 3;
+  var uW = TW_U[0].length, pW = TW_P[0].length;
+  var total = uW + gap + pW;
+  var startCol = Math.floor((COLS - total) / 2);
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+  for (var r = 0; r < ROWS; r++) {
+    for (var c = 0; c < uW; c++)
+      if (startCol + c < COLS) target[r][startCol + c] = TW_U[r][c] ? cls : '';
+    var pStart = startCol + uW + gap;
+    for (var c = 0; c < pW; c++)
+      if (pStart + c < COLS) target[r][pStart + c] = TW_P[r][c] ? cls : '';
+  }
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, target[r][c], anim);
+}
 
-  function showNext() {
-    if (showing === 'times') {
-      clearTimerBoard(true);
-      setTimeout(function() {
-        renderWord("TIME'S", 'tan', true);
-        showing = 'up';
-        setTimeout(flip, 1600);
-      }, 200);
-    } else {
-      clearTimerBoard(true);
-      setTimeout(function() {
-        renderWord('UP', 'tan', true);
-        showing = 'times';
-        count++;
-        if (count < maxFlips) {
-          setTimeout(flip, 1600);
-        }
-        // After 5 flips, stay on UP until teacher hits End Timer
-      }, 200);
-    }
+// ── TIMES UP FLIP SEQUENCE ────────────────────────────────────
+// Flips TIME'S → UP × 5, holds on UP until teacher ends
+function renderTimesUp() {
+  var count = 0, maxFlips = 5, showing = 'times';
+
+  function showTimes() {
+    clearTimerBoard(true);
+    setTimeout(function() {
+      renderTimesWord('tan', true);
+      showing = 'up';
+      setTimeout(showUp, 1500);
+    }, 250);
   }
 
-  function flip() { showNext(); }
+  function showUp() {
+    clearTimerBoard(true);
+    setTimeout(function() {
+      renderUpWord('tan', true);
+      showing = 'times';
+      count++;
+      if (count < maxFlips) setTimeout(showTimes, 1500);
+      // After 5 flips, hold on UP until teacher hits End Timer
+    }, 250);
+  }
 
-  // Start with TIME'S
-  clearTimerBoard(true);
-  setTimeout(function() {
-    renderWord("TIME'S", 'tan', true);
-    showing = 'up';
-    setTimeout(flip, 1600);
-  }, 200);
+  showTimes();
 }
 
 // ── TIMER UI ──────────────────────────────────────────────────
@@ -1805,7 +1812,6 @@ function openTimerOverlay() {
 function closeTimerOverlay() {
   document.getElementById('timer-overlay').classList.remove('open');
 }
-
 function tcMode(m) {
   tMode = m;
   document.getElementById('tc-cd').className = 'tc-tab' + (m === 'countdown' ? ' active' : '');
@@ -1814,7 +1820,6 @@ function tcMode(m) {
   ti.style.opacity = m === 'stopwatch' ? '0.3' : '1';
   ti.style.pointerEvents = m === 'stopwatch' ? 'none' : 'all';
 }
-
 function tcSound(s) {
   tSound = s;
   try { localStorage.setItem('cw2-timer-sound', s); } catch(e) {}
@@ -1822,6 +1827,22 @@ function tcSound(s) {
     var el = document.getElementById('tc-snd-' + k);
     if (el) el.className = 'tc-snd' + (k === s ? ' active' : '');
   });
+}
+
+function _startCountdownInterval() {
+  tInterval = setInterval(function() {
+    tSecs--;
+    var warn = tSecs <= 60;
+    renderTimer(tSecs, warn, true);
+    document.getElementById('tb-label').textContent = warn ? 'LESS THAN 1 MINUTE' : 'COUNTDOWN';
+    if (tSecs <= 0) {
+      clearInterval(tInterval); tRunning = false;
+      document.getElementById('tb-pause').style.display = 'none';
+      document.getElementById('tb-label').textContent = "TIME'S UP";
+      renderTimesUp();
+      playTimerBell(tSound);
+    }
+  }, 1000);
 }
 
 function timerStart() {
@@ -1832,46 +1853,25 @@ function timerStart() {
     var s = parseInt(document.getElementById('tc-sec').value) || 0;
     tSecs = m * 60 + s;
     if (tSecs <= 0) return;
-  } else {
-    swSecs = 0; tSecs = 0;
-  }
-
+  } else { swSecs = 0; tSecs = 0; }
   tActive = true; tRunning = true; tPrevDisp = '';
-  var hint = document.getElementById('timer-hint');
-  hint.classList.add('active'); hint.textContent = '⏱ RUNNING';
-
-  // Hide honor roll ticker while timer runs
+  document.getElementById('timer-hint').classList.add('active');
+  document.getElementById('timer-hint').textContent = '⏱ RUNNING';
   var hw = document.getElementById('honor-ticker-wrap');
   hw.style.opacity = '0';
   setTimeout(function() { hw.style.display = 'none'; }, 500);
-
   var board = document.getElementById('timer-board');
   board.classList.add('visible');
   setTimeout(function() { board.classList.add('show'); }, 20);
-
   var bar = document.getElementById('timer-bar');
   bar.classList.add('visible');
   setTimeout(function() { bar.classList.add('show'); }, 20);
-
   document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
   document.getElementById('tb-pause').textContent = 'PAUSE';
   document.getElementById('tb-pause').style.display = '';
-
   if (tMode === 'countdown') {
     renderTimer(tSecs, false, true);
-    tInterval = setInterval(function() {
-      tSecs--;
-      var warn = tSecs <= 60;
-      renderTimer(tSecs, warn, true);
-      document.getElementById('tb-label').textContent = warn ? 'LESS THAN 1 MINUTE' : 'COUNTDOWN';
-      if (tSecs <= 0) {
-        clearInterval(tInterval); tRunning = false;
-        document.getElementById('tb-pause').style.display = 'none';
-        document.getElementById('tb-label').textContent = "TIME'S UP";
-        renderTimesUp();
-        playTimerBell(tSound);
-      }
-    }, 1000);
+    _startCountdownInterval();
   } else {
     renderTimer(0, false, true);
     tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
@@ -1888,22 +1888,8 @@ function timerPause() {
     tRunning = true;
     document.getElementById('tb-pause').textContent = 'PAUSE';
     document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
-    if (tMode === 'countdown') {
-      tInterval = setInterval(function() {
-        tSecs--;
-        var warn = tSecs <= 60;
-        renderTimer(tSecs, warn, true);
-        if (tSecs <= 0) {
-          clearInterval(tInterval); tRunning = false;
-          document.getElementById('tb-pause').style.display = 'none';
-          document.getElementById('tb-label').textContent = "TIME'S UP";
-          renderTimesUp();
-          playTimerBell(tSound);
-        }
-      }, 1000);
-    } else {
-      tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
-    }
+    if (tMode === 'countdown') { _startCountdownInterval(); }
+    else { tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000); }
   }
 }
 
@@ -1915,24 +1901,9 @@ function timerReset() {
   document.getElementById('tb-pause').textContent = 'PAUSE';
   document.getElementById('tb-pause').style.display = '';
   document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
-  renderTimer(tSecs, false, true);
-  tRunning = true;
-  if (tMode === 'countdown') {
-    tInterval = setInterval(function() {
-      tSecs--;
-      var warn = tSecs <= 60;
-      renderTimer(tSecs, warn, true);
-      if (tSecs <= 0) {
-        clearInterval(tInterval); tRunning = false;
-        document.getElementById('tb-pause').style.display = 'none';
-        document.getElementById('tb-label').textContent = "TIME'S UP";
-        renderTimesUp();
-        playTimerBell(tSound);
-      }
-    }, 1000);
-  } else {
-    tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
-  }
+  renderTimer(tSecs, false, true); tRunning = true;
+  if (tMode === 'countdown') { _startCountdownInterval(); }
+  else { tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000); }
 }
 
 function timerEnd() {
@@ -1948,7 +1919,6 @@ function timerEnd() {
   setTimeout(function() { bar.classList.remove('visible'); }, 400);
   document.getElementById('tb-pause').style.display = '';
   document.getElementById('tb-pause').textContent = 'PAUSE';
-  // Restore honor roll ticker
   var hw = document.getElementById('honor-ticker-wrap');
   if (document.getElementById('honor-ticker-inner').innerHTML.trim()) {
     hw.style.display = 'flex';
@@ -1956,7 +1926,6 @@ function timerEnd() {
   }
 }
 
-// Timer overlay close on outside click
 document.addEventListener('click', function(e) {
   var overlay = document.getElementById('timer-overlay');
   if (overlay && overlay.classList.contains('open') &&
@@ -1966,7 +1935,7 @@ document.addEventListener('click', function(e) {
     closeTimerOverlay();
   }
 });
- 
+
 document.addEventListener('keydown', function(e) {
   if (tActive) { if (e.key === 'Escape') timerEnd(); return; }
   if (e.key==='ArrowRight'||e.key==='Enter'||e.key===' ') { e.preventDefault(); nextMsg(); }
