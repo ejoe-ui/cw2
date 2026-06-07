@@ -85,16 +85,16 @@
   .sb-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);margin-bottom:2rem;}
   .sb-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.02em;text-transform:uppercase;}
   .sb-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text);}
-  .screens-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
-  .screen-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:border-color 0.15s;}
-  .screen-card:hover{border-color:var(--border2);}
-  .screen-card.disabled{opacity:0.5;}
-  .screen-num{font-size:12px;color:var(--text-3);font-weight:600;width:20px;text-align:center;flex-shrink:0;}
-  .screen-info{flex:1;min-width:0;}
-  .screen-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .screen-desc{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .screen-meta{font-size:11px;color:var(--text-3);flex-shrink:0;font-weight:500;}
-  .screen-actions{display:flex;gap:6px;flex-shrink:0;}
+  .boards-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
+  .board-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:border-color 0.15s;}
+  .board-card:hover{border-color:var(--border2);}
+  .board-card.disabled{opacity:0.5;}
+  .board-num{font-size:12px;color:var(--text-3);font-weight:600;width:20px;text-align:center;flex-shrink:0;}
+  .board-info{flex:1;min-width:0;}
+  .board-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .board-desc{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .board-meta{font-size:11px;color:var(--text-3);flex-shrink:0;font-weight:500;}
+  .board-actions{display:flex;gap:6px;flex-shrink:0;}
   .status-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
   .status-badge.on{background:#dcfce7;color:#15803d;}
   .status-badge.off{background:var(--surface2);color:var(--text-3);border:1px solid var(--border);}
@@ -129,7 +129,7 @@
   .screen-preview-board{display:flex;flex-direction:column;gap:1px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:0.06em;}
   .empty{text-align:center;padding:2rem 1rem;color:var(--text-3);font-size:13px;}
   .global-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent-text);flex-shrink:0;}
-  .screen-card.global-card{border-left:3px solid var(--accent);}
+  .board-card.global-card{border-left:3px solid var(--accent);}
   .obj-tab{background:var(--btn-secondary-bg);border:1px solid var(--btn-secondary-border);color:var(--btn-secondary-text);font-family:inherit;font-size:12px;font-weight:600;padding:5px 14px;border-radius:6px;cursor:pointer;transition:all 0.15s;letter-spacing:0.05em;}
   .obj-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
   .obj-tab.set{border-color:var(--accent);color:var(--accent);}
@@ -236,7 +236,7 @@
     </div>
     <div class="field-group">
       <label class="field-label" for="pinRoom">Room Number</label>
-      <input class="field-input" id="pinRoom" type="text" placeholder="e.g. 27" maxlength="4"
+      <input class="field-input" id="pinRoom" type="text" placeholder="e.g. 27" maxlength="5"
         onkeydown="if(event.key==='Enter')document.getElementById('pinInput').focus()">
     </div>
     <div class="field-group">
@@ -456,16 +456,16 @@
     <div class="bday-list-scroll" id="bday-list"><div class="bday-empty">Loading...</div></div>
   </div>
 
-  <!-- SCREENS -->
+  <!-- BOARDS -->
   <div class="section">
     <div class="section-head">
       <div>
-        <div class="section-title">Screens</div>
+        <div class="section-title">Boards</div>
         <div style="font-size:10px;color:var(--text-3);margin-top:1px;font-weight:400;">Permanent · stays in rotation until you delete it</div>
       </div>
-      <button class="btn accent" onclick="openNewScreen()">+ Add Screen</button>
+      <button class="btn accent" onclick="openNewBoard()">+ Add Board</button>
     </div>
-    <div class="screens-list" id="screensList"><div class="empty">Loading...</div></div>
+    <div class="boards-list" id="boardsList"><div class="empty">Loading...</div></div>
   </div>
 
   <!-- ROOM INFO -->
@@ -475,7 +475,7 @@
       <div class="setting-card"><div class="setting-label">Room</div><div class="setting-value" id="settingRoom">—</div></div>
       <div class="setting-card"><div class="setting-label">Teacher</div><div class="setting-value" id="settingTeacher" style="font-size:14px;padding-top:3px">—</div></div>
       <div class="setting-card"><div class="setting-label">Badge</div><div class="setting-value" id="settingBadge" style="font-size:14px;padding-top:3px">—</div></div>
-      <div class="setting-card"><div class="setting-label">Active</div><div class="setting-value" id="settingScreenCount">—</div></div>
+      <div class="setting-card"><div class="setting-label">Active</div><div class="setting-value" id="settingBoardCount">—</div></div>
       <div class="setting-card" style="cursor:pointer" onclick="toggleHonorRoll()" title="Toggle honor roll ticker">
         <div class="setting-label">Honor Roll</div>
         <div class="setting-value" id="settingHonorRoll" style="font-size:14px;padding-top:3px">—</div>
@@ -483,16 +483,16 @@
     </div>
   </div>
 
-  <!-- GLOBAL SCREENS -->
-  <div class="section" id="globalScreensSection">
+  <!-- GLOBAL BOARDS -->
+  <div class="section" id="globalBoardsSection">
     <div class="section-head">
       <div style="display:flex;align-items:center;gap:8px;">
-        <div class="section-title">Global Screens</div>
+        <div class="section-title">Global Boards</div>
         <span style="font-size:10px;font-weight:500;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">school-wide · read only</span>
       </div>
-      <button class="btn accent" id="addGlobalBtn" onclick="openNewGlobalScreen()" style="display:none">+ Add Global Screen</button>
+      <button class="btn accent" id="addGlobalBtn" onclick="openNewGlobalBoard()" style="display:none">+ Add Global Board</button>
     </div>
-    <div id="globalScreensList" style="max-height:280px;overflow-y:auto;"><div class="empty">Loading...</div></div>
+    <div id="globalBoardsList" style="max-height:280px;overflow-y:auto;"><div class="empty">Loading...</div></div>
   </div>
 
   <!-- DISPLAY URL -->
@@ -505,9 +505,9 @@
     </div>
   </div>
 
-  <!-- CHANGE PIN -->
+  <!-- CHANGE TEACHER LOGIN PIN -->
   <div class="section">
-    <div class="section-head"><div class="section-title">Change PIN</div></div>
+    <div class="section-head"><div class="section-title">Change Teacher Login PIN</div></div>
     <div class="pin-change-row">
       <div class="field-group">
         <label class="field-label">New PIN (4–8 digits)</label>
@@ -552,12 +552,12 @@
 
 </div><!-- /#main -->
 
-<!-- SCREEN MODAL -->
+<!-- BOARD MODAL -->
 <div id="modal-overlay">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">Add Screen</div>
+    <div class="modal-title" id="modalTitle">Add Board</div>
     <div class="field-group">
-      <label class="field-label">Screen Content <span style="font-weight:400;color:var(--text-3)">(8 rows · 28 chars max · permanent until deleted)</span></label>
+      <label class="field-label">Board Content <span style="font-weight:400;color:var(--text-3)">(8 rows · 28 chars max · permanent until deleted)</span></label>
       <div class="lines-editor" id="linesEditor"></div>
       <div id="screen-preview-wrap" class="screen-preview" style="display:none">
         <div class="screen-preview-label">Board Preview</div>
@@ -583,7 +583,7 @@
     </div>
     <div class="modal-actions">
       <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn accent" onclick="saveScreen()">Save Screen</button>
+      <button class="btn accent" onclick="saveScreen()">Save Board</button>
     </div>
   </div>
 </div>
@@ -593,7 +593,7 @@
 const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
-var ROOM = '', classroom = null, screens = [], editingId = null, editingGlobalId = null, isMasterSession = false, globalScreens = [];
+var ROOM = '', classroom = null, boards = [], editingId = null, editingGlobalId = null, isMasterSession = false, globalBoards = [];
 
 var darkMode = localStorage.getItem('cw2-admin-theme') === 'dark';
 function applyTheme() {
@@ -691,8 +691,8 @@ async function unlockAdmin() {
   var hrRows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=show_honor_roll');
   var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
   document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
-  await loadScreens();
-  await loadGlobalScreens();
+  await loadBoards();
+  await loadGlobalBoards();
   await loadObjectives();
   await bdayLoadList();
   await msgLoadList();
@@ -701,12 +701,12 @@ async function unlockAdmin() {
   document.getElementById('roomMgmtSection').style.display = isMasterSession ? 'block' : 'none';
   document.getElementById('addGlobalBtn').style.display = isMasterSession ? 'inline-flex' : 'none';
   if (classroom && classroom.config && classroom.config.pin_is_default) {
-    setTimeout(function() { toast('Please set a new PIN — scroll down to Change PIN'); }, 600);
+    setTimeout(function() { toast('Please set a new PIN — scroll down to Change Teacher Login PIN'); }, 600);
   }
 }
 
 function logout() {
-  ROOM = ''; classroom = null; screens = []; globalScreens = []; editingId = null; editingGlobalId = null; isMasterSession = false;
+  ROOM = ''; classroom = null; boards = []; globalBoards = []; editingId = null; editingGlobalId = null; isMasterSession = false;
   bdayData = []; bdayExisting = [];
   document.getElementById('pin-screen').style.display = 'flex';
   document.getElementById('main').style.display = 'none';
@@ -727,44 +727,44 @@ function copyDisplayUrl() {
 }
 function openDisplay() { window.open('/display.html?room=' + ROOM, '_blank'); }
 
-async function loadScreens() {
+async function loadBoards() {
   var rows = await sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc');
-  screens = rows || [];
-  renderScreens();
-  var active = screens.filter(function(s) { return s.enabled; }).length;
-  document.getElementById('settingScreenCount').textContent = active + ' / ' + screens.length;
+  boards = rows || [];
+  renderBoards();
+  var active = boards.filter(function(s) { return s.enabled; }).length;
+  document.getElementById('settingBoardCount').textContent = active + ' / ' + screens.length;
 }
 
-function renderScreens() {
-  var list = document.getElementById('screensList');
-  if (!screens.length) { list.innerHTML = '<div class="empty">No screens yet — click Add Screen to get started.</div>'; return; }
-  list.innerHTML = screens.map(function(s, i) {
+function renderBoards() {
+  var list = document.getElementById('boardsList');
+  if (!boards.length) { list.innerHTML = '<div class="empty">No boards yet — click Add Board to get started.</div>'; return; }
+  list.innerHTML = boards.map(function(s, i) {
     var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
     var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
     var rest  = lines.filter(function(l) { return l && l.trim(); }).slice(1, 3).join(' · ');
     var on = s.enabled;
-    return '<div class="screen-card ' + (on ? '' : 'disabled') + '">' +
-      '<div class="screen-num">' + (s.sort_order || i+1) + '</div>' +
-      '<div class="screen-info"><div class="screen-title">' + line1 + '</div>' +
-      (rest ? '<div class="screen-desc">' + rest + '</div>' : '') + '</div>' +
-      '<div class="screen-meta">' + (s.speed || 10) + 's</div>' +
+    return '<div class="board-card ' + (on ? '' : 'disabled') + '">' +
+      '<div class="board-num">' + (s.sort_order || i+1) + '</div>' +
+      '<div class="board-info"><div class="board-title">' + line1 + '</div>' +
+      (rest ? '<div class="board-desc">' + rest + '</div>' : '') + '</div>' +
+      '<div class="board-meta">' + (s.speed || 10) + 's</div>' +
       '<span class="perm-badge">Permanent</span>' +
       '<span class="status-badge ' + (on ? 'on' : 'off') + '">' + (on ? '● On' : '○ Off') + '</span>' +
-      '<div class="screen-actions">' +
-      '<button class="btn" onclick="toggleScreen(\'' + s.id + '\',' + on + ')">' + (on ? 'Disable' : 'Enable') + '</button>' +
-      '<button class="btn" onclick="openEditScreen(\'' + s.id + '\')">Edit</button>' +
-      '<button class="btn danger" onclick="deleteScreen(\'' + s.id + '\')">Delete</button>' +
+      '<div class="board-actions">' +
+      '<button class="btn" onclick="toggleBoard(\'' + s.id + '\',' + on + ')">' + (on ? 'Disable' : 'Enable') + '</button>' +
+      '<button class="btn" onclick="openEditBoard(\'' + s.id + '\')">Edit</button>' +
+      '<button class="btn danger" onclick="deleteBoard(\'' + s.id + '\')">Delete</button>' +
       '</div></div>';
   }).join('');
 }
 
-async function toggleScreen(id, cur) {
+async function toggleBoard(id, cur) {
   await sbUpdate('cw2_screens', id, { enabled: !cur });
-  await loadScreens(); toast(cur ? 'Screen disabled' : 'Screen enabled');
+  await loadBoards(); toast(cur ? 'Board disabled' : 'Board enabled');
 }
-async function deleteScreen(id) {
+async function deleteBoard(id) {
   if (!confirm('Delete this screen? This cannot be undone.')) return;
-  await sbDelete('cw2_screens', id); await loadScreens(); toast('Screen deleted');
+  await sbDelete('cw2_screens', id); await loadBoards(); toast('Board deleted');
 }
 
 function buildLinesEditor(values) {
@@ -821,20 +821,20 @@ function getLines() {
   return out;
 }
 
-function openNewScreen() {
+function openNewBoard() {
   editingId = null; document._savingGlobal = false;
-  document.getElementById('modalTitle').textContent = 'Add Screen';
+  document.getElementById('modalTitle').textContent = 'Add Board';
   buildLinesEditor([]);
   document.getElementById('screenSpeed').value = 10;
-  document.getElementById('screenOrder').value = screens.length + 1;
+  document.getElementById('screenOrder').value = boards.length + 1;
   document.getElementById('screenEnabled').value = 'true';
   document.getElementById('modal-overlay').classList.add('open');
 }
-function openEditScreen(id) {
-  var s = screens.find(function(x) { return x.id === id; });
+function openEditBoard(id) {
+  var s = boards.find(function(x) { return x.id === id; });
   if (!s) return;
   editingId = id;
-  document.getElementById('modalTitle').textContent = 'Edit Screen';
+  document.getElementById('modalTitle').textContent = 'Edit Board';
   var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
   buildLinesEditor(lines);
   document.getElementById('screenSpeed').value = s.speed || 10;
@@ -855,15 +855,29 @@ async function saveScreen() {
   if (!lines.some(function(l) { return l.trim(); })) { toast('Add at least one line of text', true); return; }
   var isGlobal = document._savingGlobal || false;
   var roomTarget = isGlobal ? 'global' : ROOM;
-  var data = { room: roomTarget, lines: JSON.stringify(lines), speed: speed, sort_order: order, enabled: enabled };
+  var data = { room: roomTarget, lines: lines, speed: speed, sort_order: order, enabled: enabled };
   if (isGlobal) {
-    if (editingGlobalId) { await sbUpdate('cw2_screens', editingGlobalId, data); toast('Global screen updated'); }
-    else { await sbInsert('cw2_screens', data); toast('Global screen added'); }
-    closeModal(); await loadGlobalScreens();
+    if (editingGlobalId) {
+      var r = await sbUpdate('cw2_screens', editingGlobalId, data);
+      if (!r) { toast('Update failed — check console', true); return; }
+      toast('Global board updated');
+    } else {
+      var r = await sbInsert('cw2_screens', data);
+      if (!r) { toast('Save failed — check console', true); return; }
+      toast('Global board added');
+    }
+    closeModal(); await loadGlobalBoards();
   } else {
-    if (editingId) { await sbUpdate('cw2_screens', editingId, data); toast('Screen updated'); }
-    else { await sbInsert('cw2_screens', data); toast('Screen added'); }
-    closeModal(); await loadScreens();
+    if (editingId) {
+      var r = await sbUpdate('cw2_screens', editingId, data);
+      if (!r) { toast('Update failed — check console', true); return; }
+      toast('Board updated');
+    } else {
+      var r = await sbInsert('cw2_screens', data);
+      if (!r) { toast('Save failed — RLS may be blocking inserts', true); return; }
+      toast('Board added');
+    }
+    closeModal(); await loadBoards();
   }
 }
 
@@ -919,48 +933,48 @@ async function resetRoomPin() {
   toast('Room ' + roomNum + ' PIN reset — new PIN: ' + defaultPin);
 }
 
-async function loadGlobalScreens() {
+async function loadGlobalBoards() {
   var rows = await sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc');
-  globalScreens = rows || [];
-  renderGlobalScreens();
+  globalBoards = rows || [];
+  renderGlobalBoards();
 }
 
-function renderGlobalScreens() {
-  var list = document.getElementById('globalScreensList');
-  if (!globalScreens.length) { list.innerHTML = '<div class="empty">No global screens yet.</div>'; return; }
-  list.innerHTML = globalScreens.map(function(s, i) {
+function renderGlobalBoards() {
+  var list = document.getElementById('globalBoardsList');
+  if (!globalBoards.length) { list.innerHTML = '<div class="empty">No global boards yet.</div>'; return; }
+  list.innerHTML = globalBoards.map(function(s, i) {
     var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
     var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
     var rest  = lines.filter(function(l) { return l && l.trim(); }).slice(1, 3).join(' · ');
     var on = s.enabled;
     var actions = isMasterSession
-      ? '<button class="btn" onclick="openEditGlobalScreen(\'' + s.id + '\')">Edit</button><button class="btn danger" onclick="deleteGlobalScreen(\'' + s.id + '\')">Delete</button>'
+      ? '<button class="btn" onclick="openEditGlobalBoard(\'' + s.id + '\')">Edit</button><button class="btn danger" onclick="deleteGlobalBoard(\'' + s.id + '\')">Delete</button>'
       : '<span style="font-size:11px;color:var(--text-3);padding:0 4px;">Read only</span>';
-    return '<div class="screen-card global-card ' + (on ? '' : 'disabled') + '">' +
-      '<div class="screen-num">' + (s.sort_order || i+1) + '</div>' +
-      '<div class="screen-info"><div class="screen-title">' + line1 + '</div>' +
-      (rest ? '<div class="screen-desc">' + rest + '</div>' : '') + '</div>' +
-      '<div class="screen-meta">' + (s.speed || 12) + 's</div>' +
+    return '<div class="board-card global-card ' + (on ? '' : 'disabled') + '">' +
+      '<div class="board-num">' + (s.sort_order || i+1) + '</div>' +
+      '<div class="board-info"><div class="board-title">' + line1 + '</div>' +
+      (rest ? '<div class="board-desc">' + rest + '</div>' : '') + '</div>' +
+      '<div class="board-meta">' + (s.speed || 12) + 's</div>' +
       '<span class="global-badge">Global</span>' +
       '<span class="status-badge ' + (on ? 'on' : 'off') + '">' + (on ? '● On' : '○ Off') + '</span>' +
-      '<div class="screen-actions">' + actions + '</div></div>';
+      '<div class="board-actions">' + actions + '</div></div>';
   }).join('');
 }
 
-function openNewGlobalScreen() {
+function openNewGlobalBoard() {
   editingGlobalId = null; document._savingGlobal = true;
-  document.getElementById('modalTitle').textContent = 'Add Global Screen';
+  document.getElementById('modalTitle').textContent = 'Add Global Board';
   buildLinesEditor([]);
   document.getElementById('screenSpeed').value = 12;
   document.getElementById('screenOrder').value = globalScreens.length + 10;
   document.getElementById('screenEnabled').value = 'true';
   document.getElementById('modal-overlay').classList.add('open');
 }
-function openEditGlobalScreen(id) {
-  var s = globalScreens.find(function(x) { return x.id === id; });
+function openEditGlobalBoard(id) {
+  var s = globalBoards.find(function(x) { return x.id === id; });
   if (!s) return;
   editingGlobalId = id; document._savingGlobal = true;
-  document.getElementById('modalTitle').textContent = 'Edit Global Screen';
+  document.getElementById('modalTitle').textContent = 'Edit Global Board';
   var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
   buildLinesEditor(lines);
   document.getElementById('screenSpeed').value = s.speed || 12;
@@ -968,9 +982,9 @@ function openEditGlobalScreen(id) {
   document.getElementById('screenEnabled').value = s.enabled ? 'true' : 'false';
   document.getElementById('modal-overlay').classList.add('open');
 }
-async function deleteGlobalScreen(id) {
+async function deleteGlobalBoard(id) {
   if (!confirm('Delete this global screen? It will be removed from all rooms.')) return;
-  await sbDelete('cw2_screens', id); await loadGlobalScreens(); toast('Global screen deleted');
+  await sbDelete('cw2_screens', id); await loadGlobalBoards(); toast('Global screen deleted');
 }
 
 async function toggleHonorRoll() {
