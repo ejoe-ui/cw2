@@ -887,15 +887,23 @@ async function loadScreens() {
     return enabledCats[cat] !== false;
   });
 
-  // Pick 2 random globals per rotation cycle — fresh each sync
+  // Pick 1 random per enabled category — guarantees variety each rotation
   var picks = [];
-  if (eligibleGlobals.length) {
-    var shuffled = eligibleGlobals.slice();
-    for (var i = shuffled.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
-    }
-    picks = shuffled.slice(0, 2);
+  var byCategory = {};
+  eligibleGlobals.forEach(function(r) {
+    var cat = r.category || 'cowboy_code';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(r);
+  });
+  Object.keys(byCategory).forEach(function(cat) {
+    var pool = byCategory[cat];
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    picks.push(pick);
+  });
+  // Shuffle picks so category order varies
+  for (var pi = picks.length - 1; pi > 0; pi--) {
+    var pj = Math.floor(Math.random() * (pi + 1));
+    var pt = picks[pi]; picks[pi] = picks[pj]; picks[pj] = pt;
   }
 
   // Inject: one global after position 2, one at the end
@@ -944,9 +952,13 @@ function buildCalendarScreen() {
   var dayNum = now.getDate();
 
   if (!sched) {
-    lines.push('NO SCHOOL TODAY');
+    // Row 1: date line
     lines.push(dayName + '  ' + mon + '  ' + dayNum);
+    // Row 2: NO SCHOOL TODAY
+    lines.push('NO SCHOOL TODAY');
+    // Row 3: blank
     lines.push('');
+    // Find next school day
     var next = new Date(now);
     for (var i = 1; i <= 14; i++) {
       next.setDate(next.getDate() + 1);
@@ -955,17 +967,22 @@ function buildCalendarScreen() {
       if (ndow !== 0 && ndow !== 6 && !NO_SCHOOL.includes(nd)) {
         var nextDays = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
         var nextMons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        // Row 4: NEXT SCHOOL DAY
         lines.push('NEXT SCHOOL DAY');
+        // Row 5: date
         lines.push(nextDays[ndow] + '  ' + nextMons[next.getMonth()] + '  ' + next.getDate());
+        // Row 6: schedule type
         var nextSched = getScheduleForDate(next);
         if (nextSched === 'earlyRelease') lines.push('EARLY RELEASE');
         else if (nextSched === 'blockWed' || nextSched === 'blockThu') lines.push('BLOCK DAY');
         else if (nextSched === 'minimum') lines.push('MINIMUM DAY');
         else if (nextSched === 'activity') lines.push('ACTIVITY DAY');
-        else lines.push('REGULAR BELL');
+        else lines.push('');
         break;
       }
     }
+    // Row 7: blank before announcements
+    lines.push('');
   } else {
     lines.push('TODAY  ' + dayName + '  ' + mon + '  ' + dayNum);
     var schedName = getScheduleForDate(now);
@@ -976,11 +993,14 @@ function buildCalendarScreen() {
     else if (schedName === 'activity')     lines.push('ACTIVITY DAY');
     else if (schedName === 'codeDay')      lines.push('CODE DAY');
     else if (schedName === 'foggy')        lines.push('LATE ARRIVAL DAY');
-    else                                   lines.push('REGULAR DAY');
+    else                                   lines.push('');
     lines.push('');
   }
 
-  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds; }).slice(0, ROWS - lines.length);
+  // Upcoming events — max 2 to avoid cramming
+  var remaining = ROWS - lines.length;
+  var maxEvents = Math.min(2, remaining);
+  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds; }).slice(0, maxEvents);
   upcoming.forEach(function(e) {
     var daysAway = daysBetween(e.start_date, ds);
     var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : daysAway + ' DAYS';
@@ -1182,8 +1202,10 @@ function buildWeatherScreen() {
     }
   }
   while (lines.length < ROWS) lines.push('');
-  // Top 5 lines left-aligned (stats), bottom 3 centered (forecast)
-  var alignLines = lines.map(function(_, i) { return i < 5 ? 'left' : 'center'; });
+  // Row 0 = title (center), rows 1-4 = stats (left), rows 5-7 = forecast (center)
+  var alignLines = lines.map(function(_, i) {
+    return (i === 0 || i >= 5) ? 'center' : 'left';
+  });
   return { lines: lines, speed: 18, id: 'weather', align: 'left', alignLines: alignLines, sort_order: 0.8 };
 }
 
