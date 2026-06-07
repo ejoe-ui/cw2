@@ -807,7 +807,19 @@ async function loadScreens() {
       sort_order: pref ? pref.sort_order : r.sort_order
     });
   });
-
+// Hide bell schedule screens on weekends and after school hours
+  var now = new Date();
+  var dow = now.getDay();
+  var nm = nowMins();
+  var isWeekend = (dow === 0 || dow === 6);
+  var isAfterSchool = (nm > toMins('15:15'));
+  var isBeforeSchool = (nm < toMins('07:45'));
+  if (isWeekend || isAfterSchool || isBeforeSchool) {
+    mapped = mapped.filter(function(s) {
+      return s.sort_order !== 2 && s.sort_order !== 3;
+    });
+  }
+ 
   // Sort local screens by sort_order
   mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
 
