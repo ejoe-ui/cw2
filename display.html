@@ -305,6 +305,58 @@
     letter-spacing: 0.15em; text-transform: uppercase;
     color: #222; z-index: 5;
   }
+ /* ── TIMER ─────────────────────────────────────────────── */
+  #timer-hint { position: fixed; bottom: 12px; left: 16px; font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: #2a2a2a; z-index: 59; cursor: pointer; transition: color 0.2s, opacity 0.3s; opacity: 0; }
+  body:hover #timer-hint { opacity: 1; color: #2e2e2e; }
+  #timer-hint:hover { color: var(--green) !important; }
+  #timer-hint.active { color: var(--green) !important; opacity: 1 !important; }
+  #timer-trigger { position: fixed; bottom: 0; left: 0; width: 80px; height: 80px; z-index: 60; cursor: pointer; }
+
+  #timer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  #timer-overlay.open { opacity: 1; pointer-events: all; }
+  #timer-card { background: #1e1e1e; border: 1px solid var(--green); border-radius: 12px; padding: 24px 28px; min-width: 320px; max-width: 400px; display: flex; flex-direction: column; gap: 16px; transform: translateY(12px); transition: transform 0.25s; }
+  #timer-overlay.open #timer-card { transform: translateY(0); }
+  .tc-title { font-family: var(--font-retro); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--green); display: flex; justify-content: space-between; align-items: center; }
+  .tc-close { color: #888; cursor: pointer; font-size: 16px; line-height: 1; transition: color 0.2s; }
+  .tc-close:hover { color: var(--tan); }
+  .tc-tabs { display: flex; gap: 6px; }
+  .tc-tab { flex: 1; padding: 6px; text-align: center; border-radius: 4px; border: 1px solid #555; background: #2a2a2a; color: #aaa; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; }
+  .tc-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .tc-time { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .tc-time label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; }
+  .tc-input { width: 60px; background: #2a2a2a; border: 1px solid #555; border-radius: 4px; color: var(--green); font-size: 22px; font-weight: 700; text-align: center; padding: 6px 4px; font-family: var(--font-retro); outline: none; transition: border-color 0.2s; }
+  .tc-input:focus { border-color: var(--green); }
+  .tc-sep { color: var(--green); font-size: 24px; font-weight: 700; font-family: var(--font-retro); }
+  .tc-sound { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tc-sound-label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; flex-shrink: 0; }
+  .tc-snd { flex: 1; min-width: 80px; padding: 5px 6px; border-radius: 3px; border: 1px solid #555; background: #2a2a2a; color: #aaa; font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center; }
+  .tc-snd.active { border-color: var(--green); color: var(--green); background: #0d1f18; }
+  .tc-btns { display: flex; gap: 8px; }
+  .tc-btn { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #555; background: #2a2a2a; color: #bbb; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center; }
+  .tc-btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .tc-btn.primary:hover { opacity: 0.85; }
+  .tc-btn:hover:not(.primary) { border-color: #444; color: #666; }
+
+  #timer-board { position: fixed; inset: 0; top: calc(10vh + 3px); z-index: 8; display: none; pointer-events: none; padding: 1.2vh 1.5vw 40px; gap: 0.5vh; flex-direction: column; background: var(--board-bg); opacity: 0; transition: opacity 0.4s; }
+  #timer-board.visible { display: flex; }
+  #timer-board.show { opacity: 1; }
+  .tt-row { flex: 1; display: flex; gap: 0.3vw; align-items: stretch; }
+  .tt { flex: 1; border-radius: 4px; background: var(--tile-bg); border: 1px solid var(--tile-border); transition: background 0.18s, border-color 0.18s; }
+  .tt.on   { background: var(--green); border-color: var(--green); }
+  .tt.warn { background: #cc4400;      border-color: #cc4400; }
+  .tt.tan  { background: var(--tan);   border-color: var(--tan); }
+  @keyframes ttFlip { 0%{transform:scaleY(1)} 40%{transform:scaleY(0);opacity:.3} 100%{transform:scaleY(1)} }
+  .tt.flip { animation: ttFlip 0.32s ease forwards; }
+
+  #timer-bar { position: fixed; bottom: 4px; left: 0; right: 0; height: 32px; background: rgba(0,0,0,0.92); border-top: 1px solid var(--green-dim); z-index: 9; display: none; align-items: center; padding: 0 16px; gap: 16px; opacity: 0; transition: opacity 0.4s; }
+  #timer-bar.visible { display: flex; }
+  #timer-bar.show { opacity: 1; }
+  .tb-label { font-family: var(--font-retro); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); }
+  .tb-btns { display: flex; gap: 6px; }
+  .tb-btn { padding: 4px 12px; border-radius: 3px; border: 1px solid #2a2a2a; background: #0a0a0a; color: #555; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; }
+  .tb-btn:hover { border-color: var(--green); color: var(--green); }
+  .tb-btn.danger { border-color: #4a1a1a; color: #664444; }
+  .tb-btn.danger:hover { border-color: #cc4400; color: #cc4400; }
 </style>
 </head>
 <body>
@@ -371,7 +423,48 @@
 <div id="indicator-bar"></div>
 <div id="version-badge">CW 2.0</div>
 <div id="sound-prompt" onclick="enableSound(this)">▶ Click to enable flip sound</div>
+<div id="timer-hint" onclick="openTimerOverlay()">⏱ TIMER</div>
+<div id="timer-trigger" onclick="openTimerOverlay()"></div>
+<div id="timer-board"></div>
+<div id="timer-bar">
+  <div class="tb-label" id="tb-label">COUNTDOWN</div>
+  <div class="tb-btns">
+    <div class="tb-btn" id="tb-pause" onclick="timerPause()">PAUSE</div>
+    <div class="tb-btn" id="tb-reset" onclick="timerReset()">RESET</div>
+    <div class="tb-btn danger" onclick="timerEnd()">END TIMER</div>
+  </div>
+</div>
 
+<div id="timer-overlay">
+  <div id="timer-card">
+    <div class="tc-title">
+      <span>Classroom Timer</span>
+      <span class="tc-close" onclick="closeTimerOverlay()">✕</span>
+    </div>
+    <div class="tc-tabs">
+      <div class="tc-tab active" id="tc-cd" onclick="tcMode('countdown')">Countdown</div>
+      <div class="tc-tab" id="tc-sw" onclick="tcMode('stopwatch')">Stopwatch</div>
+    </div>
+    <div class="tc-time" id="tc-time">
+      <label>Min</label>
+      <input class="tc-input" type="number" id="tc-min" value="12" min="0" max="99">
+      <div class="tc-sep">:</div>
+      <input class="tc-input" type="number" id="tc-sec" value="00" min="0" max="59">
+      <label>Sec</label>
+    </div>
+    <div class="tc-sound">
+      <span class="tc-sound-label">Sound:</span>
+      <div class="tc-snd active" id="tc-snd-westminster" onclick="tcSound('westminster')">🔔 Westminster</div>
+      <div class="tc-snd" id="tc-snd-ce" onclick="tcSound('ce')">🛸 Close Encounters</div>
+      <div class="tc-snd" id="tc-snd-off" onclick="tcSound('off')">🔇 Silent</div>
+    </div>
+    <div class="tc-btns">
+      <div class="tc-btn primary" onclick="timerStart()">Start</div>
+      <div class="tc-btn" onclick="closeTimerOverlay()">Cancel</div>
+    </div>
+  </div>
+</div>
+ 
 <div id="dial-hint" onclick="toggleDial()">◎ MODE</div>
 <div id="dial-trigger" onclick="toggleDial()"></div>
 <div id="dial-panel">
@@ -1495,8 +1588,387 @@ document.addEventListener('click', function(e) {
     document.getElementById('dial-panel').classList.remove('open');
   }
 });
+// ── TIMER DIGIT MAPS ─────────────────────────────────────────
+var TD = {
+  '0':[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
+  '1':[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1],[0,0,0]],
+  '2':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,0]],
+  '3':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
+  '4':[[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,0]],
+  '5':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
+  '6':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
+  '7':[[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,0,0]],
+  '8':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,0]],
+  '9':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,0]],
+  ':':[[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,0,0]]
+};
 
+// Word bitmaps for TIME'S UP — 8 rows tall, variable width
+// Each letter pattern is 8 rows × N cols
+var TW = {
+  'T':[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
+  'I':[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  'M':[[1,0,0,0,1],[1,1,0,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+  'E':[[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,1,1,1],[0,0,0,0]],
+  "'":[[0,1],[0,1],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]],
+  'S':[[0,1,1,1],[1,0,0,0],[1,0,0,0],[0,1,1,0],[0,0,0,1],[0,0,0,1],[1,1,1,0],[0,0,0,0]],
+  'U':[[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[0,1,0]],
+  'P':[[1,1,1,0],[1,0,0,1],[1,0,0,1],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[0,0,0,0]],
+  ' ':[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+};
+
+// ── TIMER STATE ───────────────────────────────────────────────
+var tMode = 'countdown', tSound = 'westminster';
+var tRunning = false, tSecs = 0, tInterval = null, swSecs = 0;
+var ttiles = [], tPrevDisp = '', tActive = false;
+try { var _ts = localStorage.getItem('cw2-timer-sound'); if (_ts && ['westminster','ce','off'].includes(_ts)) tSound = _ts; } catch(e) {}
+
+// ── BELL SOUNDS ───────────────────────────────────────────────
+function bellNote(c, freq, t, dur, vol) {
+  vol = vol || 0.42;
+  var osc = c.createOscillator(), gain = c.createGain();
+  osc.type = 'sine'; osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(vol, t + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.35);
+  osc.connect(gain); gain.connect(c.destination); osc.start(t); osc.stop(t + dur + 0.4);
+  var osc2 = c.createOscillator(), g2 = c.createGain();
+  osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 2, t);
+  g2.gain.setValueAtTime(0, t);
+  g2.gain.linearRampToValueAtTime(vol * 0.22, t + 0.012);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.45);
+  osc2.connect(g2); g2.connect(c.destination); osc2.start(t); osc2.stop(t + dur * 0.5);
+}
+
+var _E=659.25, _C=523.25, _D=587.33, _G=392.00, _ND=0.42, _LG=0.75, _GP=0.07;
+var BELL_SEQS = {
+  westminster: [{f:_E,d:_ND},{f:_D,d:_ND},{f:_C,d:_ND},{f:_G,d:_LG},{f:_G,d:_ND},{f:_D,d:_ND},{f:_E,d:_ND},{f:_C,d:_LG}],
+  ce:          [{f:587.33,d:0.42},{f:659.25,d:0.42},{f:523.25,d:0.42},{f:261.63,d:0.52},{f:392.00,d:0.85}]
+};
+
+function playTimerBell(key) {
+  if (key === 'off') return;
+  var c = audioCtx;
+  if (!c) { try { c = new (window.AudioContext || window.webkitAudioContext)(); audioCtx = c; } catch(e) { return; } }
+  if (c.state === 'suspended') c.resume();
+  var seq = BELL_SEQS[key] || BELL_SEQS.westminster;
+  var t = c.currentTime + 0.08;
+  seq.forEach(function(note, i) {
+    if (i > 0) t += _GP;
+    if (key === 'westminster' && i === 4) t += 0.35;
+    bellNote(c, note.f, t, note.d);
+    t += note.d;
+  });
+}
+
+// ── TIMER BOARD ───────────────────────────────────────────────
+function buildTimerBoard() {
+  var board = document.getElementById('timer-board');
+  board.innerHTML = ''; ttiles = []; tPrevDisp = '';
+  for (var r = 0; r < ROWS; r++) {
+    var row = document.createElement('div');
+    row.className = 'tt-row';
+    var rt = [];
+    for (var c = 0; c < COLS; c++) {
+      var t = document.createElement('div');
+      t.className = 'tt'; t.dataset.state = '';
+      row.appendChild(t); rt.push(t);
+    }
+    board.appendChild(row); ttiles.push(rt);
+  }
+}
+
+function setTT(r, c, cls, anim) {
+  if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+  var t = ttiles[r][c];
+  var prev = t.dataset.state || '';
+  if (prev === cls) return;
+  t.className = 'tt' + (cls ? ' ' + cls : '');
+  t.dataset.state = cls;
+  if (anim) { t.classList.add('flip'); setTimeout(function() { t.classList.remove('flip'); }, 320); }
+}
+
+function clearTimerBoard(anim) {
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, '', anim);
+}
+
+function renderTimer(secs, warn, anim) {
+  var m = Math.floor(secs / 60), s = secs % 60;
+  var mStr = String(m).padStart(2, '0');
+  var sStr = String(s).padStart(2, '0');
+  var cacheKey = mStr + ':' + sStr + (warn ? 'w' : 'g');
+  if (cacheKey === tPrevDisp && !anim) return;
+  tPrevDisp = cacheKey;
+
+  var cls = warn ? 'warn' : 'on';
+  var chars, positions;
+
+  if (m === 0) {
+    chars = [sStr[0], sStr[1]];
+    positions = [11, 15];
+  } else if (mStr[0] === '0') {
+    chars = [mStr[1], ':', sStr[0], sStr[1]];
+    positions = [5, 9, 13, 17];
+  } else {
+    chars = [mStr[0], mStr[1], ':', sStr[0], sStr[1]];
+    positions = [1, 5, 9, 13, 17];
+  }
+
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+  chars.forEach(function(ch, i) {
+    var pat = TD[ch]; if (!pat) return;
+    var w = pat[0].length, col = positions[i];
+    for (var r = 0; r < ROWS; r++)
+      for (var c = 0; c < w; c++)
+        if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
+  });
+
+  for (var r = 0; r < ROWS; r++) {
+    for (var c = 0; c < COLS; c++) {
+      setTT(r, c, target[r][c], anim && target[r][c] !== (ttiles[r][c].dataset.state || ''));
+    }
+  }
+}
+
+// ── TIMES UP FLIP SEQUENCE ────────────────────────────────────
+function renderWord(word, cls, anim) {
+  // Render a word centered across all 8 rows using TW bitmaps
+  var letters = word.split('');
+  // Calculate total width
+  var totalW = 0;
+  letters.forEach(function(ch) { totalW += (TW[ch] ? TW[ch][0].length : 2) + 1; });
+  totalW = Math.max(0, totalW - 1);
+
+  var startCol = Math.max(0, Math.floor((COLS - totalW) / 2));
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+
+  var col = startCol;
+  letters.forEach(function(ch) {
+    var pat = TW[ch]; if (!pat) { col += 2; return; }
+    var w = pat[0].length;
+    for (var r = 0; r < ROWS; r++)
+      for (var c = 0; c < w; c++)
+        if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
+    col += w + 1;
+  });
+
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, target[r][c], anim);
+}
+
+function renderTimesUp() {
+  // Flip TIME'S → UP × 5, then hold until teacher ends
+  var count = 0, maxFlips = 5;
+  var showing = 'times'; // alternates between 'times' and 'up'
+
+  function showNext() {
+    if (showing === 'times') {
+      clearTimerBoard(true);
+      setTimeout(function() {
+        renderWord("TIME'S", 'tan', true);
+        showing = 'up';
+        setTimeout(flip, 1600);
+      }, 200);
+    } else {
+      clearTimerBoard(true);
+      setTimeout(function() {
+        renderWord('UP', 'tan', true);
+        showing = 'times';
+        count++;
+        if (count < maxFlips) {
+          setTimeout(flip, 1600);
+        }
+        // After 5 flips, stay on UP until teacher hits End Timer
+      }, 200);
+    }
+  }
+
+  function flip() { showNext(); }
+
+  // Start with TIME'S
+  clearTimerBoard(true);
+  setTimeout(function() {
+    renderWord("TIME'S", 'tan', true);
+    showing = 'up';
+    setTimeout(flip, 1600);
+  }, 200);
+}
+
+// ── TIMER UI ──────────────────────────────────────────────────
+function openTimerOverlay() {
+  if (tActive) return;
+  document.getElementById('timer-overlay').classList.add('open');
+}
+function closeTimerOverlay() {
+  document.getElementById('timer-overlay').classList.remove('open');
+}
+
+function tcMode(m) {
+  tMode = m;
+  document.getElementById('tc-cd').className = 'tc-tab' + (m === 'countdown' ? ' active' : '');
+  document.getElementById('tc-sw').className = 'tc-tab' + (m === 'stopwatch' ? ' active' : '');
+  var ti = document.getElementById('tc-time');
+  ti.style.opacity = m === 'stopwatch' ? '0.3' : '1';
+  ti.style.pointerEvents = m === 'stopwatch' ? 'none' : 'all';
+}
+
+function tcSound(s) {
+  tSound = s;
+  try { localStorage.setItem('cw2-timer-sound', s); } catch(e) {}
+  ['westminster','ce','off'].forEach(function(k) {
+    var el = document.getElementById('tc-snd-' + k);
+    if (el) el.className = 'tc-snd' + (k === s ? ' active' : '');
+  });
+}
+
+function timerStart() {
+  closeTimerOverlay();
+  buildTimerBoard();
+  if (tMode === 'countdown') {
+    var m = parseInt(document.getElementById('tc-min').value) || 0;
+    var s = parseInt(document.getElementById('tc-sec').value) || 0;
+    tSecs = m * 60 + s;
+    if (tSecs <= 0) return;
+  } else {
+    swSecs = 0; tSecs = 0;
+  }
+
+  tActive = true; tRunning = true; tPrevDisp = '';
+  var hint = document.getElementById('timer-hint');
+  hint.classList.add('active'); hint.textContent = '⏱ RUNNING';
+
+  // Hide honor roll ticker while timer runs
+  var hw = document.getElementById('honor-ticker-wrap');
+  hw.style.opacity = '0';
+  setTimeout(function() { hw.style.display = 'none'; }, 500);
+
+  var board = document.getElementById('timer-board');
+  board.classList.add('visible');
+  setTimeout(function() { board.classList.add('show'); }, 20);
+
+  var bar = document.getElementById('timer-bar');
+  bar.classList.add('visible');
+  setTimeout(function() { bar.classList.add('show'); }, 20);
+
+  document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  document.getElementById('tb-pause').style.display = '';
+
+  if (tMode === 'countdown') {
+    renderTimer(tSecs, false, true);
+    tInterval = setInterval(function() {
+      tSecs--;
+      var warn = tSecs <= 60;
+      renderTimer(tSecs, warn, true);
+      document.getElementById('tb-label').textContent = warn ? 'LESS THAN 1 MINUTE' : 'COUNTDOWN';
+      if (tSecs <= 0) {
+        clearInterval(tInterval); tRunning = false;
+        document.getElementById('tb-pause').style.display = 'none';
+        document.getElementById('tb-label').textContent = "TIME'S UP";
+        renderTimesUp();
+        playTimerBell(tSound);
+      }
+    }, 1000);
+  } else {
+    renderTimer(0, false, true);
+    tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
+  }
+}
+
+function timerPause() {
+  if (!tActive) return;
+  if (tRunning) {
+    clearInterval(tInterval); tRunning = false;
+    document.getElementById('tb-pause').textContent = 'RESUME';
+    document.getElementById('tb-label').textContent = 'PAUSED';
+  } else {
+    tRunning = true;
+    document.getElementById('tb-pause').textContent = 'PAUSE';
+    document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+    if (tMode === 'countdown') {
+      tInterval = setInterval(function() {
+        tSecs--;
+        var warn = tSecs <= 60;
+        renderTimer(tSecs, warn, true);
+        if (tSecs <= 0) {
+          clearInterval(tInterval); tRunning = false;
+          document.getElementById('tb-pause').style.display = 'none';
+          document.getElementById('tb-label').textContent = "TIME'S UP";
+          renderTimesUp();
+          playTimerBell(tSound);
+        }
+      }, 1000);
+    } else {
+      tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
+    }
+  }
+}
+
+function timerReset() {
+  clearInterval(tInterval); tRunning = false; tPrevDisp = ''; swSecs = 0;
+  var m = parseInt(document.getElementById('tc-min').value) || 0;
+  var s = parseInt(document.getElementById('tc-sec').value) || 0;
+  tSecs = tMode === 'countdown' ? m * 60 + s : 0;
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  document.getElementById('tb-pause').style.display = '';
+  document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+  renderTimer(tSecs, false, true);
+  tRunning = true;
+  if (tMode === 'countdown') {
+    tInterval = setInterval(function() {
+      tSecs--;
+      var warn = tSecs <= 60;
+      renderTimer(tSecs, warn, true);
+      if (tSecs <= 0) {
+        clearInterval(tInterval); tRunning = false;
+        document.getElementById('tb-pause').style.display = 'none';
+        document.getElementById('tb-label').textContent = "TIME'S UP";
+        renderTimesUp();
+        playTimerBell(tSound);
+      }
+    }, 1000);
+  } else {
+    tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
+  }
+}
+
+function timerEnd() {
+  clearInterval(tInterval);
+  tActive = false; tRunning = false; tPrevDisp = ''; swSecs = 0;
+  var hint = document.getElementById('timer-hint');
+  hint.classList.remove('active'); hint.textContent = '⏱ TIMER';
+  var board = document.getElementById('timer-board');
+  board.classList.remove('show');
+  setTimeout(function() { board.classList.remove('visible'); }, 400);
+  var bar = document.getElementById('timer-bar');
+  bar.classList.remove('show');
+  setTimeout(function() { bar.classList.remove('visible'); }, 400);
+  document.getElementById('tb-pause').style.display = '';
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  // Restore honor roll ticker
+  var hw = document.getElementById('honor-ticker-wrap');
+  if (document.getElementById('honor-ticker-inner').innerHTML.trim()) {
+    hw.style.display = 'flex';
+    setTimeout(function() { hw.style.opacity = '1'; }, 50);
+  }
+}
+
+// Timer overlay close on outside click
+document.addEventListener('click', function(e) {
+  var overlay = document.getElementById('timer-overlay');
+  if (overlay && overlay.classList.contains('open') &&
+      !e.target.closest('#timer-card') &&
+      !e.target.closest('#timer-trigger') &&
+      !e.target.closest('#timer-hint')) {
+    closeTimerOverlay();
+  }
+});
+ 
 document.addEventListener('keydown', function(e) {
+  if (tActive) { if (e.key === 'Escape') timerEnd(); return; }
   if (e.key==='ArrowRight'||e.key==='Enter'||e.key===' ') { e.preventDefault(); nextMsg(); }
   if (e.key==='ArrowLeft')  { e.preventDefault(); prevMsg(); }
   if (e.key==='f'||e.key==='F') document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
@@ -1512,6 +1984,9 @@ window.addEventListener('click', function() {
 
 (async function() {
   buildBoard();
+  buildTimerBoard();
+  var _savedTSound = localStorage.getItem('cw2-timer-sound');
+  if (_savedTSound && ['westminster','ce','off'].includes(_savedTSound)) { tSound = _savedTSound; tcSound(_savedTSound); }
   buildDialPositions();
   updateClock();
   setInterval(updateClock, 10000);
