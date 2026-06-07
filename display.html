@@ -406,8 +406,8 @@ async function sbFetch(table, query) {
   return res.json();
 }
 
-const params   = new URLSearchParams(location.search);
-const ROOM     = params.get('room') || '27';
+const params    = new URLSearchParams(location.search);
+const ROOM      = params.get('room') || '27';
 let   CLASSROOM = null;
 let   SETTINGS  = null;
 
@@ -416,7 +416,6 @@ async function loadRoomConfig() {
   const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
   CLASSROOM = (classrooms && classrooms[0]) ? classrooms[0] : null;
   SETTINGS  = (settings && settings[0])     ? settings[0]   : null;
-
   if (CLASSROOM) {
     document.getElementById('roomBadge').textContent = CLASSROOM.badge || ('CW · ROOM ' + ROOM);
     document.title = 'Cowboy Wire · Room ' + ROOM;
@@ -424,24 +423,23 @@ async function loadRoomConfig() {
     document.getElementById('roomBadge').textContent = 'CW · ROOM ' + ROOM;
     document.title = 'Cowboy Wire · Room ' + ROOM;
   }
-
   const savedTheme = localStorage.getItem('cw2-theme-' + ROOM) || 'retro-dark';
   const idx = DISPLAY_MODES.findIndex(function(m) { return m.key === savedTheme; });
   dialModeIdx = idx >= 0 ? idx : 0;
   applyDisplayMode(dialModeIdx, false);
 }
 
-const ROWS        = 8;
-const COLS        = 28;
-const SYNC_SEC    = 60;
-const SCRAMBLE_MS = 28;
+const ROWS         = 8;
+const COLS         = 28;
+const SYNC_SEC     = 60;
+const SCRAMBLE_MS  = 28;
 const SCRAMBLE_STP = 6;
 const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?:-/\'#@&%+';
 
-let messages   = [];
-let currentIdx = 0;
-let tiles      = [];
-let prevLines  = Array.from({ length: ROWS }, function() { return ' '.repeat(COLS); });
+let messages    = [];
+let currentIdx  = 0;
+let tiles       = [];
+let prevLines   = Array.from({ length: ROWS }, function() { return ' '.repeat(COLS); });
 let rotateTimer = null;
 let syncTimer   = null;
 
@@ -536,8 +534,6 @@ const NO_SCHOOL = [
   '2027-04-06','2027-04-07','2027-04-08','2027-04-09',
 ];
 
-// Manual date overrides — add special days here as needed
-// e.g. DATE_OVERRIDES['2026-10-23'] = 'activity';
 const DATE_OVERRIDES = {};
 
 function toMins(t) { var p = t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
@@ -549,7 +545,6 @@ function dateStr(d) {
   return y+'-'+m+'-'+day;
 }
 
-// Count actual school days in the current week (Mon-Fri, excluding NO_SCHOOL)
 function schoolDaysThisWeek(date) {
   var dow = date.getDay();
   var mon = new Date(date);
@@ -567,37 +562,24 @@ function getSchedule() {
   var now = new Date();
   var ds  = dateStr(now);
   var dow = now.getDay();
-
-  // Weekends and no-school days
   if (dow === 0 || dow === 6 || NO_SCHOOL.includes(ds)) return null;
-
-  // Manual date overrides first
   if (DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
-
-  // Calendar event keyword overrides (set by Supabase cw_events or similar)
   var events = window._cwCalEvents || [];
   var todayTitles = events
     .filter(function(e) { return e.start && e.start.substring(0,10) === ds; })
     .map(function(e) { return (e.title || '').toLowerCase(); });
   var has = function(kw) { return todayTitles.some(function(t) { return t.includes(kw); }); };
-
   if (has('foggy') || has('late arrival'))  return SCHEDULES.foggy;
   if (has('minimum'))                        return SCHEDULES.minimum;
   if (has('code day'))                       return SCHEDULES.codeDay;
   if (has('activity'))                       return SCHEDULES.activity;
   if (has('early release'))                  return SCHEDULES.earlyRelease;
-  if (has('block')) {
-    return dow === 3 ? SCHEDULES.blockWed : SCHEDULES.blockThu;
-  }
-
-  // 4-day week rule: if only 4 or fewer school days this week, all days are regular
+  if (has('block')) { return dow === 3 ? SCHEDULES.blockWed : SCHEDULES.blockThu; }
   if (schoolDaysThisWeek(now) <= 4) return SCHEDULES.regular;
-
-  // Normal 5-day week rules
-  if (dow === 1) return SCHEDULES.earlyRelease;  // Monday
-  if (dow === 3) return SCHEDULES.blockWed;       // Wednesday
-  if (dow === 4) return SCHEDULES.blockThu;       // Thursday
-  return SCHEDULES.regular;                        // Tuesday, Friday
+  if (dow === 1) return SCHEDULES.earlyRelease;
+  if (dow === 3) return SCHEDULES.blockWed;
+  if (dow === 4) return SCHEDULES.blockThu;
+  return SCHEDULES.regular;
 }
 
 function updatePeriodTimer() {
@@ -672,9 +654,7 @@ function buildBoard() {
 
 function padLine(text, cols, align) {
   text = (text || '').toUpperCase().substring(0, cols);
-  if (align === 'left') {
-    return text + ' '.repeat(cols - text.length);
-  }
+  if (align === 'left') { return text + ' '.repeat(cols - text.length); }
   var total = cols - text.length, left = Math.floor(total / 2);
   return ' '.repeat(left) + text + ' '.repeat(total - left);
 }
@@ -775,75 +755,45 @@ function setSyncStatus(state, label) {
   document.getElementById('syncLabel').textContent = label;
 }
 
-// ── LOAD SCREENS — local + 1 random global per rotation ──
+// ── LOAD SCREENS ─────────────────────────────────────
 async function loadScreens() {
   var results = await Promise.all([
     sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc'),
     sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc'),
     sbFetch('cw2_room_screen_prefs', 'room=eq.' + ROOM + '&select=*'),
   ]);
-
   var localScreens  = results[0] || [];
   var globalScreens = results[1] || [];
   var prefs         = results[2] || [];
-
-  // Build prefs lookup by screen_id
   var prefsMap = {};
   prefs.forEach(function(p) { prefsMap[p.screen_id] = p; });
-
-  // Filter and map local screens
   var mapped = [];
   localScreens.forEach(function(r) {
     if (!r.enabled) return;
     var pref = prefsMap[r.id];
     if (pref && pref.enabled === false) return;
     var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
-    mapped.push({
-      lines:      lines,
-      speed:      r.speed || 10,
-      id:         r.id,
-      align:      r.align || 'center',
-      isGlobal:   false,
-      sort_order: pref ? pref.sort_order : r.sort_order
-    });
+    mapped.push({ lines: lines, speed: r.speed || 10, id: r.id, align: r.align || 'center', isGlobal: false, sort_order: pref ? pref.sort_order : r.sort_order });
   });
-
-  // Sort local screens by sort_order
   mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
-
-  // Filter eligible globals (not disabled by teacher pref)
-  var eligibleGlobals = globalScreens.filter(function(r) {
-    var pref = prefsMap[r.id];
-    return !(pref && pref.enabled === false);
-  });
-
-  // Pick 1 random global and append
+  var eligibleGlobals = globalScreens.filter(function(r) { var pref = prefsMap[r.id]; return !(pref && pref.enabled === false); });
   if (eligibleGlobals.length) {
     var pick = eligibleGlobals[Math.floor(Math.random() * eligibleGlobals.length)];
     var lines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines || '[]');
-    mapped.push({
-      lines:    lines,
-      speed:    pick.speed || 12,
-      id:       pick.id,
-      align:    pick.align || 'center',
-      isGlobal: true,
-      sort_order: 9999
-    });
+    mapped.push({ lines: lines, speed: pick.speed || 12, id: pick.id, align: pick.align || 'center', isGlobal: true, sort_order: 9999 });
   }
-
   return mapped.length ? mapped : null;
 }
 
-// ── CALENDAR & EVENTS ────────────────────────────
+// ── CALENDAR & EVENTS ────────────────────────────────
 var CW_EVENTS = [];
 
 async function loadCwEvents() {
   var now = new Date();
   var ds = dateStr(now);
-  // Fetch events from today onward, active only
   var rows = await sbFetch('cw2_events', 'active=eq.true&end_date=gte.' + ds + '&order=start_date.asc');
   CW_EVENTS = rows || [];
-  window._cwCalEvents = CW_EVENTS; // makes getSchedule() keyword logic work
+  window._cwCalEvents = CW_EVENTS;
   return CW_EVENTS;
 }
 
@@ -859,10 +809,7 @@ function buildCalendarScreen() {
   var ds = dateStr(now);
   var dow = now.getDay();
   var sched = getSchedule();
-
   var lines = [];
-
-  // Line 1: Today header
   var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var dayName = days[dow];
@@ -870,11 +817,9 @@ function buildCalendarScreen() {
   var dayNum = now.getDate();
 
   if (!sched) {
-    // No school today
     lines.push('NO SCHOOL TODAY');
     lines.push(dayName + '  ' + mon + '  ' + dayNum);
     lines.push('');
-    // Find next school day
     var next = new Date(now);
     for (var i = 1; i <= 14; i++) {
       next.setDate(next.getDate() + 1);
@@ -885,7 +830,6 @@ function buildCalendarScreen() {
         var nextMons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
         lines.push('NEXT SCHOOL DAY');
         lines.push(nextDays[ndow] + '  ' + nextMons[next.getMonth()] + '  ' + next.getDate());
-        // What schedule?
         var nextSched = getScheduleForDate(next);
         if (nextSched === 'earlyRelease') lines.push('EARLY RELEASE');
         else if (nextSched === 'blockWed' || nextSched === 'blockThu') lines.push('BLOCK DAY');
@@ -896,7 +840,6 @@ function buildCalendarScreen() {
       }
     }
   } else {
-    // School day — show today + schedule type
     lines.push('TODAY  ' + dayName + '  ' + mon + '  ' + dayNum);
     var schedName = getScheduleForDate(now);
     if (schedName === 'earlyRelease')      lines.push('EARLY RELEASE DAY');
@@ -910,47 +853,35 @@ function buildCalendarScreen() {
     lines.push('');
   }
 
-  // Fill remaining rows with upcoming events
-  var upcoming = CW_EVENTS.filter(function(e) {
-    return e.start_date >= ds;
-  }).slice(0, ROWS - lines.length);
-
+  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds; }).slice(0, ROWS - lines.length);
   upcoming.forEach(function(e) {
     var daysAway = daysBetween(e.start_date, ds);
     var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : daysAway + ' DAYS';
     var title = (e.title || '').toUpperCase();
-    // Truncate title to fit with suffix
     var maxTitle = COLS - suffix.length - 2;
     if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
     lines.push(title + '  ' + suffix);
   });
 
-  // Pad to ROWS
   while (lines.length < ROWS) lines.push('');
-
   return { lines: lines, speed: 15, id: 'calendar', align: 'center', sort_order: 0 };
 }
+
 function buildBellScreen() {
   var sched = getSchedule();
   if (!sched) return null;
-
   var schedName = getScheduleForDate(new Date());
   var schedLabels = {
-    regular:     'REGULAR BELL',
-    earlyRelease:'EARLY RELEASE',
-    blockWed:    'BLOCK DAY',
-    blockThu:    'BLOCK DAY',
-    minimum:     'MINIMUM DAY',
-    foggy:       'LATE ARRIVAL',
-    activity:    'ACTIVITY DAY',
-    codeDay:     'CODE DAY'
+    regular:'REGULAR BELL', earlyRelease:'EARLY RELEASE',
+    blockWed:'BLOCK DAY', blockThu:'BLOCK DAY',
+    minimum:'MINIMUM DAY', foggy:'LATE ARRIVAL',
+    activity:'ACTIVITY DAY', codeDay:'CODE DAY'
   };
   var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   var now = new Date();
   var header = (schedLabels[schedName] || 'BELL SCHEDULE') + '  ' + days[now.getDay()];
   var nm = nowMins();
   var lines = [header];
-
   sched.periods.forEach(function(p) {
     var s = toMins(p.start), e = toMins(p.end);
     var isCurrent = nm >= s && nm < e;
@@ -962,21 +893,15 @@ function buildBellScreen() {
     var suffix = isCurrent ? '  <' : '';
     lines.push(prefix + label + ' ' + timeStr + suffix);
   });
-
   while (lines.length < ROWS) lines.push('');
   return { lines: lines, speed: 20, id: 'bell', align: 'left', sort_order: 1 };
 }
- 
+
 function buildCountdownScreen() {
   var now = new Date();
   var ds = dateStr(now);
-
-  var upcoming = CW_EVENTS.filter(function(e) {
-    return e.start_date >= ds && e.show_countdown !== false;
-  }).slice(0, ROWS - 1);
-
+  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds && e.show_countdown !== false; }).slice(0, ROWS - 1);
   if (!upcoming.length) return null;
-
   var lines = ['COMING UP AT RHS'];
   upcoming.forEach(function(e) {
     var daysAway = daysBetween(e.start_date, ds);
@@ -984,19 +909,15 @@ function buildCountdownScreen() {
     var title = (e.title || '').toUpperCase();
     var maxTitle = COLS - suffix.length - 2;
     if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
-    // Right-align the day count by padding title to fill the row
     var totalLen = title.length + 2 + suffix.length;
     var extra = COLS - totalLen;
     var padding = extra > 0 ? ' '.repeat(extra) : '';
     lines.push(title + padding + '  ' + suffix);
   });
-
   while (lines.length < ROWS) lines.push('');
-
   return { lines: lines, speed: 15, id: 'countdown', align: 'left', sort_order: 0.5 };
 }
 
-// Helper — get schedule TYPE name for a given date without using global now
 function getScheduleForDate(date) {
   var ds = dateStr(date);
   var dow = date.getDay();
@@ -1007,9 +928,9 @@ function getScheduleForDate(date) {
     .map(function(e) { return (e.title || '').toLowerCase(); });
   var has = function(kw) { return titles.some(function(t) { return t.includes(kw); }); };
   if (has('foggy') || has('late arrival')) return 'foggy';
-  if (has('minimum'))    return 'minimum';
-  if (has('code day'))   return 'codeDay';
-  if (has('activity'))   return 'activity';
+  if (has('minimum'))       return 'minimum';
+  if (has('code day'))      return 'codeDay';
+  if (has('activity'))      return 'activity';
   if (has('early release')) return 'earlyRelease';
   if (has('block')) return dow === 3 ? 'blockWed' : 'blockThu';
   if (schoolDaysThisWeek(date) <= 4) return 'regular';
@@ -1019,8 +940,10 @@ function getScheduleForDate(date) {
   return 'regular';
 }
 
-// ── WEATHER ──────────────────────────────────────
+// ── WEATHER ──────────────────────────────────────────
 var CW_WEATHER = null;
+var CW_WEATHER_DAILY = null;
+var CW_AQI = null;
 
 var WEATHER_CODES = {
   0:'CLEAR SKIES', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
@@ -1048,7 +971,6 @@ var WEATHER_COMMENTS = {
 };
 
 function pickWeatherComment(temp, feels, humidity, wind, code, aqi) {
-  // Priority: hazardous conditions first
   var pool = [];
   if (aqi !== null && aqi > 150)         pool = WEATHER_COMMENTS.aqi_bad;
   else if (aqi !== null && aqi > 100)    pool = WEATHER_COMMENTS.aqi_poor;
@@ -1062,33 +984,22 @@ function pickWeatherComment(temp, feels, humidity, wind, code, aqi) {
   else if (feels >= 60)                  pool = WEATHER_COMMENTS.mild;
   else if (feels >= 45)                  pool = WEATHER_COMMENTS.cool;
   else                                   pool = WEATHER_COMMENTS.cold;
-
   if (!pool || !pool.length) return '';
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 var AQI_LABELS = [
-  [50,  'GOOD'],
-  [100, 'MODERATE'],
-  [150, 'UNHEALTHY FOR SOME'],
-  [200, 'UNHEALTHY'],
-  [300, 'VERY UNHEALTHY'],
-  [999, 'HAZARDOUS']
+  [50,'GOOD'],[100,'MODERATE'],[150,'UNHEALTHY FOR SOME'],
+  [200,'UNHEALTHY'],[300,'VERY UNHEALTHY'],[999,'HAZARDOUS']
 ];
 
 function aqiLabel(val) {
-  for (var i = 0; i < AQI_LABELS.length; i++) {
-    if (val <= AQI_LABELS[i][0]) return AQI_LABELS[i][1];
-  }
+  for (var i = 0; i < AQI_LABELS.length; i++) { if (val <= AQI_LABELS[i][0]) return AQI_LABELS[i][1]; }
   return 'HAZARDOUS';
 }
 
-var CW_WEATHER_DAILY = null;
-var CW_AQI = null;
-
 async function loadWeather() {
   try {
-    // Current conditions + 3-day forecast
     var url = 'https://api.open-meteo.com/v1/forecast' +
       '?latitude=36.4327&longitude=-119.8668' +
       '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature' +
@@ -1100,8 +1011,6 @@ async function loadWeather() {
     var data = await res.json();
     CW_WEATHER = data.current;
     CW_WEATHER_DAILY = data.daily;
-
-    // Air quality — separate endpoint
     var aqUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality' +
       '?latitude=36.4327&longitude=-119.8668' +
       '&current=us_aqi&timezone=America/Los_Angeles';
@@ -1110,38 +1019,25 @@ async function loadWeather() {
       var aqData = await aqRes.json();
       CW_AQI = aqData.current ? aqData.current.us_aqi : null;
     }
-
     return CW_WEATHER;
   } catch(e) { return null; }
 }
 
 function buildWeatherScreen() {
   if (!CW_WEATHER) return null;
-
   var temp     = Math.round(CW_WEATHER.temperature_2m);
   var feels    = Math.round(CW_WEATHER.apparent_temperature);
   var humidity = Math.round(CW_WEATHER.relative_humidity_2m);
   var wind     = Math.round(CW_WEATHER.wind_speed_10m);
   var code     = CW_WEATHER.weather_code;
   var desc     = WEATHER_CODES[code] || 'CONDITIONS UNKNOWN';
-
-  var aqiVal = CW_AQI !== null ? Math.round(CW_AQI) : null;
-  var aqiStr = aqiVal !== null ? aqiLabel(aqiVal) : '';
-  var comment = pickWeatherComment(temp, feels, humidity, wind, code, aqiVal);
-
+  var aqiVal   = CW_AQI !== null ? Math.round(CW_AQI) : null;
+  var aqiStr   = aqiVal !== null ? aqiLabel(aqiVal) : '';
+  var comment  = pickWeatherComment(temp, feels, humidity, wind, code, aqiVal);
   var line1 = temp + ' F  FEELS LIKE  ' + feels + ' F';
   var line2 = desc + '  HUMIDITY ' + humidity + '%';
   var line3 = 'WIND ' + wind + ' MPH' + (aqiVal !== null ? '  AQI ' + aqiVal + ' ' + aqiStr.split(' ')[0] : '');
-
-  var lines = [
-    'WEATHER  RIVERDALE CA',
-    line1,
-    line2,
-    line3,
-    comment,
-  ];
-
-  // Add daily forecast rows
+  var lines = ['WEATHER  RIVERDALE CA', line1, line2, line3, comment];
   if (CW_WEATHER_DAILY && CW_WEATHER_DAILY.time) {
     var dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
     var times = CW_WEATHER_DAILY.time;
@@ -1153,20 +1049,17 @@ function buildWeatherScreen() {
       var label = i === 0 ? 'TODAY' : dayNames[d.getDay()];
       var hi = Math.round(highs[i]);
       var lo = Math.round(lows[i]);
-      // Pad label to 5 chars
       while (label.length < 5) label += ' ';
       lines.push(label + '  HI ' + hi + '  LO ' + lo);
       count++;
     }
   }
-
-  // Pad to ROWS
   while (lines.length < ROWS) lines.push('');
-
   return { lines: lines, speed: 18, id: 'weather', align: 'center', sort_order: 0.8 };
 }
 
- var CW_OBJECTIVES = {};
+// ── OBJECTIVES ───────────────────────────────────────
+var CW_OBJECTIVES = {};
 
 async function loadObjectives() {
   var today = dateStr(new Date());
@@ -1181,32 +1074,24 @@ async function loadObjectives() {
 function buildObjectivesScreen() {
   var sched = getSchedule();
   if (!sched) return null;
-
   var nm = nowMins();
   var currentPeriod = null;
   var minutesIn = 0;
-
   sched.periods.forEach(function(p) {
     if (p.break) return;
     var s = toMins(p.start), e = toMins(p.end);
     if (nm >= s && nm < e) {
-      // Extract period number from label e.g. "P1" → "1", "P1/2" → "1"
       var match = (p.label || '').match(/\d+/);
       if (match) { currentPeriod = match[0]; minutesIn = nm - s; }
     }
   });
-
   if (!currentPeriod) return null;
-
   var obj = CW_OBJECTIVES[currentPeriod];
   if (!obj || !obj.title) return null;
-
-  // Respect display_mode
   if (obj.display_mode === 'timed') {
     var limit = obj.timed_minutes || 10;
     if (minutesIn > limit) return null;
   }
-
   var lines = [
     'P' + currentPeriod + '  NOW LEARNING',
     obj.title ? obj.title.toUpperCase() : '',
@@ -1214,16 +1099,98 @@ function buildObjectivesScreen() {
     obj.line1 ? '> ' + obj.line1.toUpperCase() : '',
     '',
     obj.line2 ? '/ ' + obj.line2.toUpperCase() : '',
-    '',
-    '',
+    '', '',
   ];
+  while (lines.length < ROWS) lines.push('');
+  lines = lines.slice(0, ROWS);
+  return { lines: lines, speed: 15, id: 'objectives', align: 'left', sort_order: 0.2 };
+}
+
+// ── BIRTHDAYS ────────────────────────────────────────
+var CW_BIRTHDAYS = [];
+
+async function loadBirthdays() {
+  var rows = await sbFetch('cw2_birthdays', 'room=eq.' + ROOM + '&active=eq.true&select=*');
+  CW_BIRTHDAYS = rows || [];
+}
+
+function buildBirthdayScreen() {
+  if (!CW_BIRTHDAYS.length) return null;
+  var now = new Date();
+  var todayM = now.getMonth() + 1;
+  var todayD = now.getDate();
+
+  function daysUntil(month, day) {
+    var n = new Date();
+    var thisYear = n.getFullYear();
+    var bday = new Date(thisYear, month - 1, day);
+    var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    if (bday < today) bday.setFullYear(thisYear + 1);
+    return Math.round((bday - today) / 86400000);
+  }
+
+  var months = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var sorted = CW_BIRTHDAYS.slice().sort(function(a, b) {
+    return daysUntil(a.month, a.day) - daysUntil(b.month, b.day);
+  });
+
+  var todays   = sorted.filter(function(b) { return b.month === todayM && b.day === todayD; });
+  var thisWeek = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 0 && d <= 7; });
+  var upcoming = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 7; });
+
+  var lines = [];
+  if (todays.length) {
+    lines.push('HAPPY BIRTHDAY');
+    todays.forEach(function(b) { lines.push(b.name.toUpperCase()); });
+    lines.push('');
+  } else if (thisWeek.length) {
+    lines.push('BIRTHDAYS THIS WEEK');
+    thisWeek.slice(0, 2).forEach(function(b) {
+      lines.push(b.name.toUpperCase());
+      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
+      lines.push('');
+    });
+  } else {
+    lines.push('COMING UP  BIRTHDAYS');
+    upcoming.slice(0, 3).forEach(function(b) {
+      lines.push(b.name.toUpperCase());
+      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
+      lines.push('');
+    });
+  }
 
   while (lines.length < ROWS) lines.push('');
   lines = lines.slice(0, ROWS);
-
-  return { lines: lines, speed: 15, id: 'objectives', align: 'left', sort_order: 0.2 };
+  return { lines: lines, speed: 16, id: 'birthday', align: 'center', sort_order: 0.9 };
 }
- 
+
+// ── MESSAGES ─────────────────────────────────────────
+var CW_MESSAGES = [];
+
+async function loadMessages() {
+  var now = new Date().toISOString();
+  var rows = await sbFetch('cw2_messages', 'room=eq.' + ROOM + '&active=eq.true&expires_at=gte.' + now + '&select=*');
+  CW_MESSAGES = rows || [];
+}
+
+function buildMessageScreens() {
+  return CW_MESSAGES.map(function(m) {
+    var lines = [
+      m.line1 || '',
+      m.line2 || '',
+      m.line3 || '',
+      m.line4 || '',
+      m.line5 || '',
+      m.line6 || '',
+      '',
+      m.sender ? 'FROM  ' + (m.sender).toUpperCase() : ''
+    ];
+    while (lines.length < ROWS) lines.push('');
+    return { lines: lines, speed: 12, id: 'message-' + m.id, align: 'center', sort_order: 0.1 };
+  });
+}
+
+// ── HONOR ROLL ───────────────────────────────────────
 async function loadHonorRoll() {
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
@@ -1235,6 +1202,7 @@ async function loadHonorRoll() {
   document.getElementById('honor-ticker-wrap').style.display = 'flex';
 }
 
+// ── START BOARD ──────────────────────────────────────
 async function startBoard() {
   setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
@@ -1276,52 +1244,53 @@ async function startBoard() {
     }
   }, SYNC_SEC * 1000);
 
-  // Refresh calendar and weather every 5 minutes
+  // Refresh dynamic data every 5 minutes
   setInterval(async function() {
     await loadCwEvents();
     await loadWeather();
     await loadObjectives();
+    await loadBirthdays();
+    await loadMessages();
     injectDynamicScreens();
     buildDots();
   }, 5 * 60 * 1000);
 }
 
 function injectDynamicScreens() {
-  // Remove previously injected dynamic screens
+  // Clear all previously injected dynamic screens
   messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' && m.id !== 'bell' && m.id !== 'objectives';
+    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' &&
+           m.id !== 'bell' && m.id !== 'objectives' && m.id !== 'birthday' &&
+           !m.id.startsWith('message-');
   });
 
-  // Calendar screen — first in rotation
+  // Calendar — position 0
   var calScreen = buildCalendarScreen();
   if (calScreen) messages.unshift(calScreen);
 
-  // Countdown screen — after welcome (position 2)
+  // Countdown — position 2
   var countScreen = buildCountdownScreen();
-  if (countScreen) {
-    var insertAt = Math.min(2, messages.length);
-    messages.splice(insertAt, 0, countScreen);
-  }
+  if (countScreen) messages.splice(Math.min(2, messages.length), 0, countScreen);
 
-  // Weather screen — after countdown
+  // Weather — position 3
   var wxScreen = buildWeatherScreen();
-  if (wxScreen) {
-    var wxAt = Math.min(3, messages.length);
-    messages.splice(wxAt, 0, wxScreen);
-  }
+  if (wxScreen) messages.splice(Math.min(3, messages.length), 0, wxScreen);
 
-// Bell schedule screen — school days only, correct schedule auto-selected
+  // Bell schedule — position 4, school days only
   var bellScreen = buildBellScreen();
-  if (bellScreen) {
-    var bellAt = Math.min(4, messages.length);
-    messages.splice(bellAt, 0, bellScreen);
-  }
+  if (bellScreen) messages.splice(Math.min(4, messages.length), 0, bellScreen);
 
-  // Objectives screen — current period only, respects display_mode
+  // Birthday — position 5
+  var bdayScreen = buildBirthdayScreen();
+  if (bdayScreen) messages.splice(Math.min(5, messages.length), 0, bdayScreen);
+
+  // Objectives — position 1 (current period only)
   var objScreen = buildObjectivesScreen();
-  if (objScreen) {
-    messages.splice(1, 0, objScreen);
-  }
+  if (objScreen) messages.splice(1, 0, objScreen);
+
+  // Messages — inject right after calendar
+  var msgScreens = buildMessageScreens();
+  msgScreens.reverse().forEach(function(ms) { messages.splice(1, 0, ms); });
 }
 
 // ── NOISE METER ──────────────────────────────────────
@@ -1555,6 +1524,8 @@ window.addEventListener('click', function() {
   }, 8000);
   await startBoard();
   await loadObjectives();
+  await loadBirthdays();
+  await loadMessages();
   setTimeout(function() { loadHonorRoll(); }, 2000);
   setInterval(function() { loadHonorRoll(); }, 30*60*1000);
 })();
