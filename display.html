@@ -906,15 +906,18 @@ async function loadScreens() {
     var pt = picks[pi]; picks[pi] = picks[pj]; picks[pj] = pt;
   }
 
-  // Inject: one global after position 2, one at the end
+  // Inject: one per enabled category, spread evenly through local boards
   var finalList = mapped.slice();
-  if (picks[0]) {
-    var g0lines = Array.isArray(picks[0].lines) ? picks[0].lines : JSON.parse(picks[0].lines || '[]');
-    finalList.splice(Math.min(2, finalList.length), 0, { lines: g0lines, speed: picks[0].speed || 12, id: picks[0].id, align: picks[0].align || 'center', _isGlobal: true });
-  }
-  if (picks[1]) {
-    var g1lines = Array.isArray(picks[1].lines) ? picks[1].lines : JSON.parse(picks[1].lines || '[]');
-    finalList.push({ lines: g1lines, speed: picks[1].speed || 12, id: picks[1].id, align: picks[1].align || 'center', _isGlobal: true });
+  if (picks.length) {
+    var localLen = finalList.length;
+    var step = localLen > 0 ? Math.floor(localLen / (picks.length + 1)) : 0;
+    var inserted = 0;
+    picks.forEach(function(pick, i) {
+      var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines || '[]');
+      var pos = step > 0 ? Math.min((i + 1) * step + inserted, finalList.length) : finalList.length;
+      finalList.splice(pos, 0, { lines: glines, speed: pick.speed || 12, id: pick.id, align: pick.align || 'left', _isGlobal: true });
+      inserted++;
+    });
   }
 
   return finalList.length ? finalList : null;
