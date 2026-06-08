@@ -158,9 +158,11 @@
   .dc-list-status{font-size:10px;font-weight:600;color:var(--text-3);}
   .dc-list-status.on{color:#15803d;}
   .dc-list-btns{display:flex;gap:3px;flex-shrink:0;}
-  .dc-arrow{width:24px;height:24px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text-2);font-size:11px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-family:inherit;}
-  .dc-arrow:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
-  .dc-arrow:disabled{opacity:0.2;cursor:not-allowed;}
+  .dc-handle{width:24px;height:32px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--text-3);font-size:14px;flex-shrink:0;user-select:none;}
+  .dc-handle:active{cursor:grabbing;}
+  .dc-list-item.drag-over-top{border-top:2px solid var(--accent);}
+  .dc-list-item.drag-over-bottom{border-bottom:2px solid var(--accent);}
+  .dc-list-item.dragging{opacity:0.35;background:var(--accent-bg);}
   .dc-save-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
   .dc-dirty-label{font-size:11px;color:var(--warning);font-weight:600;min-height:16px;}
 
@@ -1229,38 +1231,80 @@ function dcRenderList() {
   list.innerHTML = dcOrder.map(function(key, i) {
     var m = dcMetaFor(key);
     var isOn = dcCats[key] !== false;
-    var isFirst = i === 0;
-    var isLast  = i === dcOrder.length - 1;
-    return '<div class="dc-list-item ' + (isOn ? '' : 'off-item') + '" id="dc-li-' + key + '">' +
+    return '<div class="dc-list-item ' + (isOn ? '' : 'off-item') + '" id="dc-li-' + key + '" draggable="true" data-key="' + key + '">' +
+      '<div class="dc-handle" title="Drag to reorder">≡</div>' +
       '<div class="dc-list-num">' + (i + 1) + '</div>' +
       '<div class="dc-list-icon">' + m.icon + '</div>' +
       '<div class="dc-list-name">' + m.label + '</div>' +
       '<div class="dc-list-status ' + (isOn ? 'on' : '') + '">' + (isOn ? '● On' : '○ Off') + '</div>' +
-      '<div class="dc-list-btns">' +
-        '<button class="dc-arrow" onclick="dcMove(\'' + key + '\',-1)" ' + (isFirst ? 'disabled' : '') + ' title="Move up">↑</button>' +
-        '<button class="dc-arrow" onclick="dcMove(\'' + key + '\',1)" ' + (isLast ? 'disabled' : '') + ' title="Move down">↓</button>' +
-      '</div>' +
     '</div>';
   }).join('');
+  dcBindDrag();
+}
+
+function dcBindDrag() {
+  var items = document.querySelectorAll('#dc-list .dc-list-item');
+  var dragKey = null;
+
+  items.forEach(function(item) {
+    item.addEventListener('dragstart', function(e) {
+      dragKey = item.dataset.key;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    item.addEventListener('dragend', function() {
+      item.classList.remove('dragging');
+      document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el) {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      dragKey = null;
+    });
+
+    item.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      if (!dragKey || dragKey === item.dataset.key) return;
+      var rect = item.getBoundingClientRect();
+      var mid  = rect.top + rect.height / 2;
+      document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el) {
+        el.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      if (e.clientY < mid) {
+        item.classList.add('drag-over-top');
+      } else {
+        item.classList.add('drag-over-bottom');
+      }
+    });
+
+    item.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (!dragKey || dragKey === item.dataset.key) return;
+      var rect    = item.getBoundingClientRect();
+      var mid     = rect.top + rect.height / 2;
+      var before  = e.clientY < mid;
+      var fromIdx = dcOrder.indexOf(dragKey);
+      var toIdx   = dcOrder.indexOf(item.dataset.key);
+      if (fromIdx < 0 || toIdx < 0) return;
+      // Remove from original position
+      dcOrder.splice(fromIdx, 1);
+      // Recalculate toIdx after removal
+      toIdx = dcOrder.indexOf(item.dataset.key);
+      var insertAt = before ? toIdx : toIdx + 1;
+      dcOrder.splice(insertAt, 0, dragKey);
+      dcDirty = true;
+      dcRenderGrid();
+      dcRenderList();
+      dcUpdateDirty();
+    });
+
+    item.addEventListener('dragleave', function() {
+      item.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+  });
 }
 
 function dcToggle(key) {
   dcCats[key] = dcCats[key] === false ? true : false;
-  dcDirty = true;
-  dcRenderGrid();
-  dcRenderList();
-  dcUpdateDirty();
-}
-
-function dcMove(key, dir) {
-  var idx = dcOrder.indexOf(key);
-  if (idx < 0) return;
-  var newIdx = idx + dir;
-  if (newIdx < 0 || newIdx >= dcOrder.length) return;
-  // Swap
-  var tmp = dcOrder[idx];
-  dcOrder[idx] = dcOrder[newIdx];
-  dcOrder[newIdx] = tmp;
   dcDirty = true;
   dcRenderGrid();
   dcRenderList();
