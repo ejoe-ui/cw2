@@ -505,12 +505,28 @@ const params    = new URLSearchParams(location.search);
 const ROOM      = params.get('room') || '27';
 let   CLASSROOM = null;
 let   SETTINGS  = null;
+// ═══════════════════════════════════════════════════════════
+// PATCH 1 of 3 — Add loadSettings() function
+// INSERT this function right before loadRoomConfig() in display.html
+// ═══════════════════════════════════════════════════════════
+
+// ── LOAD SETTINGS (called on every sync to pick up toggle changes) ──
+async function loadSettings() {
+  const rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=*');
+  SETTINGS = (rows && rows[0]) ? rows[0] : null;
+}
+ 
+// ═══════════════════════════════════════════════════════════
+// PATCH 2 of 3 — Update loadRoomConfig()
+// FIND this line in loadRoomConfig():
+//   SETTINGS  = (settings && settings[0])     ? settings[0]   : null;
+// REPLACE the entire Promise.all block at the top of loadRoomConfig() with:
+// ═══════════════════════════════════════════════════════════
 
 async function loadRoomConfig() {
   const classrooms = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
-  const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
   CLASSROOM = (classrooms && classrooms[0]) ? classrooms[0] : null;
-  SETTINGS  = (settings && settings[0])     ? settings[0]   : null;
+  await loadSettings();
   if (CLASSROOM) {
     document.getElementById('roomBadge').textContent = CLASSROOM.badge || ('CW · ROOM ' + ROOM);
     document.title = 'Cowboy Wire · Room ' + ROOM;
@@ -1546,6 +1562,7 @@ async function startBoard() {
 
   clearInterval(syncTimer);
   syncTimer = setInterval(async function() {
+    await loadSettings(); // FIX: re-read settings every sync
     var fresh = await loadScreens();
     await loadCwEvents();
     await loadWeather();
@@ -1563,9 +1580,10 @@ async function startBoard() {
       setSyncStatus('error', 'SYNC FAILED');
     }
   }, SYNC_SEC * 1000);
-
+ 
   // Refresh dynamic data every 5 minutes
   setInterval(async function() {
+    await loadSettings(); // FIX: re-read settings on 5-min refresh too
     await loadCwEvents();
     await loadWeather();
     await loadObjectives();
@@ -1583,105 +1601,7 @@ async function startBoard() {
 // the entire function body with this version.
 // ═══════════════════════════════════════════════════════════════
 
-function injectDynamicScreens() {
-  // Clear all previously injected dynamic screens
-  messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' &&
-           m.id !== 'bell' && m.id !== 'objectives' && m.id !== 'birthday' &&
-           m.id !== 'quiet' && !m.id.startsWith('message-');
-  });
-
-  // Read display controls from settings
-  var cats = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
-
-  // Default order if none saved
-  var DC_DEFAULT = [
-    'show_objectives','show_messages','show_calendar','show_weather',
-    'show_bell','show_birthday','show_quiet',
-    'cowboy_code','fun_facts','word_of_day','positive_thoughts','business','this_week'
-  ];
-  var order = (Array.isArray(cats.display_order) && cats.display_order.length)
-    ? cats.display_order
-    : DC_DEFAULT;
-
-  // Build each dynamic screen if its toggle is on (default: on)
-  var screensByKey = {};
-
-  if (cats['show_calendar'] !== false) {
-    var s = buildCalendarScreen();
-    if (s) screensByKey['show_calendar'] = [s];
-  }
-  if (cats['show_weather'] !== false) {
-    var s = buildWeatherScreen();
-    if (s) screensByKey['show_weather'] = [s];
-  }
-  if (cats['show_bell'] !== false) {
-    var s = buildBellScreen();
-    if (s) screensByKey['show_bell'] = [s];
-  }
-  if (cats['show_birthday'] !== false) {
-    var s = buildBirthdayScreen();
-    if (s) screensByKey['show_birthday'] = [s];
-  }
-  if (cats['show_quiet'] !== false) {
-    var s = buildQuietScreen();
-    if (s) screensByKey['show_quiet'] = [s];
-  }
-  if (cats['show_objectives'] !== false) {
-    var s = buildObjectivesScreen();
-    if (s) screensByKey['show_objectives'] = [s];
-  }
-  if (cats['show_messages'] !== false) {
-    var msgs = buildMessageScreens();
-    if (msgs.length) screensByKey['show_messages'] = msgs;
-  }
-  // Countdown always on (no toggle yet), inject after calendar
-  var countScreen = buildCountdownScreen();
-  if (countScreen) screensByKey['show_countdown'] = [countScreen];
-
-  // Build injection list in display_order sequence
-  // Objectives and messages are high-priority — always inject at position 0
-  // Everything else spreads evenly through the local boards list
-  var highPriority = ['show_objectives', 'show_messages'];
-  var highScreens  = [];
-  var normalScreens = [];
-
-  // Walk the order array
-  order.forEach(function(key) {
-    if (cats[key] === false) return; // explicitly off
-    var screens = screensByKey[key];
-    if (!screens || !screens.length) return;
-    if (highPriority.indexOf(key) >= 0) {
-      screens.forEach(function(s) { highScreens.push(s); });
-    } else {
-      screens.forEach(function(s) { normalScreens.push(s); });
-    }
-  });
-
-  // Countdown appended after calendar-group if available
-  if (screensByKey['show_countdown']) {
-    screensByKey['show_countdown'].forEach(function(s) { normalScreens.push(s); });
-  }
-
-  // Spread normal screens evenly through local boards
-  if (normalScreens.length) {
-    var localLen = messages.length;
-    var step = localLen > 0 ? Math.floor(localLen / (normalScreens.length + 1)) : 0;
-    var inserted = 0;
-    normalScreens.forEach(function(screen, i) {
-      var pos = step > 0
-        ? Math.min((i + 1) * step + inserted, messages.length)
-        : messages.length;
-      messages.splice(pos, 0, screen);
-      inserted++;
-    });
-  }
-
-  // High priority screens go at the very front in order
-  highScreens.reverse().forEach(function(s) {
-    messages.unshift(s);
-  });
-}
+injectDynamicScreens()
 
 // ── NOISE METER ──────────────────────────────────────
 var nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
