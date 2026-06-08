@@ -926,6 +926,8 @@ function buildQuietScreen(){
   while(lines.length<ROWS)lines.push('');
   return{lines:lines.slice(0,ROWS),speed:14,id:'quiet',align:'left',sort_order:0.7};
 }
+
+
 // ── LIVE HISTORY DROP (Wikipedia On This Day) ─────────────────
 var CW_HISTORY_LIVE = null;
 
@@ -976,12 +978,12 @@ function formatHistoryDrop(year,text){
   var lines=['',header,''];
   textLines.slice(0,4).forEach(function(l){lines.push(l);});
   while(lines.length<7)lines.push('');
-  lines.push('HISTORY DROPS');
+  lines.push('ON THIS DAY');
   return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
 }
 
 function buildHistoryDropScreen(){return CW_HISTORY_LIVE||null;}
- 
+
 // ── HONOR ROLL ────────────────────────────────────────────────
 async function loadHonorRoll(){
   if(SETTINGS&&SETTINGS.show_honor_roll===false){document.getElementById('honor-ticker-wrap').style.display='none';document.getElementById('honor-ticker-inner').innerHTML='';return;}
@@ -1000,7 +1002,7 @@ function injectDynamicScreens() {
 
   var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather',
     'show_bell','show_birthday','show_quiet','cowboy_code','fun_facts',
-    'word_of_day','wise_words','business','history_drops'];
+    'word_of_day','wise_words','business','history_drops','on_this_day'];
   var order = (Array.isArray(cats.display_order) && cats.display_order.length)
     ? cats.display_order : DC_DEFAULT;
 
@@ -1011,9 +1013,9 @@ function injectDynamicScreens() {
   if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
   if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
   if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
-  if(cats['history_drops'] !== false){var s=buildHistoryDropScreen();if(s)screensByKey['history_drops']=[s];}
   if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
   if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
+  if(cats['on_this_day'] !== false){var s=buildHistoryDropScreen();if(s)dynamicScreens['on_this_day']=[s];}
   var countScreen = buildCountdownScreen();
 
   // Build local boards map (keyed by board-uuid)
@@ -1099,7 +1101,7 @@ async function startBoard() {
   }, SYNC_SEC * 1000);
 
   setInterval(async function() {
-    await loadSettings();
+    await loadSettings(); // KEY FIX: refresh settings on 5-min refresh too
     await loadCwEvents();await loadWeather();await loadObjectives();
     await loadBirthdays();await loadMessages();await loadQuietPoints();
     await loadLiveHistoryDrop();
@@ -1294,9 +1296,9 @@ window.addEventListener('click',function(){if(typeof enableSound==='function'){v
   setInterval(updateClock,10000);setInterval(updatePeriodTimer,1000);updatePeriodTimer();updateSoundBtn();
   setTimeout(function(){var sp=document.getElementById('sound-prompt');if(sp){sp.style.opacity='0';setTimeout(function(){sp.remove();},600);}},8000);
   await startBoard();
-  await loadLiveHistoryDrop();
   await loadObjectives();await loadBirthdays();await loadMessages();
   await loadPeriodNames();await loadQuietPoints();
+  await loadLiveHistoryDrop();
   cwStartQuietTimer();
   setTimeout(function(){loadHonorRoll();},2000);
   setInterval(function(){loadHonorRoll();},30*60*1000);
