@@ -10,8 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  [data-theme="light"] {
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+  [data-theme="light"]{
     --bg:#f5f5f5;--surface:#ffffff;--surface2:#f9f9f9;--border:#e2e2e2;--border2:#d0d0d0;
     --text:#111111;--text-2:#555555;--text-3:#999999;--accent:#005640;--accent-bg:#e8f2ee;
     --accent-text:#003d2e;--danger:#dc2626;--danger-bg:#fef2f2;--warning:#d97706;
@@ -19,16 +19,14 @@
     --btn-secondary-border:#d0d0d0;--btn-secondary-text:#333;--input-bg:#ffffff;
     --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
     --shadow-md:0 4px 6px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);--header-bg:#ffffff;
-    --green:#005640;
   }
-  [data-theme="dark"] {
+  [data-theme="dark"]{
     --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:#2e2e2e;--border2:#3a3a3a;
     --text:#f0f0f0;--text-2:#aaaaaa;--text-3:#666666;--accent:#00a86b;--accent-bg:#0d2a1a;
     --accent-text:#00c87a;--danger:#f87171;--danger-bg:#2a0a0a;--warning:#fbbf24;
     --btn-primary-bg:#005640;--btn-primary-text:#ffffff;--btn-secondary-bg:#2a2a2a;
     --btn-secondary-border:#3a3a3a;--btn-secondary-text:#cccccc;--input-bg:#111111;
     --shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-md:0 4px 6px rgba(0,0,0,0.5);--header-bg:#111111;
-    --green:#00a86b;
   }
   html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;transition:background 0.2s,color 0.2s;}
   #header{position:sticky;top:0;z-index:50;background:var(--header-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;height:56px;box-shadow:var(--shadow);}
@@ -38,6 +36,8 @@
   .h-logo-sub{font-size:11px;color:var(--text-3);font-weight:400;}
   .h-sep{width:1px;height:20px;background:var(--border);flex-shrink:0;}
   .h-room-tag{font-size:12px;color:var(--text-2);font-weight:500;}
+  .h-clock-display{font-size:13px;font-weight:600;color:var(--text-2);letter-spacing:0.04em;white-space:nowrap;}
+  .h-date-display{font-size:11px;color:var(--text-3);white-space:nowrap;}
   .h-spacer{flex:1;}
   .h-actions{display:flex;align-items:center;gap:8px;}
   .theme-toggle{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;color:var(--text-2);font-weight:500;transition:all 0.15s;white-space:nowrap;font-family:inherit;}
@@ -46,7 +46,6 @@
   .btn-ghost:hover{border-color:var(--danger);color:var(--danger);}
   #pin-screen{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;}
   .pin-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-md);padding:2.5rem;width:100%;max-width:400px;display:flex;flex-direction:column;gap:1.25rem;}
-  .pin-header{display:flex;flex-direction:column;gap:4px;}
   .pin-title{font-size:20px;font-weight:700;color:var(--text);}
   .pin-sub{font-size:13px;color:var(--text-2);}
   .field-group{display:flex;flex-direction:column;}
@@ -56,14 +55,12 @@
   .field-input.shake{border-color:var(--danger);box-shadow:0 0 0 3px var(--danger-bg);animation:shake 0.3s;}
   @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
   .pin-digits{font-size:22px;letter-spacing:0.25em;text-align:center;}
-  .field-select{width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:14px;padding:9px 12px;outline:none;cursor:pointer;transition:border-color 0.15s;}
-  .field-select:focus{border-color:var(--accent);}
+  .field-select{width:100%;background:var(--input-bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:inherit;font-size:14px;padding:9px 12px;outline:none;cursor:pointer;}
   .field-hint{font-size:11px;color:var(--text-3);margin-top:4px;}
   .btn-primary{width:100%;background:var(--btn-primary-bg);border:none;border-radius:6px;color:var(--btn-primary-text);font-family:inherit;font-size:14px;font-weight:600;padding:10px;cursor:pointer;transition:opacity 0.15s;}
   .btn-primary:hover{opacity:0.88;}
   .error-text{font-size:12px;color:var(--danger);min-height:16px;text-align:center;}
-  .forgot-link{font-size:12px;color:var(--text-3);text-align:center;cursor:pointer;transition:color 0.15s;}
-  .forgot-link:hover{color:var(--text-2);}
+  .forgot-link{font-size:12px;color:var(--text-3);text-align:center;cursor:pointer;}
   #main{max-width:860px;margin:0 auto;padding:2rem 1.5rem 4rem;}
   .section{margin-bottom:2rem;}
   .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);}
@@ -85,11 +82,10 @@
   .sb-section{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:var(--shadow);margin-bottom:2rem;}
   .sb-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border);font-size:13px;font-weight:700;color:var(--text);letter-spacing:0.02em;text-transform:uppercase;}
   .sb-count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text);}
-  .boards-list{display:flex;flex-direction:column;gap:8px;max-height:260px;overflow-y:auto;}
+  .boards-list{display:flex;flex-direction:column;gap:8px;}
   .board-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);transition:border-color 0.15s;}
   .board-card:hover{border-color:var(--border2);}
   .board-card.disabled{opacity:0.5;}
-  .board-num{font-size:12px;color:var(--text-3);font-weight:600;width:20px;text-align:center;flex-shrink:0;}
   .board-info{flex:1;min-width:0;}
   .board-title{font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .board-desc{font-size:11px;color:var(--text-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -118,7 +114,7 @@
   .lines-editor{display:flex;flex-direction:column;gap:4px;}
   .line-row{display:flex;align-items:center;gap:8px;}
   .line-num{font-size:11px;color:var(--text-3);width:16px;text-align:right;flex-shrink:0;font-weight:600;}
-  .line-input{flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:6px 10px;outline:none;text-transform:uppercase;letter-spacing:0.03em;transition:border-color 0.15s;}
+  .line-input{flex:1;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:'Courier New',monospace;font-size:12px;padding:6px 10px;outline:none;text-transform:uppercase;letter-spacing:0.03em;}
   .line-input:focus{border-color:var(--accent);}
   .line-input::placeholder{color:var(--text-3);text-transform:none;font-family:inherit;}
   .line-cc{font-size:10px;color:var(--text-3);width:36px;text-align:right;flex-shrink:0;}
@@ -137,36 +133,38 @@
   [data-theme="dark"] #toast{background:#f0f0f0;color:#111;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   #toast.err{background:var(--danger);color:#fff;}
-
-  /* ── DISPLAY CONTROLS ── */
+  /* Display Controls */
   .dc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
   .dc-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;user-select:none;transition:border-color 0.18s,background 0.18s;}
   .dc-card.on{border-color:var(--accent);background:var(--accent-bg);}
-  .dc-card.off{border-color:var(--border);background:var(--surface);}
+  .dc-card.perm-card.on{border-color:#7c3aed;background:#f5f3ff;}
+  [data-theme="dark"] .dc-card.perm-card.on{background:#1e1a2e;}
   .dc-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
   .dc-icon{font-size:18px;line-height:1;}
   .dc-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
   .dc-desc{font-size:10px;color:var(--text-3);line-height:1.4;}
+  .dc-perm-badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#ede9fe;color:#6d28d9;margin-bottom:3px;}
+  [data-theme="dark"] .dc-perm-badge{background:#2e1a5e;color:#a78bfa;}
   .dc-divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
   .dc-order-label{font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
   .dc-list{display:flex;flex-direction:column;gap:4px;}
   .dc-list-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:border-color 0.15s;}
   .dc-list-item.off-item{opacity:0.45;}
-  .dc-list-num{font-size:11px;font-weight:700;color:var(--text-3);width:18px;text-align:center;flex-shrink:0;}
-  .dc-list-icon{font-size:14px;flex-shrink:0;}
-  .dc-list-name{font-size:12px;font-weight:600;color:var(--text);flex:1;}
-  .dc-list-status{font-size:10px;font-weight:600;color:var(--text-3);}
-  .dc-list-status.on{color:#15803d;}
-  .dc-list-btns{display:flex;gap:3px;flex-shrink:0;}
-  .dc-handle{width:24px;height:32px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--text-3);font-size:14px;flex-shrink:0;user-select:none;}
-  .dc-handle:active{cursor:grabbing;}
   .dc-list-item.drag-over-top{border-top:2px solid var(--accent);}
   .dc-list-item.drag-over-bottom{border-bottom:2px solid var(--accent);}
   .dc-list-item.dragging{opacity:0.35;background:var(--accent-bg);}
+  .dc-handle{width:24px;height:32px;display:flex;align-items:center;justify-content:center;cursor:grab;color:var(--text-3);font-size:14px;flex-shrink:0;user-select:none;}
+  .dc-handle:active{cursor:grabbing;}
+  .dc-list-num{font-size:11px;font-weight:700;color:var(--text-3);width:18px;text-align:center;flex-shrink:0;}
+  .dc-list-icon{font-size:14px;flex-shrink:0;}
+  .dc-list-name{font-size:12px;font-weight:600;color:var(--text);flex:1;}
+  .dc-list-perm{font-size:9px;font-weight:700;color:#6d28d9;background:#ede9fe;padding:1px 5px;border-radius:3px;flex-shrink:0;}
+  [data-theme="dark"] .dc-list-perm{background:#2e1a5e;color:#a78bfa;}
+  .dc-list-status{font-size:10px;font-weight:600;color:var(--text-3);}
+  .dc-list-status.on{color:#15803d;}
   .dc-save-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
   .dc-dirty-label{font-size:11px;color:var(--warning);font-weight:600;min-height:16px;}
-
-  /* Birthday Manager */
+  /* Birthday */
   .bday-tabs{display:flex;gap:6px;margin-bottom:14px;}
   .bday-tab{flex:1;padding:7px 10px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-3);font-family:inherit;font-size:12px;font-weight:500;cursor:pointer;transition:all 0.2s;text-align:center;}
   .bday-tab.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
@@ -198,8 +196,7 @@
   .bday-row-date{font-size:11px;color:var(--text-3);margin-top:1px;}
   .bday-del-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-size:11px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
   .bday-del-btn:hover{border-color:var(--danger);color:var(--danger);}
-
-  /* Quick Message */
+  /* Messages */
   .msg-compose{display:flex;flex-direction:column;gap:10px;}
   .msg-field-group{display:flex;flex-direction:column;gap:4px;}
   .msg-lines-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
@@ -209,7 +206,6 @@
   .msg-line{flex:1;font-family:'Courier New',monospace !important;letter-spacing:0.08em;font-size:12px !important;padding:6px 10px !important;}
   .msg-align-btn{width:28px;height:28px;flex-shrink:0;border-radius:5px;border:1px solid var(--border2);background:var(--surface2);color:var(--text-3);font-size:10px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-family:inherit;}
   .msg-align-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
-  .msg-align-btn:hover{border-color:var(--border2);color:var(--text);}
   .msg-preview-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
   .msg-preview-label{font-size:10px;font-weight:600;letter-spacing:0.15em;color:var(--text-3);text-transform:uppercase;margin-bottom:8px;}
   .msg-preview-board{display:flex;flex-direction:column;min-height:100px;justify-content:center;gap:1px;background:#0d0d0d;border-radius:4px;padding:8px 10px;}
@@ -227,8 +223,7 @@
   .msg-del-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-3);font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
   .msg-del-btn:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
   .msg-expires-soon{color:var(--warning) !important;font-weight:600;}
-
-  /* Quiet Competition */
+  /* Quiet */
   .quiet-name-row{display:flex;align-items:center;gap:8px;}
   .quiet-period-label{font-size:11px;font-weight:600;color:var(--text-3);width:24px;flex-shrink:0;}
   .quiet-standing-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
@@ -249,6 +244,11 @@
   </div>
   <div class="h-sep"></div>
   <div class="h-room-tag" id="headerRoom" style="display:none"></div>
+  <div class="h-sep" id="clockSep" style="display:none"></div>
+  <div style="display:none;flex-direction:column;align-items:flex-start;gap:1px;" id="headerClockWrap">
+    <div class="h-clock-display" id="headerClock">--:-- --</div>
+    <div class="h-date-display" id="headerDate"></div>
+  </div>
   <div class="h-spacer"></div>
   <div class="h-actions">
     <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark mode</button>
@@ -258,10 +258,8 @@
 
 <div id="pin-screen">
   <div class="pin-card">
-    <div class="pin-header">
-      <div class="pin-title">Sign In</div>
-      <div class="pin-sub">Enter your room number and PIN to continue.</div>
-    </div>
+    <div class="pin-title">Sign In</div>
+    <div class="pin-sub">Enter your room number and PIN to continue.</div>
     <div class="field-group">
       <label class="field-label" for="pinRoom">Room Number</label>
       <input class="field-input" id="pinRoom" type="text" placeholder="e.g. 27" maxlength="5"
@@ -269,8 +267,7 @@
     </div>
     <div class="field-group">
       <label class="field-label" for="pinInput">PIN</label>
-      <input class="field-input pin-digits" id="pinInput" type="password"
-        placeholder="••••" maxlength="8"
+      <input class="field-input pin-digits" id="pinInput" type="password" placeholder="••••" maxlength="8"
         onkeydown="if(event.key==='Enter')verifyPin()">
     </div>
     <div class="error-text" id="pinError"></div>
@@ -381,9 +378,7 @@
       </div>
       <div class="msg-preview-wrap">
         <div class="msg-preview-label">Board Preview</div>
-        <div class="msg-preview-board" id="msg-preview-board">
-          <div class="msg-preview-empty">Start typing to preview</div>
-        </div>
+        <div class="msg-preview-board" id="msg-preview-board"><div class="msg-preview-empty">Start typing to preview</div></div>
       </div>
       <div class="msg-actions">
         <button class="sb-btn-secondary" onclick="msgClearForm()">Clear</button>
@@ -484,28 +479,18 @@
     <div class="bday-list-scroll" id="bday-list"><div class="bday-empty">Loading...</div></div>
   </div>
 
-  <!-- DISPLAY CONTROLS -->
+  <!-- UNIFIED DISPLAY CONTROLS -->
   <div class="sb-section" id="section-display-controls">
     <div class="sb-section-header">
       <div>
         <span>📺 Display Controls</span>
-        <div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Toggle screens on/off · reorder to control what shows first</div>
+        <div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Toggle on/off · drag to reorder · controls everything on your display</div>
       </div>
     </div>
-
-    <!-- TOP: Toggle grid — rerenders to match order -->
-    <div class="dc-grid" id="dc-grid">
-      <div class="empty" style="grid-column:1/-1;padding:1rem;">Loading...</div>
-    </div>
-
+    <div class="dc-grid" id="dc-grid"><div class="empty" style="grid-column:1/-1;padding:1rem;">Loading...</div></div>
     <hr class="dc-divider">
-
-    <!-- BOTTOM: Order list with up/down arrows -->
-    <div class="dc-order-label">Display Order — first to last</div>
-    <div class="dc-list" id="dc-list">
-      <div class="bday-empty">Loading...</div>
-    </div>
-
+    <div class="dc-order-label">Display Order — drag to reorder</div>
+    <div class="dc-list" id="dc-list"><div class="bday-empty">Loading...</div></div>
     <div class="dc-save-row">
       <div class="dc-dirty-label" id="dc-dirty-label"></div>
       <button class="sb-btn-primary" onclick="dcSave()" id="dc-save-btn">Save Display Settings</button>
@@ -513,12 +498,12 @@
     <div style="font-size:11px;color:var(--text-3);margin-top:6px;min-height:16px;" id="dc-status"></div>
   </div>
 
-  <!-- BOARDS -->
+  <!-- BOARDS — edit/delete only, order controlled by Display Controls above -->
   <div class="section">
     <div class="section-head">
       <div>
         <div class="section-title">Boards</div>
-        <div style="font-size:10px;color:var(--text-3);margin-top:1px;font-weight:400;">Permanent · stays in rotation until you delete it</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:1px;font-weight:400;">Edit content · position controlled by Display Controls above</div>
       </div>
       <button class="btn accent" onclick="openNewBoard()">+ Add Board</button>
     </div>
@@ -540,14 +525,14 @@
     </div>
   </div>
 
-  <!-- GLOBAL BOARDS -->
-  <div class="section" id="globalBoardsSection">
+  <!-- GLOBAL BOARDS (master only) -->
+  <div class="section" id="globalBoardsSection" style="display:none">
     <div class="section-head">
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="section-title">Global Boards</div>
-        <span style="font-size:10px;font-weight:500;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">school-wide · read only</span>
+        <span style="font-size:10px;font-weight:500;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">master only</span>
       </div>
-      <button class="btn accent" id="addGlobalBtn" onclick="openNewGlobalBoard()" style="display:none">+ Add Global Board</button>
+      <button class="btn accent" id="addGlobalBtn" onclick="openNewGlobalBoard()">+ Add Global Board</button>
     </div>
     <div id="globalBoardsList" style="max-height:280px;overflow-y:auto;"><div class="empty">Loading...</div></div>
   </div>
@@ -562,7 +547,7 @@
     </div>
   </div>
 
-  <!-- CHANGE TEACHER LOGIN PIN -->
+  <!-- CHANGE PIN -->
   <div class="section">
     <div class="section-head"><div class="section-title">Change Teacher Login PIN</div></div>
     <div class="pin-change-row">
@@ -607,14 +592,14 @@
     </div>
   </div>
 
-</div><!-- /#main -->
+</div>
 
 <!-- BOARD MODAL -->
 <div id="modal-overlay">
   <div class="modal">
     <div class="modal-title" id="modalTitle">Add Board</div>
     <div class="field-group">
-      <label class="field-label">Board Content <span style="font-weight:400;color:var(--text-3)">(8 rows · 28 chars max · permanent until deleted)</span></label>
+      <label class="field-label">Board Content <span style="font-weight:400;color:var(--text-3)">(8 rows · 28 chars max)</span></label>
       <div class="lines-editor" id="linesEditor"></div>
       <div id="screen-preview-wrap" class="screen-preview" style="display:none">
         <div class="screen-preview-label">Board Preview</div>
@@ -625,17 +610,6 @@
       <div class="field-group">
         <label class="field-label">Duration (seconds)</label>
         <input class="field-input" id="screenSpeed" type="number" min="5" max="120" value="10">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Sort Order</label>
-        <input class="field-input" id="screenOrder" type="number" min="1" value="1">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Enabled</label>
-        <select class="field-select" id="screenEnabled">
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
       </div>
     </div>
     <div class="modal-actions">
@@ -650,104 +624,74 @@
 const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
-var ROOM = '', classroom = null, boards = [], editingId = null, editingGlobalId = null, isMasterSession = false, globalBoards = [];
+var ROOM='',classroom=null,boards=[],editingId=null,editingGlobalId=null,isMasterSession=false,globalBoards=[];
+var dcSettings=null,dcOrder=[],dcCats={},dcDirty=false;
+var bdayData=[],bdayExisting=[];
 
-var darkMode = localStorage.getItem('cw2-admin-theme') === 'dark';
-function applyTheme() {
-  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
-  document.getElementById('themeBtn').textContent = darkMode ? '☀️ Light mode' : '🌙 Dark mode';
-  localStorage.setItem('cw2-admin-theme', darkMode ? 'dark' : 'light');
-}
-function toggleTheme() { darkMode = !darkMode; applyTheme(); }
+// ── THEME ──────────────────────────────────────────────────────
+var darkMode=localStorage.getItem('cw2-admin-theme')==='dark';
+function applyTheme(){document.documentElement.setAttribute('data-theme',darkMode?'dark':'light');document.getElementById('themeBtn').textContent=darkMode?'☀️ Light mode':'🌙 Dark mode';localStorage.setItem('cw2-admin-theme',darkMode?'dark':'light');}
+function toggleTheme(){darkMode=!darkMode;applyTheme();}
 applyTheme();
 
-async function sbFetch(table, query) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-  });
-  if (!res.ok) return null;
-  return res.json();
+// ── HEADER CLOCK ───────────────────────────────────────────────
+function updateHeaderClock(){
+  var now=new Date(),h=now.getHours(),m=now.getMinutes().toString().padStart(2,'0'),s=now.getSeconds().toString().padStart(2,'0');
+  var ap=h>=12?'PM':'AM';h=h%12||12;
+  var days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var el=document.getElementById('headerClock'),de=document.getElementById('headerDate');
+  if(el)el.textContent=h+':'+m+':'+s+' '+ap;
+  if(de)de.textContent=days[now.getDay()]+', '+months[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
 }
-async function sbInsert(table, data) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
-    method: 'POST',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
-async function sbUpdate(table, id, data) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
-    method: 'PATCH',
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-    body: JSON.stringify(data)
-  });
-  if (!res.ok) return null;
-  return res.json();
-}
-async function sbDelete(table, id) {
-  var res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?id=eq.' + id, {
-    method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-  });
-  return res.ok;
-}
+setInterval(updateHeaderClock,1000);
 
-var urlParams = new URLSearchParams(location.search);
-var urlRoom = urlParams.get('room') || '';
-window.addEventListener('DOMContentLoaded', function() {
-  if (urlRoom) document.getElementById('pinRoom').value = urlRoom;
-  document.getElementById(urlRoom ? 'pinInput' : 'pinRoom').focus();
-});
+// ── SUPABASE HELPERS ───────────────────────────────────────────
+async function sbFetch(table,query){var res=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+query,{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)return null;return res.json();}
+async function sbInsert(table,data){var res=await fetch(SUPABASE_URL+'/rest/v1/'+table,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});if(!res.ok)return null;return res.json();}
+async function sbUpdate(table,id,data){var res=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(data)});if(!res.ok)return null;return res.json();}
+async function sbDelete(table,id){var res=await fetch(SUPABASE_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});return res.ok;}
 
-async function verifyPin() {
-  var roomVal = document.getElementById('pinRoom').value.trim();
-  var pinVal  = document.getElementById('pinInput').value.trim();
-  if (!roomVal) { showPinError('Enter a room number'); return; }
-  if (!pinVal)  { showPinError('Enter your PIN'); return; }
-  var adminRows = await sbFetch('cw2_settings', 'room=eq.admin&select=master_pin');
-  var masterPin = (adminRows && adminRows[0]) ? adminRows[0].master_pin : null;
-  if (masterPin && pinVal === masterPin) {
-    var checkRows = await sbFetch('cw2_classrooms', 'room=eq.' + roomVal + '&select=config');
-    var hasPin = checkRows && checkRows[0] && checkRows[0].config && checkRows[0].config.admin_pin;
-    if (hasPin) { showPinError('Incorrect PIN'); shakeInput(); return; }
-    ROOM = roomVal; isMasterSession = true; await unlockAdmin(); return;
+// ── PIN / AUTH ─────────────────────────────────────────────────
+var urlParams=new URLSearchParams(location.search),urlRoom=urlParams.get('room')||'';
+window.addEventListener('DOMContentLoaded',function(){if(urlRoom)document.getElementById('pinRoom').value=urlRoom;document.getElementById(urlRoom?'pinInput':'pinRoom').focus();});
+
+async function verifyPin(){
+  var roomVal=document.getElementById('pinRoom').value.trim(),pinVal=document.getElementById('pinInput').value.trim();
+  if(!roomVal){showPinError('Enter a room number');return;}
+  if(!pinVal){showPinError('Enter your PIN');return;}
+  var adminRows=await sbFetch('cw2_settings','room=eq.admin&select=master_pin');
+  var masterPin=(adminRows&&adminRows[0])?adminRows[0].master_pin:null;
+  if(masterPin&&pinVal===masterPin){
+    var checkRows=await sbFetch('cw2_classrooms','room=eq.'+roomVal+'&select=config');
+    var hasPin=checkRows&&checkRows[0]&&checkRows[0].config&&checkRows[0].config.admin_pin;
+    if(hasPin){showPinError('Incorrect PIN');shakeInput();return;}
+    ROOM=roomVal;isMasterSession=true;await unlockAdmin();return;
   }
-  var rows = await sbFetch('cw2_classrooms', 'room=eq.' + roomVal + '&select=*');
-  if (!rows || !rows.length) { showPinError('Room not found'); return; }
-  var cls = rows[0];
-  var storedPin = cls.config && cls.config.admin_pin ? cls.config.admin_pin : null;
-  if (!storedPin) { showPinError('No PIN set — contact your admin'); return; }
-  if (pinVal !== String(storedPin)) { showPinError('Incorrect PIN'); shakeInput(); return; }
-  ROOM = roomVal; classroom = cls; isMasterSession = false; await unlockAdmin();
+  var rows=await sbFetch('cw2_classrooms','room=eq.'+roomVal+'&select=*');
+  if(!rows||!rows.length){showPinError('Room not found');return;}
+  var cls=rows[0],storedPin=cls.config&&cls.config.admin_pin?cls.config.admin_pin:null;
+  if(!storedPin){showPinError('No PIN set — contact your admin');return;}
+  if(pinVal!==String(storedPin)){showPinError('Incorrect PIN');shakeInput();return;}
+  ROOM=roomVal;classroom=cls;isMasterSession=false;await unlockAdmin();
 }
-function shakeInput() {
-  var inp = document.getElementById('pinInput');
-  inp.classList.add('shake');
-  setTimeout(function() { inp.classList.remove('shake'); }, 400);
-}
-function showPinError(msg) {
-  var el = document.getElementById('pinError');
-  el.textContent = msg;
-  clearTimeout(el._t);
-  el._t = setTimeout(function() { el.textContent = ''; }, 3500);
-}
-function showMasterHint() { showPinError('Contact your admin for access'); }
+function shakeInput(){var inp=document.getElementById('pinInput');inp.classList.add('shake');setTimeout(function(){inp.classList.remove('shake');},400);}
+function showPinError(msg){var el=document.getElementById('pinError');el.textContent=msg;clearTimeout(el._t);el._t=setTimeout(function(){el.textContent='';},3500);}
+function showMasterHint(){showPinError('Contact your admin for access');}
 
-async function unlockAdmin() {
-  document.getElementById('pin-screen').style.display = 'none';
-  document.getElementById('main').style.display = 'block';
-  document.getElementById('logoutBtn').style.display = 'block';
-  var tag = document.getElementById('headerRoom');
-  tag.textContent = 'Room ' + ROOM; tag.style.display = 'block';
-  if (!classroom) {
-    var rows = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
-    classroom = (rows && rows[0]) ? rows[0] : null;
-  }
+async function unlockAdmin(){
+  document.getElementById('pin-screen').style.display='none';
+  document.getElementById('main').style.display='block';
+  document.getElementById('logoutBtn').style.display='block';
+  var tag=document.getElementById('headerRoom');tag.textContent='Room '+ROOM;tag.style.display='block';
+  var cw=document.getElementById('headerClockWrap'),cs=document.getElementById('clockSep');
+  if(cw){cw.style.display='flex';}if(cs)cs.style.display='block';
+  updateHeaderClock();
+  if(!classroom){var rows=await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');classroom=(rows&&rows[0])?rows[0]:null;}
   updateRoomInfo();
-  var hrRows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=show_honor_roll');
-  var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
-  document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
+  var hrRows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=show_honor_roll');
+  var hrVal=hrRows&&hrRows[0]?hrRows[0].show_honor_roll:null;
+  document.getElementById('settingHonorRoll').textContent=hrVal===false?'✗ Off':'✓ On';
   await loadBoards();
   await loadDisplayControls();
   await loadGlobalBoards();
@@ -756,948 +700,464 @@ async function unlockAdmin() {
   await msgLoadList();
   await quietLoadNames();
   await quietLoadStandings();
-  document.getElementById('roomMgmtSection').style.display = isMasterSession ? 'block' : 'none';
-  document.getElementById('addGlobalBtn').style.display = isMasterSession ? 'inline-flex' : 'none';
-  if (classroom && classroom.config && classroom.config.pin_is_default) {
-    setTimeout(function() { toast('Please set a new PIN — scroll down to Change Teacher Login PIN'); }, 600);
+  document.getElementById('roomMgmtSection').style.display=isMasterSession?'block':'none';
+  document.getElementById('globalBoardsSection').style.display=isMasterSession?'block':'none';
+  if(classroom&&classroom.config&&classroom.config.pin_is_default){
+    setTimeout(function(){toast('Please set a new PIN — scroll down to Change Teacher Login PIN');},600);
   }
 }
 
-function logout() {
-  ROOM = ''; classroom = null; boards = []; globalBoards = []; editingId = null; editingGlobalId = null; isMasterSession = false;
-  bdayData = []; bdayExisting = []; dcSettings = null; dcOrder = []; dcDirty = false;
-  document.getElementById('pin-screen').style.display = 'flex';
-  document.getElementById('main').style.display = 'none';
-  document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('headerRoom').style.display = 'none';
-  document.getElementById('pinInput').value = '';
-  document.getElementById('pinError').textContent = '';
+function logout(){
+  ROOM='';classroom=null;boards=[];globalBoards=[];editingId=null;editingGlobalId=null;isMasterSession=false;
+  bdayData=[];bdayExisting=[];dcSettings=null;dcOrder=[];dcCats={};dcDirty=false;
+  document.getElementById('pin-screen').style.display='flex';
+  document.getElementById('main').style.display='none';
+  document.getElementById('logoutBtn').style.display='none';
+  document.getElementById('headerRoom').style.display='none';
+  var cw=document.getElementById('headerClockWrap'),cs=document.getElementById('clockSep');
+  if(cw)cw.style.display='none';if(cs)cs.style.display='none';
+  document.getElementById('pinInput').value='';
+  document.getElementById('pinError').textContent='';
 }
 
-function updateRoomInfo() {
-  document.getElementById('settingRoom').textContent    = ROOM;
-  document.getElementById('settingTeacher').textContent = classroom ? (classroom.teacher_name || '—') : '—';
-  document.getElementById('settingBadge').textContent   = classroom ? (classroom.badge || '—') : '—';
-  document.getElementById('displayUrl').textContent     = location.origin + '/display.html?room=' + ROOM;
+function updateRoomInfo(){
+  document.getElementById('settingRoom').textContent=ROOM;
+  document.getElementById('settingTeacher').textContent=classroom?(classroom.teacher_name||'—'):'—';
+  document.getElementById('settingBadge').textContent=classroom?(classroom.badge||'—'):'—';
+  document.getElementById('displayUrl').textContent=location.origin+'/display.html?room='+ROOM;
 }
-function copyDisplayUrl() {
-  navigator.clipboard.writeText(location.origin + '/display.html?room=' + ROOM).then(function() { toast('URL copied'); });
-}
-function openDisplay() { window.open('/display.html?room=' + ROOM, '_blank'); }
+function copyDisplayUrl(){navigator.clipboard.writeText(location.origin+'/display.html?room='+ROOM).then(function(){toast('URL copied');});}
+function openDisplay(){window.open('/display.html?room='+ROOM,'_blank');}
 
-async function loadBoards() {
-  var rows = await sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc');
-  boards = rows || [];
+// ── BOARDS (edit/delete only) ──────────────────────────────────
+async function loadBoards(){
+  var rows=await sbFetch('cw2_screens','room=eq.'+ROOM+'&order=sort_order.asc');
+  boards=rows||[];
   renderBoards();
-  var active = boards.filter(function(s) { return s.enabled; }).length;
-  document.getElementById('settingBoardCount').textContent = active + ' / ' + boards.length;
+  var active=boards.filter(function(s){return s.enabled;}).length;
+  document.getElementById('settingBoardCount').textContent=active+' / '+boards.length;
+  // Sync boards into display order
+  syncBoardsToOrder();
 }
 
-function renderBoards() {
-  var list = document.getElementById('boardsList');
-  if (!boards.length) { list.innerHTML = '<div class="empty">No boards yet — click Add Board to get started.</div>'; return; }
-  list.innerHTML = boards.map(function(s, i) {
-    var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
-    var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
-    var rest  = lines.filter(function(l) { return l && l.trim(); }).slice(1, 3).join(' · ');
-    var on = s.enabled;
-    return '<div class="board-card ' + (on ? '' : 'disabled') + '">' +
-      '<div class="board-num">' + (s.sort_order || i+1) + '</div>' +
-      '<div class="board-info"><div class="board-title">' + line1 + '</div>' +
-      (rest ? '<div class="board-desc">' + rest + '</div>' : '') + '</div>' +
-      '<div class="board-meta">' + (s.speed || 10) + 's</div>' +
+function renderBoards(){
+  var list=document.getElementById('boardsList');
+  if(!boards.length){list.innerHTML='<div class="empty">No boards yet — click Add Board to get started.</div>';return;}
+  list.innerHTML=boards.map(function(s){
+    var lines=Array.isArray(s.lines)?s.lines:JSON.parse(s.lines||'[]');
+    var line1=lines.find(function(l){return l&&l.trim();})||'Empty board';
+    var rest=lines.filter(function(l){return l&&l.trim();}).slice(1,3).join(' · ');
+    var on=s.enabled;
+    return '<div class="board-card '+(on?'':'disabled')+'">' +
+      '<div class="board-info"><div class="board-title">'+line1+'</div>'+(rest?'<div class="board-desc">'+rest+'</div>':'')+
+      '</div><div class="board-meta">'+(s.speed||10)+'s</div>' +
       '<span class="perm-badge">Permanent</span>' +
-      '<span class="status-badge ' + (on ? 'on' : 'off') + '">' + (on ? '● On' : '○ Off') + '</span>' +
       '<div class="board-actions">' +
-      '<button class="btn" onclick="toggleBoard(\'' + s.id + '\',' + on + ')">' + (on ? 'Disable' : 'Enable') + '</button>' +
-      '<button class="btn" onclick="openEditBoard(\'' + s.id + '\')">Edit</button>' +
-      '<button class="btn danger" onclick="deleteBoard(\'' + s.id + '\')">Delete</button>' +
+      '<button class="btn" onclick="openEditBoard(\''+s.id+'\')">Edit</button>' +
+      '<button class="btn danger" onclick="deleteBoard(\''+s.id+'\')">Delete</button>' +
       '</div></div>';
   }).join('');
 }
 
-async function toggleBoard(id, cur) {
-  await sbUpdate('cw2_screens', id, { enabled: !cur });
-  await loadBoards(); toast(cur ? 'Board disabled' : 'Board enabled');
-}
-async function deleteBoard(id) {
-  if (!confirm('Delete this screen? This cannot be undone.')) return;
-  await sbDelete('cw2_screens', id); await loadBoards(); toast('Board deleted');
+// Sync any boards not yet in dcOrder into the order list
+function syncBoardsToOrder(){
+  if(!dcSettings)return;
+  var changed=false;
+  boards.forEach(function(b){
+    var key='board-'+b.id;
+    if(dcOrder.indexOf(key)<0){
+      dcOrder.push(key);
+      changed=true;
+    }
+  });
+  // Remove board keys for boards that no longer exist
+  var boardIds=boards.map(function(b){return'board-'+b.id;});
+  var cleaned=dcOrder.filter(function(k){
+    if(!k.startsWith('board-'))return true;
+    return boardIds.indexOf(k)>=0;
+  });
+  if(cleaned.length!==dcOrder.length){dcOrder=cleaned;changed=true;}
+  if(changed){dcDirty=true;dcRenderGrid();dcRenderList();dcUpdateDirty();}
 }
 
-function buildLinesEditor(values) {
-  values = values || [];
-  var ed = document.getElementById('linesEditor');
-  ed.innerHTML = '';
-  for (var i = 0; i < 8; i++) {
-    var val = (values[i] || '').toUpperCase();
-    var row = document.createElement('div');
-    row.className = 'line-row';
-    row.innerHTML = '<div class="line-num">' + (i+1) + '</div>' +
-      '<input class="line-input" id="line' + i + '" type="text" maxlength="28"' +
-      ' value="' + val.replace(/"/g, '&quot;') + '"' +
-      ' placeholder="' + (i===0 ? 'Main headline' : '') + '"' +
-      ' oninput="updateCC(' + i + ');updateScreenPreview()">' +
-      '<div class="line-cc" id="cc' + i + '">' + val.length + '/28</div>';
+async function toggleBoard(id,cur){await sbUpdate('cw2_screens',id,{enabled:!cur});await loadBoards();toast(cur?'Board disabled':'Board enabled');}
+
+async function deleteBoard(id){
+  if(!confirm('Delete this board? This cannot be undone.'))return;
+  await sbDelete('cw2_screens',id);
+  // Remove from display order and save
+  var key='board-'+id;
+  dcOrder=dcOrder.filter(function(k){return k!==key;});
+  if(dcSettings){
+    var toSave=Object.assign({},dcCats);
+    toSave.display_order=dcOrder.slice();
+    await fetch(SUPABASE_URL+'/rest/v1/cw2_settings?id=eq.'+dcSettings.id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({global_categories:toSave})});
+    dcCats=toSave;dcSettings.global_categories=toSave;
+  }
+  await loadBoards();toast('Board deleted');
+}
+
+// ── BOARD MODAL ────────────────────────────────────────────────
+function buildLinesEditor(values){
+  values=values||[];
+  var ed=document.getElementById('linesEditor');ed.innerHTML='';
+  for(var i=0;i<8;i++){
+    var val=(values[i]||'').toUpperCase();
+    var row=document.createElement('div');row.className='line-row';
+    row.innerHTML='<div class="line-num">'+(i+1)+'</div>' +
+      '<input class="line-input" id="line'+i+'" type="text" maxlength="28" value="'+val.replace(/"/g,'&quot;')+'" placeholder="'+(i===0?'Main headline':'')+'" oninput="updateCC('+i+');updateScreenPreview()">' +
+      '<div class="line-cc" id="cc'+i+'">'+val.length+'/28</div>';
     ed.appendChild(row);
   }
   updateScreenPreview();
 }
-function updateCC(i) {
-  var len = document.getElementById('line' + i).value.length;
-  var el  = document.getElementById('cc' + i);
-  el.textContent = len + '/28';
-  el.className = 'line-cc' + (len > 28 ? ' over' : len > 22 ? ' warn' : '');
-}
-function updateScreenPreview() {
-  var wrap  = document.getElementById('screen-preview-wrap');
-  var board = document.getElementById('screen-preview-board');
-  if (!wrap || !board) return;
-  var lines = [];
-  for (var i = 0; i < 8; i++) {
-    var el = document.getElementById('line' + i);
-    lines.push(el ? el.value.toUpperCase() : '');
-  }
-  var hasContent = lines.some(function(l) { return l.trim(); });
-  if (!hasContent) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  board.innerHTML = lines.map(function(l) {
-    var text = (l || '').substring(0, 28);
-    var pad = 28 - text.length;
-    var left = Math.floor(pad / 2);
-    var display = ' '.repeat(left) + text;
-    return '<div style="white-space:pre;line-height:1.5;color:' + (text.trim() ? '#f0ebe0' : '#1a1a1a') + '">' +
-      (display.length > 0 ? display : ' '.repeat(28)) + '</div>';
+function updateCC(i){var len=document.getElementById('line'+i).value.length,el=document.getElementById('cc'+i);el.textContent=len+'/28';el.className='line-cc'+(len>28?' over':len>22?' warn':'');}
+function updateScreenPreview(){
+  var wrap=document.getElementById('screen-preview-wrap'),board=document.getElementById('screen-preview-board');
+  if(!wrap||!board)return;
+  var lines=[];for(var i=0;i<8;i++){var el=document.getElementById('line'+i);lines.push(el?el.value.toUpperCase():'');}
+  var hasContent=lines.some(function(l){return l.trim();});
+  if(!hasContent){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  board.innerHTML=lines.map(function(l){
+    var text=(l||'').substring(0,28),pad=28-text.length,left=Math.floor(pad/2),display=' '.repeat(left)+text;
+    return '<div style="white-space:pre;line-height:1.5;color:'+(text.trim()?'#f0ebe0':'#1a1a1a')+'">'+display+'</div>';
   }).join('');
 }
-function getLines() {
-  var out = [];
-  for (var i = 0; i < 8; i++) out.push(document.getElementById('line' + i).value.toUpperCase().trim());
-  return out;
-}
-function openNewBoard() {
-  editingId = null; document._savingGlobal = false;
-  document.getElementById('modalTitle').textContent = 'Add Board';
+function getLines(){var out=[];for(var i=0;i<8;i++)out.push(document.getElementById('line'+i).value.toUpperCase().trim());return out;}
+
+function openNewBoard(){
+  editingId=null;document._savingGlobal=false;
+  document.getElementById('modalTitle').textContent='Add Board';
   buildLinesEditor([]);
-  document.getElementById('screenSpeed').value = 10;
-  document.getElementById('screenOrder').value = boards.length + 1;
-  document.getElementById('screenEnabled').value = 'true';
+  document.getElementById('screenSpeed').value=10;
   document.getElementById('modal-overlay').classList.add('open');
 }
-function openEditBoard(id) {
-  var s = boards.find(function(x) { return x.id === id; });
-  if (!s) return;
-  editingId = id;
-  document.getElementById('modalTitle').textContent = 'Edit Board';
-  var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
+function openEditBoard(id){
+  var s=boards.find(function(x){return x.id===id;});if(!s)return;
+  editingId=id;
+  document.getElementById('modalTitle').textContent='Edit Board';
+  var lines=Array.isArray(s.lines)?s.lines:JSON.parse(s.lines||'[]');
   buildLinesEditor(lines);
-  document.getElementById('screenSpeed').value = s.speed || 10;
-  document.getElementById('screenOrder').value = s.sort_order || 1;
-  document.getElementById('screenEnabled').value = s.enabled ? 'true' : 'false';
+  document.getElementById('screenSpeed').value=s.speed||10;
   document.getElementById('modal-overlay').classList.add('open');
 }
-function closeModal() {
+function closeModal(){
   document.getElementById('modal-overlay').classList.remove('open');
-  editingId = null; editingGlobalId = null; document._savingGlobal = false;
-  var pw = document.getElementById('screen-preview-wrap'); if (pw) pw.style.display='none';
+  editingId=null;editingGlobalId=null;document._savingGlobal=false;
+  var pw=document.getElementById('screen-preview-wrap');if(pw)pw.style.display='none';
 }
-async function saveScreen() {
-  var lines   = getLines();
-  var speed   = parseInt(document.getElementById('screenSpeed').value) || 10;
-  var order   = parseInt(document.getElementById('screenOrder').value) || 1;
-  var enabled = document.getElementById('screenEnabled').value === 'true';
-  if (!lines.some(function(l) { return l.trim(); })) { toast('Add at least one line of text', true); return; }
-  var isGlobal = document._savingGlobal || false;
-  var roomTarget = isGlobal ? 'global' : ROOM;
-  var data = { room: roomTarget, lines: lines, speed: speed, sort_order: order, enabled: enabled };
-  if (isGlobal) {
-    if (editingGlobalId) {
-      var r = await sbUpdate('cw2_screens', editingGlobalId, data);
-      if (!r) { toast('Update failed', true); return; }
-      toast('Global board updated');
-    } else {
-      var r = await sbInsert('cw2_screens', data);
-      if (!r) { toast('Save failed', true); return; }
-      toast('Global board added');
-    }
-    closeModal(); await loadGlobalBoards();
+
+async function saveScreen(){
+  var lines=getLines(),speed=parseInt(document.getElementById('screenSpeed').value)||10;
+  var enabled=true;
+  if(!lines.some(function(l){return l.trim();})){toast('Add at least one line of text',true);return;}
+  var isGlobal=document._savingGlobal||false;
+  var roomTarget=isGlobal?'global':ROOM;
+  var data={room:roomTarget,lines:lines,speed:speed,enabled:enabled};
+  if(!isGlobal)data.sort_order=9999; // placeholder, order controlled by display_order
+  if(isGlobal){
+    if(editingGlobalId){var r=await sbUpdate('cw2_screens',editingGlobalId,data);if(!r){toast('Update failed',true);return;}toast('Global board updated');}
+    else{var r=await sbInsert('cw2_screens',data);if(!r){toast('Save failed',true);return;}toast('Global board added');}
+    closeModal();await loadGlobalBoards();
   } else {
-    if (editingId) {
-      var r = await sbUpdate('cw2_screens', editingId, data);
-      if (!r) { toast('Update failed', true); return; }
-      toast('Board updated');
+    if(editingId){
+      var r=await sbUpdate('cw2_screens',editingId,data);if(!r){toast('Update failed',true);return;}toast('Board updated');
+      closeModal();await loadBoards();
     } else {
-      var r = await sbInsert('cw2_screens', data);
-      if (!r) { toast('Save failed — RLS may be blocking inserts', true); return; }
-      toast('Board added');
+      var r=await sbInsert('cw2_screens',data);
+      if(!r){toast('Save failed — RLS may be blocking inserts',true);return;}
+      // New board: append to display_order and save
+      var newId=r[0].id,key='board-'+newId;
+      dcOrder.push(key);
+      if(dcSettings){
+        var toSave=Object.assign({},dcCats);toSave.display_order=dcOrder.slice();
+        await fetch(SUPABASE_URL+'/rest/v1/cw2_settings?id=eq.'+dcSettings.id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({global_categories:toSave})});
+        dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;
+      }
+      toast('Board added — drag it in Display Controls to position it');
+      closeModal();await loadBoards();
     }
-    closeModal(); await loadBoards();
   }
 }
 
-async function changePin() {
-  var newPin  = document.getElementById('newPinInput').value.trim();
-  var confirm = document.getElementById('confirmPinInput').value.trim();
-  var errEl   = document.getElementById('pinChangeError');
-  if (!newPin || newPin.length < 4) { errEl.textContent = 'PIN must be 4–8 digits'; return; }
-  if (newPin !== confirm)           { errEl.textContent = 'PINs do not match'; return; }
-  if (!/^\d+$/.test(newPin))       { errEl.textContent = 'Numbers only'; return; }
-  errEl.textContent = '';
-  var currentConfig = (classroom && classroom.config) ? classroom.config : {};
-  currentConfig.admin_pin = newPin; currentConfig.pin_is_default = false;
-  if (classroom && classroom.id) {
-    await sbUpdate('cw2_classrooms', classroom.id, { config: currentConfig });
-    classroom.config = currentConfig;
-    document.getElementById('newPinInput').value = '';
-    document.getElementById('confirmPinInput').value = '';
-    toast('PIN updated');
-  } else { errEl.textContent = 'Classroom record not found'; }
-}
-
-async function onboardRoom() {
-  var roomNum = document.getElementById('newRoomNum').value.trim();
-  var teacher = document.getElementById('newRoomTeacher').value.trim();
-  var email   = document.getElementById('newRoomEmail').value.trim();
-  var errEl   = document.getElementById('onboardError');
-  errEl.textContent = '';
-  if (!roomNum) { errEl.textContent = 'Room number required'; return; }
-  if (!teacher) { errEl.textContent = 'Teacher name required'; return; }
-  var existing = await sbFetch('cw2_classrooms', 'room=eq.' + roomNum + '&select=room');
-  if (existing && existing.length) { errEl.textContent = 'Room ' + roomNum + ' already exists'; return; }
-  var defaultPin = roomNum + roomNum;
-  var result = await sbInsert('cw2_classrooms', { room: roomNum, badge: 'RHS · ROOM ' + roomNum, teacher_name: teacher, teacher_email: email || null, is_active: true, config: { admin_pin: defaultPin, pin_is_default: true } });
-  if (!result) { errEl.textContent = 'Failed to create room — check Supabase'; return; }
-  document.getElementById('newRoomNum').value = '';
-  document.getElementById('newRoomTeacher').value = '';
-  document.getElementById('newRoomEmail').value = '';
-  toast('Room ' + roomNum + ' added — default PIN: ' + defaultPin);
-}
-
-async function resetRoomPin() {
-  var roomNum = document.getElementById('resetRoomNum').value.trim();
-  var errEl   = document.getElementById('resetError');
-  errEl.textContent = '';
-  if (!roomNum) { errEl.textContent = 'Enter a room number'; return; }
-  var rows = await sbFetch('cw2_classrooms', 'room=eq.' + roomNum + '&select=id,config');
-  if (!rows || !rows.length) { errEl.textContent = 'Room ' + roomNum + ' not found'; return; }
-  var defaultPin = roomNum + roomNum;
-  var result = await sbUpdate('cw2_classrooms', rows[0].id, { config: { admin_pin: defaultPin, pin_is_default: true } });
-  if (!result) { errEl.textContent = 'Reset failed'; return; }
-  document.getElementById('resetRoomNum').value = '';
-  toast('Room ' + roomNum + ' PIN reset — new PIN: ' + defaultPin);
-}
-
-async function loadGlobalBoards() {
-  var rows = await sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc');
-  globalBoards = rows || [];
-  renderGlobalBoards();
-}
-function renderGlobalBoards() {
-  var list = document.getElementById('globalBoardsList');
-  if (!globalBoards.length) { list.innerHTML = '<div class="empty">No global boards yet.</div>'; return; }
-  list.innerHTML = globalBoards.map(function(s, i) {
-    var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
-    var line1 = lines.find(function(l) { return l && l.trim(); }) || 'Empty screen';
-    var rest  = lines.filter(function(l) { return l && l.trim(); }).slice(1, 3).join(' · ');
-    var on = s.enabled;
-    var actions = isMasterSession
-      ? '<button class="btn" onclick="openEditGlobalBoard(\'' + s.id + '\')">Edit</button><button class="btn danger" onclick="deleteGlobalBoard(\'' + s.id + '\')">Delete</button>'
-      : '<span style="font-size:11px;color:var(--text-3);padding:0 4px;">Read only</span>';
-    return '<div class="board-card global-card ' + (on ? '' : 'disabled') + '">' +
-      '<div class="board-num">' + (s.sort_order || i+1) + '</div>' +
-      '<div class="board-info"><div class="board-title">' + line1 + '</div>' +
-      (rest ? '<div class="board-desc">' + rest + '</div>' : '') + '</div>' +
-      '<div class="board-meta">' + (s.speed || 12) + 's</div>' +
-      '<span class="global-badge">Global</span>' +
-      '<span class="status-badge ' + (on ? 'on' : 'off') + '">' + (on ? '● On' : '○ Off') + '</span>' +
-      '<div class="board-actions">' + actions + '</div></div>';
-  }).join('');
-}
-function openNewGlobalBoard() {
-  editingGlobalId = null; document._savingGlobal = true;
-  document.getElementById('modalTitle').textContent = 'Add Global Board';
-  buildLinesEditor([]);
-  document.getElementById('screenSpeed').value = 12;
-  document.getElementById('screenOrder').value = globalBoards.length + 10;
-  document.getElementById('screenEnabled').value = 'true';
-  document.getElementById('modal-overlay').classList.add('open');
-}
-function openEditGlobalBoard(id) {
-  var s = globalBoards.find(function(x) { return x.id === id; });
-  if (!s) return;
-  editingGlobalId = id; document._savingGlobal = true;
-  document.getElementById('modalTitle').textContent = 'Edit Global Board';
-  var lines = Array.isArray(s.lines) ? s.lines : JSON.parse(s.lines || '[]');
-  buildLinesEditor(lines);
-  document.getElementById('screenSpeed').value = s.speed || 12;
-  document.getElementById('screenOrder').value = s.sort_order || 10;
-  document.getElementById('screenEnabled').value = s.enabled ? 'true' : 'false';
-  document.getElementById('modal-overlay').classList.add('open');
-}
-async function deleteGlobalBoard(id) {
-  if (!confirm('Delete this global screen? It will be removed from all rooms.')) return;
-  await sbDelete('cw2_screens', id); await loadGlobalBoards(); toast('Global board deleted');
-}
-
-async function toggleHonorRoll() {
-  var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,show_honor_roll');
-  if (!rows || !rows.length) { toast('Settings record not found', true); return; }
-  var current = rows[0].show_honor_roll;
-  var next = current === false ? true : false;
-  await sbUpdate('cw2_settings', rows[0].id, { show_honor_roll: next });
-  document.getElementById('settingHonorRoll').textContent = next ? '✓ On' : '✗ Off';
-  toast('Honor roll ' + (next ? 'enabled' : 'disabled'));
-}
-
-function toast(msg, isErr) {
-  var el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show' + (isErr ? ' err' : '');
-  clearTimeout(el._t);
-  el._t = setTimeout(function() { el.className = ''; }, 2500);
-}
-
-document.getElementById('modal-overlay').addEventListener('click', function(e) {
-  if (e.target === document.getElementById('modal-overlay')) closeModal();
-});
-
-// ── OBJECTIVES ────────────────────────────────────────────────
-var OBJ_PERIOD = '1';
-var objCache = {};
-
-async function loadObjectives() {
-  var rows = await sbFetch('cw2_objectives', 'room=eq.' + ROOM + '&select=*');
-  objCache = {};
-  (rows || []).forEach(function(r) { objCache[r.period] = r; });
-  objRefreshTabs(); objLoadPeriod(OBJ_PERIOD); objUpdateActivePeriod();
-}
-function objRefreshTabs() {
-  ['1','2','3','4','5','6','7'].forEach(function(p) {
-    var btn = document.getElementById('objtab-' + p);
-    if (!btn) return;
-    var rec = objCache[p];
-    var isSet = rec && rec.active && rec.title;
-    btn.className = 'obj-tab' + (p === OBJ_PERIOD ? ' active' : (isSet ? ' set' : ''));
-  });
-}
-function objUpdateActivePeriod() {
-  var badge = document.getElementById('objActivePeriod');
-  var label = document.getElementById('objStatusLabel');
-  if (badge) badge.style.display = 'none';
-  if (label) label.textContent = 'NOT SET';
-}
-function objSelectPeriod(p) {
-  OBJ_PERIOD = p; objRefreshTabs(); objLoadPeriod(p);
-  document.getElementById('objPeriodHeading').textContent = 'P' + p + ' OBJECTIVES';
-}
-function objLoadPeriod(p) {
-  var rec = objCache[p];
-  var today = new Date().toISOString().split('T')[0];
-  document.getElementById('objTitle').value   = rec ? (rec.title || '') : '';
-  document.getElementById('objLine1').value   = rec ? (rec.line1 || '') : '';
-  document.getElementById('objLine2').value   = rec ? (rec.line2 || '') : '';
-  document.getElementById('objDate').value    = rec ? (rec.scheduled_date || today) : today;
-  document.getElementById('objMode').value    = rec ? (rec.display_mode || 'always') : 'always';
-  document.getElementById('objMinutes').value = rec ? (rec.timed_minutes || 10) : 10;
-  ['objTitle','objLine1','objLine2'].forEach(function(id) {
-    var max = id === 'objTitle' ? 28 : 80;
-    objUpdateCC(id, id + 'CC', max);
-  });
-  objToggleTimed();
-  document.getElementById('objError').textContent = '';
-}
-function objUpdateCC(inputId, ccId, max) {
-  var len = document.getElementById(inputId).value.length;
-  var el  = document.getElementById(ccId);
-  if (!el) return;
-  el.textContent = len + '/' + max;
-  el.style.color = len > max * 0.9 ? 'var(--warning)' : 'var(--text-3)';
-}
-function objToggleTimed() {
-  var mode = document.getElementById('objMode').value;
-  document.getElementById('objTimedGroup').style.display = mode === 'timed' ? 'block' : 'none';
-}
-async function objSave() {
-  var title = document.getElementById('objTitle').value.trim();
-  var line1 = document.getElementById('objLine1').value.trim();
-  var line2 = document.getElementById('objLine2').value.trim();
-  var date  = document.getElementById('objDate').value;
-  var mode  = document.getElementById('objMode').value;
-  var mins  = parseInt(document.getElementById('objMinutes').value) || 10;
-  var errEl = document.getElementById('objError');
-  if (!title && !line1) { errEl.textContent = 'Add at least a title or objective'; return; }
-  errEl.textContent = '';
-  var data = { room: ROOM, period: OBJ_PERIOD, title: title, line1: line1, line2: line2, display_mode: mode, timed_minutes: mins, scheduled_date: date, active: true, updated_at: new Date().toISOString() };
-  var existing = objCache[OBJ_PERIOD];
-  if (existing && existing.id) {
-    await sbUpdate('cw2_objectives', existing.id, data); toast('P' + OBJ_PERIOD + ' objectives saved');
-  } else {
-    var result = await sbInsert('cw2_objectives', data);
-    if (result && result[0]) objCache[OBJ_PERIOD] = result[0];
-    toast('P' + OBJ_PERIOD + ' objectives live');
-  }
-  await loadObjectives();
-}
-async function objClear() {
-  var existing = objCache[OBJ_PERIOD];
-  if (existing && existing.id) {
-    await sbUpdate('cw2_objectives', existing.id, { active: false, title: '', line1: '', line2: '' });
-    toast('P' + OBJ_PERIOD + ' cleared');
-  }
-  document.getElementById('objTitle').value = '';
-  document.getElementById('objLine1').value = '';
-  document.getElementById('objLine2').value = '';
-  ['objTitle','objLine1','objLine2'].forEach(function(id) {
-    var max = id === 'objTitle' ? 28 : 80;
-    objUpdateCC(id, id + 'CC', max);
-  });
-  await loadObjectives();
-}
-
-// ── DISPLAY CONTROLS ──────────────────────────────────────────
-var DC_META = [
-  { key:'show_objectives',    label:'Period Objectives',  icon:'🎯', desc:'Shows today\'s learning goals' },
-  { key:'show_messages',      label:'Quick Messages',     icon:'📣', desc:'Announcements from teacher' },
-  { key:'show_calendar',      label:'Calendar',           icon:'📅', desc:'Date, schedule & upcoming events' },
-  { key:'show_weather',       label:'Weather',            icon:'🌤', desc:'Current conditions & forecast' },
-  { key:'show_bell',          label:'Bell Schedule',      icon:'🔔', desc:'Today\'s period times' },
-  { key:'show_birthday',      label:'Birthdays',          icon:'🎂', desc:'Student birthday shoutouts' },
-  { key:'show_quiet',         label:'Quiet Competition',  icon:'🤫', desc:'Weekly silence standings' },
-  { key:'cowboy_code',        label:'Cowboy Code',        icon:'🤠', desc:'School values & character boards' },
-  { key:'fun_facts',          label:'Fun Facts',          icon:'💡', desc:'Teen-voiced facts with reaction lines' },
-  { key:'word_of_day',        label:'Word of the Day',    icon:'📖', desc:'Vocabulary with student sentences' },
-  { key:'positive_thoughts',  label:'Positive Thoughts',  icon:'✨', desc:'SEL-focused affirmations' },
-  { key:'business',           label:'Business Facts',     icon:'📈', desc:'Creator economy & brand stories' },
-  { key:'this_week',          label:'This Week',          icon:'📅', desc:'Music, sports, tech & culture history' },
+// ── DISPLAY CONTROLS ───────────────────────────────────────────
+var DC_META=[
+  {key:'show_objectives',label:'Period Objectives',icon:'🎯',desc:"Shows today's learning goals"},
+  {key:'show_messages',label:'Quick Messages',icon:'📣',desc:'Announcements from teacher'},
+  {key:'show_calendar',label:'Calendar',icon:'📅',desc:'Date, schedule & upcoming events'},
+  {key:'show_weather',label:'Weather',icon:'🌤',desc:'Current conditions & forecast'},
+  {key:'show_bell',label:'Bell Schedule',icon:'🔔',desc:"Today's period times"},
+  {key:'show_birthday',label:'Birthdays',icon:'🎂',desc:'Student birthday shoutouts'},
+  {key:'show_quiet',label:'Quiet Competition',icon:'🤫',desc:'Weekly silence standings'},
+  {key:'cowboy_code',label:'Cowboy Code',icon:'🤠',desc:'School values & character boards'},
+  {key:'fun_facts',label:'Fun Facts',icon:'💡',desc:'Teen-voiced facts with reaction lines'},
+  {key:'word_of_day',label:'Word of the Day',icon:'📖',desc:'Vocabulary with student sentences'},
+  {key:'wise_words',label:'Words of Wisdom',icon:'🌟',desc:'Affirmations and perspective for the day'},
+  {key:'business',label:'Business Facts',icon:'📈',desc:'Creator economy & brand stories'},
+  {key:'this_week',label:'This Week',icon:'📅',desc:'Music, sports, tech & culture history'},
 ];
 
-var DC_DEFAULT_ORDER = DC_META.map(function(m) { return m.key; });
-
-var dcSettings = null;
-var dcOrder    = [];
-var dcCats     = {};
-var dcDirty    = false;
-
-async function loadDisplayControls() {
-  var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,global_categories');
-  if (!rows || !rows.length) {
-    document.getElementById('dc-grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Settings not found for this room.</div>';
-    return;
+function dcMetaFor(key){
+  if(key.startsWith('board-')){
+    var id=key.replace('board-','');
+    var b=boards.find(function(x){return x.id===id;});
+    if(b){
+      var lines=Array.isArray(b.lines)?b.lines:JSON.parse(b.lines||'[]');
+      var label=lines.find(function(l){return l&&l.trim();})||'Board';
+      return{key:key,label:label.substring(0,22),icon:'📋',desc:'Permanent board · edit in Boards section',isPerm:true,boardEnabled:b.enabled};
+    }
+    return{key:key,label:'Board (deleted)',icon:'📋',desc:'',isPerm:true,boardEnabled:false};
   }
-  dcSettings = rows[0];
-  dcCats = dcSettings.global_categories ? Object.assign({}, dcSettings.global_categories) : {};
+  return DC_META.find(function(m){return m.key===key;})||{key:key,label:key,icon:'▪',desc:''};
+}
 
-  // Build order — use saved display_order if valid, else default
-  var savedOrder = dcCats.display_order;
-  if (Array.isArray(savedOrder) && savedOrder.length === DC_DEFAULT_ORDER.length) {
-    dcOrder = savedOrder.slice();
+async function loadDisplayControls(){
+  var rows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=id,global_categories');
+  if(!rows||!rows.length){document.getElementById('dc-grid').innerHTML='<div class="empty" style="grid-column:1/-1">Settings not found.</div>';return;}
+  dcSettings=rows[0];
+  dcCats=dcSettings.global_categories?Object.assign({},dcSettings.global_categories):{};
+  var DC_DEFAULT_KEYS=DC_META.map(function(m){return m.key;});
+  var savedOrder=dcCats.display_order;
+  if(Array.isArray(savedOrder)&&savedOrder.length){
+    // Keep valid saved keys, add any missing DC_META keys
+    var valid=savedOrder.filter(function(k){return k.startsWith('board-')||DC_DEFAULT_KEYS.indexOf(k)>=0;});
+    var missing=DC_DEFAULT_KEYS.filter(function(k){return valid.indexOf(k)<0;});
+    dcOrder=valid.concat(missing);
   } else {
-    // Merge: keep any valid saved keys, append missing ones
-    var validSaved = Array.isArray(savedOrder) ? savedOrder.filter(function(k) {
-      return DC_DEFAULT_ORDER.indexOf(k) >= 0;
-    }) : [];
-    var missing = DC_DEFAULT_ORDER.filter(function(k) { return validSaved.indexOf(k) < 0; });
-    dcOrder = validSaved.concat(missing);
+    dcOrder=DC_DEFAULT_KEYS.slice();
   }
-
-  dcDirty = false;
-  dcRenderGrid();
-  dcRenderList();
-  dcUpdateDirty();
+  dcDirty=false;
+  dcRenderGrid();dcRenderList();dcUpdateDirty();
 }
 
-function dcMetaFor(key) {
-  return DC_META.find(function(m) { return m.key === key; }) || { key: key, label: key, icon: '▪', desc: '' };
-}
-
-function dcRenderGrid() {
-  var grid = document.getElementById('dc-grid');
-  grid.innerHTML = dcOrder.map(function(key) {
-    var m = dcMetaFor(key);
-    var isOn = dcCats[key] !== false;
-    return '<div class="dc-card ' + (isOn ? 'on' : 'off') + '" onclick="dcToggle(\'' + key + '\')" id="dc-card-' + key + '">' +
-      '<div class="dc-card-top">' +
-        '<div class="dc-icon">' + m.icon + '</div>' +
-        '<span class="status-badge ' + (isOn ? 'on' : 'off') + '">' + (isOn ? '● On' : '○ Off') + '</span>' +
-      '</div>' +
-      '<div class="dc-label">' + m.label + '</div>' +
-      '<div class="dc-desc">' + m.desc + '</div>' +
+function dcRenderGrid(){
+  var grid=document.getElementById('dc-grid');
+  var allKeys=dcOrder.filter(function(k){return!k.startsWith('board-');});
+  // Also add board keys
+  dcOrder.filter(function(k){return k.startsWith('board-');}).forEach(function(k){allKeys.push(k);});
+  // Re-sort to dcOrder sequence
+  allKeys=dcOrder.slice();
+  grid.innerHTML=allKeys.map(function(key){
+    var m=dcMetaFor(key);
+    var isOn=m.isPerm?m.boardEnabled:dcCats[key]!==false;
+    var permClass=m.isPerm?' perm-card':'';
+    return '<div class="dc-card'+(isOn?' on':'')+permClass+'" onclick="dcToggle(\''+key+'\')" id="dc-card-'+key.replace(/[^a-z0-9]/gi,'-')+'">' +
+      '<div class="dc-card-top"><div class="dc-icon">'+m.icon+'</div><span class="status-badge '+(isOn?'on':'off')+'">'+(isOn?'● On':'○ Off')+'</span></div>' +
+      (m.isPerm?'<div class="dc-perm-badge">📋 Board</div>':'')+
+      '<div class="dc-label">'+m.label+'</div>' +
+      '<div class="dc-desc">'+m.desc+'</div>' +
     '</div>';
   }).join('');
 }
 
-function dcRenderList() {
-  var list = document.getElementById('dc-list');
-  list.innerHTML = dcOrder.map(function(key, i) {
-    var m = dcMetaFor(key);
-    var isOn = dcCats[key] !== false;
-    return '<div class="dc-list-item ' + (isOn ? '' : 'off-item') + '" id="dc-li-' + key + '" draggable="true" data-key="' + key + '">' +
+function dcRenderList(){
+  var list=document.getElementById('dc-list');
+  list.innerHTML=dcOrder.map(function(key,i){
+    var m=dcMetaFor(key);
+    var isOn=m.isPerm?m.boardEnabled:dcCats[key]!==false;
+    return '<div class="dc-list-item '+(isOn?'':'off-item')+'" id="dc-li-'+i+'" draggable="true" data-key="'+key+'">' +
       '<div class="dc-handle" title="Drag to reorder">≡</div>' +
-      '<div class="dc-list-num">' + (i + 1) + '</div>' +
-      '<div class="dc-list-icon">' + m.icon + '</div>' +
-      '<div class="dc-list-name">' + m.label + '</div>' +
-      '<div class="dc-list-status ' + (isOn ? 'on' : '') + '">' + (isOn ? '● On' : '○ Off') + '</div>' +
+      '<div class="dc-list-num">'+(i+1)+'</div>' +
+      '<div class="dc-list-icon">'+m.icon+'</div>' +
+      '<div class="dc-list-name">'+m.label+'</div>' +
+      (m.isPerm?'<span class="dc-list-perm">Board</span>':'')+
+      '<div class="dc-list-status '+(isOn?'on':'')+'>'+(isOn?'● On':'○ Off')+'</div>' +
     '</div>';
   }).join('');
   dcBindDrag();
 }
 
-function dcBindDrag() {
-  var items = document.querySelectorAll('#dc-list .dc-list-item');
-  var dragKey = null;
-
-  items.forEach(function(item) {
-    item.addEventListener('dragstart', function(e) {
-      dragKey = item.dataset.key;
-      item.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
+function dcBindDrag(){
+  var items=document.querySelectorAll('#dc-list .dc-list-item'),dragKey=null;
+  items.forEach(function(item){
+    item.addEventListener('dragstart',function(e){dragKey=item.dataset.key;item.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    item.addEventListener('dragend',function(){item.classList.remove('dragging');document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el){el.classList.remove('drag-over-top','drag-over-bottom');});dragKey=null;});
+    item.addEventListener('dragover',function(e){
+      e.preventDefault();if(!dragKey||dragKey===item.dataset.key)return;
+      var rect=item.getBoundingClientRect(),mid=rect.top+rect.height/2;
+      document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el){el.classList.remove('drag-over-top','drag-over-bottom');});
+      item.classList.add(e.clientY<mid?'drag-over-top':'drag-over-bottom');
     });
-
-    item.addEventListener('dragend', function() {
-      item.classList.remove('dragging');
-      document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el) {
-        el.classList.remove('drag-over-top', 'drag-over-bottom');
-      });
-      dragKey = null;
+    item.addEventListener('drop',function(e){
+      e.preventDefault();if(!dragKey||dragKey===item.dataset.key)return;
+      var rect=item.getBoundingClientRect(),before=e.clientY<rect.top+rect.height/2;
+      var fromIdx=dcOrder.indexOf(dragKey),toIdx=dcOrder.indexOf(item.dataset.key);
+      if(fromIdx<0||toIdx<0)return;
+      dcOrder.splice(fromIdx,1);
+      toIdx=dcOrder.indexOf(item.dataset.key);
+      dcOrder.splice(before?toIdx:toIdx+1,0,dragKey);
+      dcDirty=true;dcRenderGrid();dcRenderList();dcUpdateDirty();
     });
-
-    item.addEventListener('dragover', function(e) {
-      e.preventDefault();
-      if (!dragKey || dragKey === item.dataset.key) return;
-      var rect = item.getBoundingClientRect();
-      var mid  = rect.top + rect.height / 2;
-      document.querySelectorAll('#dc-list .dc-list-item').forEach(function(el) {
-        el.classList.remove('drag-over-top', 'drag-over-bottom');
-      });
-      if (e.clientY < mid) {
-        item.classList.add('drag-over-top');
-      } else {
-        item.classList.add('drag-over-bottom');
-      }
-    });
-
-    item.addEventListener('drop', function(e) {
-      e.preventDefault();
-      if (!dragKey || dragKey === item.dataset.key) return;
-      var rect    = item.getBoundingClientRect();
-      var mid     = rect.top + rect.height / 2;
-      var before  = e.clientY < mid;
-      var fromIdx = dcOrder.indexOf(dragKey);
-      var toIdx   = dcOrder.indexOf(item.dataset.key);
-      if (fromIdx < 0 || toIdx < 0) return;
-      // Remove from original position
-      dcOrder.splice(fromIdx, 1);
-      // Recalculate toIdx after removal
-      toIdx = dcOrder.indexOf(item.dataset.key);
-      var insertAt = before ? toIdx : toIdx + 1;
-      dcOrder.splice(insertAt, 0, dragKey);
-      dcDirty = true;
-      dcRenderGrid();
-      dcRenderList();
-      dcUpdateDirty();
-    });
-
-    item.addEventListener('dragleave', function() {
-      item.classList.remove('drag-over-top', 'drag-over-bottom');
-    });
+    item.addEventListener('dragleave',function(){item.classList.remove('drag-over-top','drag-over-bottom');});
   });
 }
 
-function dcToggle(key) {
-  dcCats[key] = dcCats[key] === false ? true : false;
-  dcDirty = true;
-  dcRenderGrid();
-  dcRenderList();
-  dcUpdateDirty();
-}
-
-function dcUpdateDirty() {
-  var label = document.getElementById('dc-dirty-label');
-  if (label) label.textContent = dcDirty ? '● Unsaved changes' : '';
-}
-
-async function dcSave() {
-  if (!dcSettings) return;
-  var btn = document.getElementById('dc-save-btn');
-  var status = document.getElementById('dc-status');
-  btn.disabled = true; btn.textContent = 'Saving...';
-
-  // Write display_order into the cats object
-  var toSave = Object.assign({}, dcCats);
-  toSave.display_order = dcOrder.slice();
-
-  var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_settings?id=eq.' + dcSettings.id, {
-    method: 'PATCH',
-    headers: {
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=minimal'
-    },
-    body: JSON.stringify({ global_categories: toSave })
-  });
-
-  btn.disabled = false; btn.textContent = 'Save Display Settings';
-
-  if (res.ok) {
-    dcSettings.global_categories = toSave;
-    dcCats = Object.assign({}, toSave);
-    dcDirty = false;
-    dcUpdateDirty();
-    status.textContent = '';
-    toast('Display settings saved — board updates within 60s');
-  } else {
-    status.textContent = 'Save failed — try again';
-    toast('Save failed', true);
+function dcToggle(key){
+  if(key.startsWith('board-')){
+    // Toggle the actual board enabled state in Supabase
+    var id=key.replace('board-','');
+    var b=boards.find(function(x){return x.id===id;});
+    if(!b)return;
+    sbUpdate('cw2_screens',id,{enabled:!b.enabled}).then(function(){loadBoards();toast(b.enabled?'Board disabled':'Board enabled');});
+    return;
   }
+  dcCats[key]=dcCats[key]===false?true:false;
+  dcDirty=true;dcRenderGrid();dcRenderList();dcUpdateDirty();
 }
 
-// ── BIRTHDAY MANAGER ──────────────────────────────────────────
-var MONTH_NAMES = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-var bdayData = [], bdayExisting = [];
+function dcUpdateDirty(){var label=document.getElementById('dc-dirty-label');if(label)label.textContent=dcDirty?'● Unsaved changes':'';}
 
-function bdayTab(tab, btn) {
-  document.querySelectorAll('.bday-tab').forEach(function(t) { t.classList.remove('active'); });
-  document.querySelectorAll('.bday-pane').forEach(function(p) { p.style.display = 'none'; });
-  btn.classList.add('active');
-  document.getElementById('bday-pane-' + tab).style.display = 'block';
-}
-(function initDrop() {
-  var dz = document.getElementById('bday-dropzone');
-  if (!dz) return;
-  dz.addEventListener('dragover',  function(e) { e.preventDefault(); dz.classList.add('drag-over'); });
-  dz.addEventListener('dragleave', function()  { dz.classList.remove('drag-over'); });
-  dz.addEventListener('drop', function(e) { e.preventDefault(); dz.classList.remove('drag-over'); bdayHandleFiles(e.dataTransfer.files); });
-})();
-async function bdayHandleFiles(files) {
-  if (!files || !files.length) return;
-  bdayData = [];
-  var status = document.getElementById('bday-upload-status');
-  status.textContent = 'Parsing ' + files.length + ' file(s)...';
-  for (var i = 0; i < files.length; i++) {
-    try { var parsed = await bdayParseFile(files[i]); bdayData = bdayData.concat(parsed); }
-    catch(e) { status.textContent = 'Error reading ' + files[i].name + ': ' + e.message; return; }
-  }
-  var seen = {};
-  bdayData = bdayData.filter(function(r) {
-    var key = r.name.toUpperCase() + '|' + r.month + '|' + r.day;
-    if (seen[key]) return false; seen[key] = true; return true;
-  });
-  bdayRenderPreview(); status.textContent = '';
-}
-async function bdayParseFile(file) {
-  return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        var wb   = XLSX.read(e.target.result, { type:'array', cellDates:true });
-        var ws   = wb.Sheets[wb.SheetNames[0]];
-        var rows = XLSX.utils.sheet_to_json(ws, { header:1, defval:null });
-        var format = bdayDetectFormat(rows), results = [];
-        for (var i = 4; i < rows.length; i++) {
-          var row = rows[i];
-          if (!row || row.every(function(c) { return c === null || c === undefined || c === ''; })) continue;
-          var name = null, month = null, day = null;
-          if (format === 'birthday') {
-            var rawName = row[3], rawDate = row[5];
-            if (!rawName || !rawDate) continue;
-            name = bdayFlipName(String(rawName).trim());
-            var p = bdayParseDate(rawDate); if (!p) continue;
-            month = p.month; day = p.day;
-          } else {
-            var last = row[4], first = row[7], rawDate2 = row[16];
-            if (!last || !first || !rawDate2) continue;
-            name = String(first).trim() + ' ' + String(last).trim();
-            var p2 = bdayParseDate(rawDate2); if (!p2) continue;
-            month = p2.month; day = p2.day;
-          }
-          if (name && month && day) results.push({ name:name, month:month, day:day });
-        }
-        resolve(results);
-      } catch(err) { reject(err); }
-    };
-    reader.onerror = function() { reject(new Error('File read failed')); };
-    reader.readAsArrayBuffer(file);
-  });
-}
-function bdayDetectFormat(rows) {
-  for (var r = 0; r < Math.min(4, rows.length); r++)
-    for (var c = 0; c < (rows[r] || []).length; c++) {
-      var val = String(rows[r][c] || '');
-      if (val.includes('STUDENT BIRTHDAYS')) return 'birthday';
-      if (val.includes('STUDENT DIRECTORY')) return 'directory';
-    }
-  return 'birthday';
-}
-function bdayFlipName(raw) {
-  var comma = raw.indexOf(',');
-  if (comma === -1) return raw;
-  var last = raw.substring(0, comma).trim();
-  var rest = raw.substring(comma + 1).trim();
-  return rest.split(' ')[0] + ' ' + last;
-}
-function bdayParseDate(raw) {
-  if (!raw) return null;
-  if (raw instanceof Date) return { month: raw.getMonth() + 1, day: raw.getDate() };
-  var s = String(raw).trim(), parts = s.split('/');
-  if (parts.length >= 2) { var m = parseInt(parts[0]), d = parseInt(parts[1]); if (m >= 1 && m <= 12 && d >= 1 && d <= 31) return { month:m, day:d }; }
-  return null;
-}
-function bdayRenderPreview() {
-  var tbody = document.getElementById('bday-preview-body');
-  var wrap  = document.getElementById('bday-preview-wrap');
-  var countEl = document.getElementById('bday-preview-count');
-  tbody.innerHTML = '';
-  var existingKeys = {};
-  bdayExisting.forEach(function(r) { existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day] = true; });
-  var newCount = 0;
-  bdayData.forEach(function(r, i) {
-    var key = r.name.toUpperCase() + '|' + r.month + '|' + r.day;
-    var isDup = !!existingKeys[key]; if (!isDup) newCount++;
-    var tr = document.createElement('tr');
-    tr.innerHTML = '<td>' + (i+1) + '</td><td>' + r.name + '</td><td>' + MONTH_NAMES[r.month] + '</td><td>' + r.day + '</td><td class="' + (isDup ? 'bday-status-dup' : 'bday-status-ok') + '">' + (isDup ? 'already exists' : '✓ new') + '</td>';
-    tbody.appendChild(tr);
-  });
-  countEl.textContent = bdayData.length + ' students parsed · ' + newCount + ' new';
-  wrap.style.display = 'block';
-  var btn = document.getElementById('bday-commit-btn');
-  btn.textContent = newCount > 0 ? '⬆ Upload ' + newCount + ' New Students' : '✓ All Already Exist';
-  btn.disabled = newCount === 0;
-}
-function bdayClearPreview() { bdayData = []; document.getElementById('bday-preview-wrap').style.display = 'none'; document.getElementById('bday-file-input').value = ''; }
-async function bdayCommit() {
-  var btn = document.getElementById('bday-commit-btn');
-  var status = document.getElementById('bday-upload-status');
-  btn.disabled = true; btn.textContent = 'Uploading...';
-  var existingKeys = {};
-  bdayExisting.forEach(function(r) { existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day] = true; });
-  var toInsert = bdayData.filter(function(r) { return !existingKeys[r.name.toUpperCase() + '|' + r.month + '|' + r.day]; });
-  if (!toInsert.length) { status.textContent = 'Nothing new to upload.'; btn.textContent = '✓ Done'; return; }
-  var payload = toInsert.map(function(r) { return { room: ROOM, name: r.name, month: r.month, day: r.day, active: true }; });
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error(await res.text());
-    status.textContent = '✓ ' + toInsert.length + ' students uploaded.';
-    btn.textContent = '✓ Done'; bdayData = [];
-    document.getElementById('bday-preview-wrap').style.display = 'none';
-    document.getElementById('bday-file-input').value = '';
-    await bdayLoadList();
-  } catch(e) { status.textContent = 'Upload failed: ' + e.message; btn.disabled = false; btn.textContent = '⬆ Retry Upload'; }
-}
-async function bdayAddManual() {
-  var name  = (document.getElementById('bday-name').value || '').trim();
-  var month = parseInt(document.getElementById('bday-month').value);
-  var day   = parseInt(document.getElementById('bday-day').value);
-  var status = document.getElementById('bday-manual-status');
-  if (!name || !month || !day) { status.textContent = 'Fill in all fields.'; return; }
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify([{ room: ROOM, name: name, month: month, day: day, active: true }]) });
-    if (!res.ok) throw new Error(await res.text());
-    document.getElementById('bday-name').value = '';
-    document.getElementById('bday-month').value = '';
-    document.getElementById('bday-day').value = '';
-    status.textContent = '✓ ' + name + ' added.';
-    await bdayLoadList();
-  } catch(e) { status.textContent = 'Error: ' + e.message; }
-}
-async function bdayLoadList() {
-  var rows = await sbFetch('cw2_birthdays', 'room=eq.' + ROOM + '&active=eq.true&order=month.asc,day.asc');
-  bdayExisting = rows || [];
-  var list = document.getElementById('bday-list');
-  var countEl = document.getElementById('bday-count');
-  if (countEl) countEl.textContent = bdayExisting.length;
-  if (!bdayExisting.length) { list.innerHTML = '<div class="bday-empty">No birthdays yet. Upload a file or add manually.</div>'; return; }
-  list.innerHTML = bdayExisting.map(function(r) {
-    return '<div class="bday-row"><div><div class="bday-row-name">' + r.name + '</div><div class="bday-row-date">' + MONTH_NAMES[r.month] + ' ' + r.day + '</div></div><button class="bday-del-btn" onclick="bdayDelete(\'' + r.id + '\')">✕</button></div>';
-  }).join('');
-}
-async function bdayDelete(id) {
-  if (!confirm('Remove this birthday?')) return;
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) throw new Error(await res.text());
-    await bdayLoadList();
-  } catch(e) { alert('Delete failed: ' + e.message); }
-}
-async function bdayClearAll() {
-  if (!confirm('Remove ALL birthdays for Room ' + ROOM + '? This cannot be undone.')) return;
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_birthdays?room=eq.' + ROOM, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) throw new Error(await res.text());
-    await bdayLoadList();
-  } catch(e) { alert('Clear failed: ' + e.message); }
+async function dcSave(){
+  if(!dcSettings)return;
+  var btn=document.getElementById('dc-save-btn'),status=document.getElementById('dc-status');
+  btn.disabled=true;btn.textContent='Saving...';
+  var toSave=Object.assign({},dcCats);
+  toSave.display_order=dcOrder.slice();
+  var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_settings?id=eq.'+dcSettings.id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({global_categories:toSave})});
+  btn.disabled=false;btn.textContent='Save Display Settings';
+  if(res.ok){dcSettings.global_categories=toSave;dcCats=Object.assign({},toSave);dcDirty=false;dcUpdateDirty();status.textContent='';toast('Display settings saved — board updates within 60s');}
+  else{status.textContent='Save failed — try again';toast('Save failed',true);}
 }
 
-// ── QUICK MESSAGE ─────────────────────────────────────────────
-var msgAligns = [true,true,true,true,true,true,true,true];
-function msgToggleAlign(n) {
-  msgAligns[n-1] = !msgAligns[n-1];
-  var btn = document.getElementById('msg-align' + n);
-  btn.textContent = msgAligns[n-1] ? 'C' : 'L';
-  btn.classList.toggle('active', msgAligns[n-1]);
-  msgUpdatePreview();
+// ── GLOBAL BOARDS ──────────────────────────────────────────────
+async function loadGlobalBoards(){
+  var rows=await sbFetch('cw2_screens','room=eq.global&order=sort_order.asc');
+  globalBoards=rows||[];renderGlobalBoards();
 }
-function msgGetLines() { return [1,2,3,4,5,6,7,8].map(function(n) { return document.getElementById('msg-line' + n).value || ''; }); }
-function msgUpdatePreview() {
-  var lines = msgGetLines();
-  var board = document.getElementById('msg-preview-board');
-  if (lines.every(function(l) { return !l.trim(); })) { board.innerHTML = '<div class="msg-preview-empty">Start typing to preview</div>'; return; }
-  board.innerHTML = lines.map(function(l, i) {
-    var cls = msgAligns[i] ? 'msg-preview-row-center' : 'msg-preview-row-left';
-    return '<div class="' + cls + '">' + (l ? l.toUpperCase() : '') + '</div>';
+function renderGlobalBoards(){
+  var list=document.getElementById('globalBoardsList');
+  if(!globalBoards.length){list.innerHTML='<div class="empty">No global boards.</div>';return;}
+  list.innerHTML=globalBoards.map(function(s,i){
+    var lines=Array.isArray(s.lines)?s.lines:JSON.parse(s.lines||'[]');
+    var line1=lines.find(function(l){return l&&l.trim();})||'Empty';
+    var rest=lines.filter(function(l){return l&&l.trim();}).slice(1,3).join(' · ');
+    var on=s.enabled;
+    return '<div class="board-card global-card '+(on?'':'disabled')+'">' +
+      '<div class="board-info"><div class="board-title">'+line1+'</div>'+(rest?'<div class="board-desc">'+rest+'</div>':'')+
+      '</div><div class="board-meta">'+(s.speed||12)+'s</div>' +
+      '<span class="global-badge">Global</span>' +
+      '<span class="status-badge '+(on?'on':'off')+'">'+(on?'● On':'○ Off')+'</span>' +
+      '<div class="board-actions"><button class="btn" onclick="openEditGlobalBoard(\''+s.id+'\')">Edit</button><button class="btn danger" onclick="deleteGlobalBoard(\''+s.id+'\')">Delete</button></div></div>';
   }).join('');
 }
-function msgClearForm() {
-  [1,2,3,4,5,6,7,8].forEach(function(n) {
-    document.getElementById('msg-line' + n).value = '';
-    msgAligns[n-1] = true;
-    var btn = document.getElementById('msg-align' + n);
-    btn.textContent = 'C'; btn.classList.add('active');
-  });
-  document.getElementById('msg-expire').value = '24';
-  document.getElementById('msg-status').textContent = '';
-  msgUpdatePreview();
-}
-async function msgPost() {
-  var lines  = msgGetLines();
-  var hours  = parseInt(document.getElementById('msg-expire').value) || 24;
-  var status = document.getElementById('msg-status');
-  var btn    = document.getElementById('msg-post-btn');
-  if (lines.every(function(l) { return !l.trim(); })) { status.textContent = 'Enter at least one line of text.'; return; }
-  btn.disabled = true; btn.textContent = 'Posting...'; status.textContent = '';
-  var expiresAt = new Date(Date.now() + hours * 3600000).toISOString();
-  var alignStr  = msgAligns.map(function(a) { return a ? 'C' : 'L'; }).join(',');
-  var payload = { room: ROOM, sender: null, line1: lines[0]||null, line2: lines[1]||null, line3: lines[2]||null, line4: lines[3]||null, line5: lines[4]||null, line6: lines[5]||null, line7: lines[6]||null, line8: lines[7]||null, status: alignStr, active: true, expires_at: expiresAt, expire_hours: hours };
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify(payload) });
-    if (!res.ok) throw new Error(await res.text());
-    status.textContent = '✓ Posted. Appears on board within 5 minutes.';
-    btn.textContent = '📣 Post to Board Now'; btn.disabled = false;
-    msgClearForm(); await msgLoadList();
-  } catch(e) { status.textContent = 'Error: ' + e.message; btn.textContent = '📣 Post to Board Now'; btn.disabled = false; }
-}
-async function msgLoadList() {
-  var now  = new Date().toISOString();
-  var rows = await sbFetch('cw2_messages', 'room=eq.' + ROOM + '&active=eq.true&expires_at=gte.' + now + '&order=created_at.desc');
-  rows = rows || [];
-  var countEl = document.getElementById('msg-active-count');
-  if (countEl) countEl.textContent = rows.length;
-  var list = document.getElementById('msg-list');
-  if (!rows.length) { list.innerHTML = '<div class="bday-empty">No active messages.</div>'; return; }
-  list.innerHTML = rows.map(function(m) {
-    var aligns = (m.status || '').split(',');
-    var allLines = [m.line1,m.line2,m.line3,m.line4,m.line5,m.line6,m.line7||'',m.line8||''];
-    var linesHtml = allLines.map(function(l, i) {
-      if (!l || !l.trim()) return '';
-      var isLeft = aligns[i] === 'L';
-      return '<div class="msg-card-line' + (isLeft?' left':'') + '">' + (isLeft?'← ':'') + l.toUpperCase() + '</div>';
-    }).filter(Boolean).join('');
-    var hoursLeft = Math.round((new Date(m.expires_at) - new Date()) / 3600000);
-    var expLabel  = hoursLeft < 1 ? 'expires soon' : hoursLeft < 24 ? 'in '+hoursLeft+'h' : 'in '+Math.round(hoursLeft/24)+'d';
-    var expClass  = hoursLeft < 2 ? 'msg-expires-soon' : '';
-    return '<div class="msg-card"><div class="msg-card-body">' + linesHtml + '<div class="msg-card-meta"><span class="'+expClass+'">Expires '+expLabel+'</span></div></div><button class="msg-del-btn" onclick="msgDelete(\''+m.id+'\')">✕ Remove</button></div>';
-  }).join('');
-}
-async function msgDelete(id) {
-  if (!confirm('Remove this message from the board?')) return;
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages?id=eq.' + id, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) throw new Error(await res.text());
-    await msgLoadList();
-  } catch(e) { alert('Delete failed: ' + e.message); }
-}
-async function msgClearAll() {
-  if (!confirm('Remove ALL active messages for Room ' + ROOM + '?')) return;
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_messages?room=eq.' + ROOM + '&active=eq.true', { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) throw new Error(await res.text());
-    await msgLoadList();
-  } catch(e) { alert('Clear failed: ' + e.message); }
+function openNewGlobalBoard(){editingGlobalId=null;document._savingGlobal=true;document.getElementById('modalTitle').textContent='Add Global Board';buildLinesEditor([]);document.getElementById('screenSpeed').value=12;document.getElementById('modal-overlay').classList.add('open');}
+function openEditGlobalBoard(id){var s=globalBoards.find(function(x){return x.id===id;});if(!s)return;editingGlobalId=id;document._savingGlobal=true;document.getElementById('modalTitle').textContent='Edit Global Board';var lines=Array.isArray(s.lines)?s.lines:JSON.parse(s.lines||'[]');buildLinesEditor(lines);document.getElementById('screenSpeed').value=s.speed||12;document.getElementById('modal-overlay').classList.add('open');}
+async function deleteGlobalBoard(id){if(!confirm('Delete this global board?'))return;await sbDelete('cw2_screens',id);await loadGlobalBoards();toast('Global board deleted');}
+
+// ── HONOR ROLL TOGGLE ──────────────────────────────────────────
+async function toggleHonorRoll(){
+  var rows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=id,show_honor_roll');
+  if(!rows||!rows.length){toast('Settings not found',true);return;}
+  var next=rows[0].show_honor_roll===false?true:false;
+  await sbUpdate('cw2_settings',rows[0].id,{show_honor_roll:next});
+  document.getElementById('settingHonorRoll').textContent=next?'✓ On':'✗ Off';
+  toast('Honor roll '+(next?'enabled':'disabled'));
 }
 
-// ── QUIET COMPETITION ─────────────────────────────────────────
-function quietWeekStart() {
-  var d = new Date();
-  d.setDate(d.getDate() - d.getDay());
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+// ── PIN CHANGE ─────────────────────────────────────────────────
+async function changePin(){
+  var newPin=document.getElementById('newPinInput').value.trim(),confirm=document.getElementById('confirmPinInput').value.trim(),errEl=document.getElementById('pinChangeError');
+  if(!newPin||newPin.length<4){errEl.textContent='PIN must be 4–8 digits';return;}
+  if(newPin!==confirm){errEl.textContent='PINs do not match';return;}
+  if(!/^\d+$/.test(newPin)){errEl.textContent='Numbers only';return;}
+  errEl.textContent='';
+  var currentConfig=(classroom&&classroom.config)?classroom.config:{};
+  currentConfig.admin_pin=newPin;currentConfig.pin_is_default=false;
+  if(classroom&&classroom.id){await sbUpdate('cw2_classrooms',classroom.id,{config:currentConfig});classroom.config=currentConfig;document.getElementById('newPinInput').value='';document.getElementById('confirmPinInput').value='';toast('PIN updated');}
+  else{errEl.textContent='Classroom record not found';}
 }
-async function quietLoadNames() {
-  var rows = await sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name&order=period.asc');
-  var nameMap = {};
-  (rows || []).forEach(function(r) { nameMap[r.period] = r.display_name; });
-  var editor = document.getElementById('quiet-name-editor');
-  if (!editor) return;
-  editor.innerHTML = '';
-  ['1','2','3','4','5','6','7'].forEach(function(p) {
-    var row = document.createElement('div');
-    row.className = 'quiet-name-row';
-    row.innerHTML = '<div class="quiet-period-label">P' + p + '</div><input class="sb-input" type="text" id="quiet-name-' + p + '" placeholder="e.g. Silent Assassins" maxlength="40" value="' + (nameMap[p] || '').replace(/"/g,'&quot;') + '">';
-    editor.appendChild(row);
-  });
-  var ws = quietWeekStart();
-  var d = new Date(ws + 'T00:00:00');
-  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var label = document.getElementById('quiet-week-label');
-  if (label) label.textContent = 'Week of ' + months[d.getMonth()] + ' ' + d.getDate();
+
+// ── ROOM MANAGEMENT ────────────────────────────────────────────
+async function onboardRoom(){
+  var roomNum=document.getElementById('newRoomNum').value.trim(),teacher=document.getElementById('newRoomTeacher').value.trim(),email=document.getElementById('newRoomEmail').value.trim(),errEl=document.getElementById('onboardError');
+  errEl.textContent='';
+  if(!roomNum){errEl.textContent='Room number required';return;}
+  if(!teacher){errEl.textContent='Teacher name required';return;}
+  var existing=await sbFetch('cw2_classrooms','room=eq.'+roomNum+'&select=room');
+  if(existing&&existing.length){errEl.textContent='Room '+roomNum+' already exists';return;}
+  var defaultPin=roomNum+roomNum;
+  var result=await sbInsert('cw2_classrooms',{room:roomNum,badge:'RHS · ROOM '+roomNum,teacher_name:teacher,teacher_email:email||null,is_active:true,config:{admin_pin:defaultPin,pin_is_default:true}});
+  if(!result){errEl.textContent='Failed to create room';return;}
+  document.getElementById('newRoomNum').value='';document.getElementById('newRoomTeacher').value='';document.getElementById('newRoomEmail').value='';
+  toast('Room '+roomNum+' added — default PIN: '+defaultPin);
 }
-async function quietSaveNames() {
-  var status = document.getElementById('quiet-name-status');
-  status.textContent = 'Saving...';
-  var promises = [];
-  ['1','2','3','4','5','6','7'].forEach(function(p) {
-    var input = document.getElementById('quiet-name-' + p);
-    if (!input) return;
-    var name = input.value.trim();
-    promises.push(
-      fetch(SUPABASE_URL + '/rest/v1/cw2_period_names?room=eq.' + ROOM + '&period=eq.' + p, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } }).then(function() {
-        if (!name) return;
-        return fetch(SUPABASE_URL + '/rest/v1/cw2_period_names', { method: 'POST', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' }, body: JSON.stringify({ room: ROOM, period: p, display_name: name }) });
-      })
-    );
-  });
-  try {
-    await Promise.all(promises);
-    status.textContent = '✓ Names saved. Board updates within 5 minutes.';
-    toast('Period names saved');
-    await quietLoadStandings();
-  } catch(e) { status.textContent = 'Error: ' + e.message; }
+async function resetRoomPin(){
+  var roomNum=document.getElementById('resetRoomNum').value.trim(),errEl=document.getElementById('resetError');
+  errEl.textContent='';if(!roomNum){errEl.textContent='Enter a room number';return;}
+  var rows=await sbFetch('cw2_classrooms','room=eq.'+roomNum+'&select=id,config');
+  if(!rows||!rows.length){errEl.textContent='Room '+roomNum+' not found';return;}
+  var defaultPin=roomNum+roomNum;
+  var result=await sbUpdate('cw2_classrooms',rows[0].id,{config:{admin_pin:defaultPin,pin_is_default:true}});
+  if(!result){errEl.textContent='Reset failed';return;}
+  document.getElementById('resetRoomNum').value='';toast('Room '+roomNum+' PIN reset — new PIN: '+defaultPin);
 }
-async function quietLoadStandings() {
-  var ws = quietWeekStart();
-  var results = await Promise.all([
-    sbFetch('cw2_quiet_points', 'room=eq.' + ROOM + '&week_start=eq.' + ws + '&select=*'),
-    sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name')
-  ]);
-  var pointRows = results[0] || [], nameRows = results[1] || [];
-  var nameMap = {};
-  nameRows.forEach(function(r) { nameMap[r.period] = r.display_name; });
-  var grouped = {};
-  pointRows.forEach(function(r) {
-    var name = nameMap[r.period] || ('Period ' + r.period);
-    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
-    grouped[name].points  += r.points_earned || 0;
-    grouped[name].minutes += r.minutes_quiet  || 0;
-  });
-  Object.values(nameMap).forEach(function(name) { if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 }; });
-  var ranked = Object.values(grouped).sort(function(a, b) { return b.points - a.points; });
-  var el = document.getElementById('quiet-standings');
-  if (!el) return;
-  if (!ranked.length) { el.innerHTML = '<div class="bday-empty">No data yet. Points accumulate when the noise meter is on during class periods.</div>'; return; }
-  var medals = ['🥇','🥈','🥉','4.','5.','6.','7.'];
-  el.innerHTML = ranked.map(function(entry, i) {
-    return '<div class="quiet-standing-row"><div class="quiet-standing-rank">' + (medals[i]||(i+1)+'.') + '</div><div class="quiet-standing-name">' + entry.name + '</div><div style="display:flex;align-items:center;gap:8px"><div class="quiet-standing-pts">' + entry.points.toLocaleString() + ' pts</div><div class="quiet-standing-mins">' + entry.minutes + ' min quiet</div></div></div>';
-  }).join('');
+
+// ── TOAST ──────────────────────────────────────────────────────
+function toast(msg,isErr){var el=document.getElementById('toast');el.textContent=msg;el.className='show'+(isErr?' err':'');clearTimeout(el._t);el._t=setTimeout(function(){el.className='';},2500);}
+document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===document.getElementById('modal-overlay'))closeModal();});
+
+// ── OBJECTIVES ─────────────────────────────────────────────────
+var OBJ_PERIOD='1',objCache={};
+async function loadObjectives(){var rows=await sbFetch('cw2_objectives','room=eq.'+ROOM+'&select=*');objCache={};(rows||[]).forEach(function(r){objCache[r.period]=r;});objRefreshTabs();objLoadPeriod(OBJ_PERIOD);objUpdateActivePeriod();}
+function objRefreshTabs(){['1','2','3','4','5','6','7'].forEach(function(p){var btn=document.getElementById('objtab-'+p);if(!btn)return;var rec=objCache[p],isSet=rec&&rec.active&&rec.title;btn.className='obj-tab'+(p===OBJ_PERIOD?' active':(isSet?' set':''));});}
+function objUpdateActivePeriod(){var badge=document.getElementById('objActivePeriod'),label=document.getElementById('objStatusLabel');if(badge)badge.style.display='none';if(label)label.textContent='NOT SET';}
+function objSelectPeriod(p){OBJ_PERIOD=p;objRefreshTabs();objLoadPeriod(p);document.getElementById('objPeriodHeading').textContent='P'+p+' OBJECTIVES';}
+function objLoadPeriod(p){var rec=objCache[p],today=new Date().toISOString().split('T')[0];document.getElementById('objTitle').value=rec?(rec.title||''):'';document.getElementById('objLine1').value=rec?(rec.line1||''):'';document.getElementById('objLine2').value=rec?(rec.line2||''):'';document.getElementById('objDate').value=rec?(rec.scheduled_date||today):today;document.getElementById('objMode').value=rec?(rec.display_mode||'always'):'always';document.getElementById('objMinutes').value=rec?(rec.timed_minutes||10):10;['objTitle','objLine1','objLine2'].forEach(function(id){var max=id==='objTitle'?28:80;objUpdateCC(id,id+'CC',max);});objToggleTimed();document.getElementById('objError').textContent='';}
+function objUpdateCC(inputId,ccId,max){var len=document.getElementById(inputId).value.length,el=document.getElementById(ccId);if(!el)return;el.textContent=len+'/'+max;el.style.color=len>max*0.9?'var(--warning)':'var(--text-3)';}
+function objToggleTimed(){var mode=document.getElementById('objMode').value;document.getElementById('objTimedGroup').style.display=mode==='timed'?'block':'none';}
+async function objSave(){
+  var title=document.getElementById('objTitle').value.trim(),line1=document.getElementById('objLine1').value.trim(),line2=document.getElementById('objLine2').value.trim(),date=document.getElementById('objDate').value,mode=document.getElementById('objMode').value,mins=parseInt(document.getElementById('objMinutes').value)||10,errEl=document.getElementById('objError');
+  if(!title&&!line1){errEl.textContent='Add at least a title or objective';return;}
+  errEl.textContent='';
+  var data={room:ROOM,period:OBJ_PERIOD,title:title,line1:line1,line2:line2,display_mode:mode,timed_minutes:mins,scheduled_date:date,active:true,updated_at:new Date().toISOString()};
+  var existing=objCache[OBJ_PERIOD];
+  if(existing&&existing.id){await sbUpdate('cw2_objectives',existing.id,data);toast('P'+OBJ_PERIOD+' objectives saved');}
+  else{var result=await sbInsert('cw2_objectives',data);if(result&&result[0])objCache[OBJ_PERIOD]=result[0];toast('P'+OBJ_PERIOD+' objectives live');}
+  await loadObjectives();
 }
-async function quietResetWeek() {
-  if (!confirm('Reset all quiet competition points for this week? This cannot be undone.')) return;
-  var ws = quietWeekStart();
-  try {
-    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points?room=eq.' + ROOM + '&week_start=eq.' + ws, { method: 'DELETE', headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
-    if (!res.ok) throw new Error(await res.text());
-    toast('Week reset — all points cleared');
-    await quietLoadStandings();
-  } catch(e) { alert('Reset failed: ' + e.message); }
+async function objClear(){
+  var existing=objCache[OBJ_PERIOD];
+  if(existing&&existing.id){await sbUpdate('cw2_objectives',existing.id,{active:false,title:'',line1:'',line2:''});toast('P'+OBJ_PERIOD+' cleared');}
+  document.getElementById('objTitle').value='';document.getElementById('objLine1').value='';document.getElementById('objLine2').value='';
+  ['objTitle','objLine1','objLine2'].forEach(function(id){var max=id==='objTitle'?28:80;objUpdateCC(id,id+'CC',max);});
+  await loadObjectives();
 }
+
+// ── BIRTHDAY MANAGER ───────────────────────────────────────────
+var MONTH_NAMES=['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function bdayTab(tab,btn){document.querySelectorAll('.bday-tab').forEach(function(t){t.classList.remove('active');});document.querySelectorAll('.bday-pane').forEach(function(p){p.style.display='none';});btn.classList.add('active');document.getElementById('bday-pane-'+tab).style.display='block';}
+(function initDrop(){var dz=document.getElementById('bday-dropzone');if(!dz)return;dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over');});dz.addEventListener('dragleave',function(){dz.classList.remove('drag-over');});dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag-over');bdayHandleFiles(e.dataTransfer.files);});})();
+async function bdayHandleFiles(files){if(!files||!files.length)return;bdayData=[];var status=document.getElementById('bday-upload-status');status.textContent='Parsing '+files.length+' file(s)...';for(var i=0;i<files.length;i++){try{var parsed=await bdayParseFile(files[i]);bdayData=bdayData.concat(parsed);}catch(e){status.textContent='Error reading '+files[i].name+': '+e.message;return;}}var seen={};bdayData=bdayData.filter(function(r){var key=r.name.toUpperCase()+'|'+r.month+'|'+r.day;if(seen[key])return false;seen[key]=true;return true;});bdayRenderPreview();status.textContent='';}
+async function bdayParseFile(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(e){try{var wb=XLSX.read(e.target.result,{type:'array',cellDates:true}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null}),format=bdayDetectFormat(rows),results=[];for(var i=4;i<rows.length;i++){var row=rows[i];if(!row||row.every(function(c){return c===null||c===undefined||c==='';}))continue;var name=null,month=null,day=null;if(format==='birthday'){var rawName=row[3],rawDate=row[5];if(!rawName||!rawDate)continue;name=bdayFlipName(String(rawName).trim());var p=bdayParseDate(rawDate);if(!p)continue;month=p.month;day=p.day;}else{var last=row[4],first=row[7],rawDate2=row[16];if(!last||!first||!rawDate2)continue;name=String(first).trim()+' '+String(last).trim();var p2=bdayParseDate(rawDate2);if(!p2)continue;month=p2.month;day=p2.day;}if(name&&month&&day)results.push({name:name,month:month,day:day});}resolve(results);}catch(err){reject(err);}};reader.onerror=function(){reject(new Error('File read failed'));};reader.readAsArrayBuffer(file);});}
+function bdayDetectFormat(rows){for(var r=0;r<Math.min(4,rows.length);r++)for(var c=0;c<(rows[r]||[]).length;c++){var val=String(rows[r][c]||'');if(val.includes('STUDENT BIRTHDAYS'))return'birthday';if(val.includes('STUDENT DIRECTORY'))return'directory';}return'birthday';}
+function bdayFlipName(raw){var comma=raw.indexOf(',');if(comma===-1)return raw;var last=raw.substring(0,comma).trim(),rest=raw.substring(comma+1).trim();return rest.split(' ')[0]+' '+last;}
+function bdayParseDate(raw){if(!raw)return null;if(raw instanceof Date)return{month:raw.getMonth()+1,day:raw.getDate()};var s=String(raw).trim(),parts=s.split('/');if(parts.length>=2){var m=parseInt(parts[0]),d=parseInt(parts[1]);if(m>=1&&m<=12&&d>=1&&d<=31)return{month:m,day:d};}return null;}
+function bdayRenderPreview(){var tbody=document.getElementById('bday-preview-body'),wrap=document.getElementById('bday-preview-wrap'),countEl=document.getElementById('bday-preview-count');tbody.innerHTML='';var existingKeys={};bdayExisting.forEach(function(r){existingKeys[r.name.toUpperCase()+'|'+r.month+'|'+r.day]=true;});var newCount=0;bdayData.forEach(function(r,i){var key=r.name.toUpperCase()+'|'+r.month+'|'+r.day,isDup=!!existingKeys[key];if(!isDup)newCount++;var tr=document.createElement('tr');tr.innerHTML='<td>'+(i+1)+'</td><td>'+r.name+'</td><td>'+MONTH_NAMES[r.month]+'</td><td>'+r.day+'</td><td class="'+(isDup?'bday-status-dup':'bday-status-ok')+'">'+(isDup?'already exists':'✓ new')+'</td>';tbody.appendChild(tr);});countEl.textContent=bdayData.length+' students parsed · '+newCount+' new';wrap.style.display='block';var btn=document.getElementById('bday-commit-btn');btn.textContent=newCount>0?'⬆ Upload '+newCount+' New Students':'✓ All Already Exist';btn.disabled=newCount===0;}
+function bdayClearPreview(){bdayData=[];document.getElementById('bday-preview-wrap').style.display='none';document.getElementById('bday-file-input').value='';}
+async function bdayCommit(){var btn=document.getElementById('bday-commit-btn'),status=document.getElementById('bday-upload-status');btn.disabled=true;btn.textContent='Uploading...';var existingKeys={};bdayExisting.forEach(function(r){existingKeys[r.name.toUpperCase()+'|'+r.month+'|'+r.day]=true;});var toInsert=bdayData.filter(function(r){return!existingKeys[r.name.toUpperCase()+'|'+r.month+'|'+r.day];});if(!toInsert.length){status.textContent='Nothing new to upload.';btn.textContent='✓ Done';return;}var payload=toInsert.map(function(r){return{room:ROOM,name:r.name,month:r.month,day:r.day,active:true};});try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_birthdays',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw new Error(await res.text());status.textContent='✓ '+toInsert.length+' students uploaded.';btn.textContent='✓ Done';bdayData=[];document.getElementById('bday-preview-wrap').style.display='none';document.getElementById('bday-file-input').value='';await bdayLoadList();}catch(e){status.textContent='Upload failed: '+e.message;btn.disabled=false;btn.textContent='⬆ Retry Upload';}}
+async function bdayAddManual(){var name=(document.getElementById('bday-name').value||'').trim(),month=parseInt(document.getElementById('bday-month').value),day=parseInt(document.getElementById('bday-day').value),status=document.getElementById('bday-manual-status');if(!name||!month||!day){status.textContent='Fill in all fields.';return;}try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_birthdays',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify([{room:ROOM,name:name,month:month,day:day,active:true}])});if(!res.ok)throw new Error(await res.text());document.getElementById('bday-name').value='';document.getElementById('bday-month').value='';document.getElementById('bday-day').value='';status.textContent='✓ '+name+' added.';await bdayLoadList();}catch(e){status.textContent='Error: '+e.message;}}
+async function bdayLoadList(){var rows=await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&order=month.asc,day.asc');bdayExisting=rows||[];var list=document.getElementById('bday-list'),countEl=document.getElementById('bday-count');if(countEl)countEl.textContent=bdayExisting.length;if(!bdayExisting.length){list.innerHTML='<div class="bday-empty">No birthdays yet.</div>';return;}list.innerHTML=bdayExisting.map(function(r){return'<div class="bday-row"><div><div class="bday-row-name">'+r.name+'</div><div class="bday-row-date">'+MONTH_NAMES[r.month]+' '+r.day+'</div></div><button class="bday-del-btn" onclick="bdayDelete(\''+r.id+'\')">✕</button></div>';}).join('');}
+async function bdayDelete(id){if(!confirm('Remove this birthday?'))return;try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_birthdays?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)throw new Error(await res.text());await bdayLoadList();}catch(e){alert('Delete failed: '+e.message);}}
+async function bdayClearAll(){if(!confirm('Remove ALL birthdays for Room '+ROOM+'?'))return;try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_birthdays?room=eq.'+ROOM,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)throw new Error(await res.text());await bdayLoadList();}catch(e){alert('Clear failed: '+e.message);}}
+
+// ── QUICK MESSAGE ──────────────────────────────────────────────
+var msgAligns=[true,true,true,true,true,true,true,true];
+function msgToggleAlign(n){msgAligns[n-1]=!msgAligns[n-1];var btn=document.getElementById('msg-align'+n);btn.textContent=msgAligns[n-1]?'C':'L';btn.classList.toggle('active',msgAligns[n-1]);msgUpdatePreview();}
+function msgGetLines(){return[1,2,3,4,5,6,7,8].map(function(n){return document.getElementById('msg-line'+n).value||'';});}
+function msgUpdatePreview(){var lines=msgGetLines(),board=document.getElementById('msg-preview-board');if(lines.every(function(l){return!l.trim();})){board.innerHTML='<div class="msg-preview-empty">Start typing to preview</div>';return;}board.innerHTML=lines.map(function(l,i){var cls=msgAligns[i]?'msg-preview-row-center':'msg-preview-row-left';return'<div class="'+cls+'">'+(l?l.toUpperCase():'')+'</div>';}).join('');}
+function msgClearForm(){[1,2,3,4,5,6,7,8].forEach(function(n){document.getElementById('msg-line'+n).value='';msgAligns[n-1]=true;var btn=document.getElementById('msg-align'+n);btn.textContent='C';btn.classList.add('active');});document.getElementById('msg-expire').value='24';document.getElementById('msg-status').textContent='';msgUpdatePreview();}
+async function msgPost(){var lines=msgGetLines(),hours=parseInt(document.getElementById('msg-expire').value)||24,status=document.getElementById('msg-status'),btn=document.getElementById('msg-post-btn');if(lines.every(function(l){return!l.trim();})){status.textContent='Enter at least one line.';return;}btn.disabled=true;btn.textContent='Posting...';status.textContent='';var expiresAt=new Date(Date.now()+hours*3600000).toISOString(),alignStr=msgAligns.map(function(a){return a?'C':'L';}).join(','),payload={room:ROOM,sender:null,line1:lines[0]||null,line2:lines[1]||null,line3:lines[2]||null,line4:lines[3]||null,line5:lines[4]||null,line6:lines[5]||null,line7:lines[6]||null,line8:lines[7]||null,status:alignStr,active:true,expires_at:expiresAt,expire_hours:hours};try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_messages',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw new Error(await res.text());status.textContent='✓ Posted. Appears on board within 5 minutes.';btn.textContent='📣 Post to Board Now';btn.disabled=false;msgClearForm();await msgLoadList();}catch(e){status.textContent='Error: '+e.message;btn.textContent='📣 Post to Board Now';btn.disabled=false;}}
+async function msgLoadList(){var now=new Date().toISOString(),rows=await sbFetch('cw2_messages','room=eq.'+ROOM+'&active=eq.true&expires_at=gte.'+now+'&order=created_at.desc');rows=rows||[];var countEl=document.getElementById('msg-active-count');if(countEl)countEl.textContent=rows.length;var list=document.getElementById('msg-list');if(!rows.length){list.innerHTML='<div class="bday-empty">No active messages.</div>';return;}list.innerHTML=rows.map(function(m){var aligns=(m.status||'').split(','),allLines=[m.line1,m.line2,m.line3,m.line4,m.line5,m.line6,m.line7||'',m.line8||''];var linesHtml=allLines.map(function(l,i){if(!l||!l.trim())return'';var isLeft=aligns[i]==='L';return'<div class="msg-card-line'+(isLeft?' left':'')+'">'+( isLeft?'← ':'')+l.toUpperCase()+'</div>';}).filter(Boolean).join('');var hoursLeft=Math.round((new Date(m.expires_at)-new Date())/3600000);var expLabel=hoursLeft<1?'expires soon':hoursLeft<24?'in '+hoursLeft+'h':'in '+Math.round(hoursLeft/24)+'d';var expClass=hoursLeft<2?'msg-expires-soon':'';return'<div class="msg-card"><div class="msg-card-body">'+linesHtml+'<div class="msg-card-meta"><span class="'+expClass+'">Expires '+expLabel+'</span></div></div><button class="msg-del-btn" onclick="msgDelete(\''+m.id+'\')">✕ Remove</button></div>';}).join('');}
+async function msgDelete(id){if(!confirm('Remove this message?'))return;try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_messages?id=eq.'+id,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)throw new Error(await res.text());await msgLoadList();}catch(e){alert('Delete failed: '+e.message);}}
+async function msgClearAll(){if(!confirm('Remove ALL active messages?'))return;try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_messages?room=eq.'+ROOM+'&active=eq.true',{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)throw new Error(await res.text());await msgLoadList();}catch(e){alert('Clear failed: '+e.message);}}
+
+// ── QUIET COMPETITION ──────────────────────────────────────────
+function quietWeekStart(){var d=new Date();d.setDate(d.getDate()-d.getDay());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+async function quietLoadNames(){var rows=await sbFetch('cw2_period_names','room=eq.'+ROOM+'&select=period,display_name&order=period.asc');var nameMap={};(rows||[]).forEach(function(r){nameMap[r.period]=r.display_name;});var editor=document.getElementById('quiet-name-editor');if(!editor)return;editor.innerHTML='';['1','2','3','4','5','6','7'].forEach(function(p){var row=document.createElement('div');row.className='quiet-name-row';row.innerHTML='<div class="quiet-period-label">P'+p+'</div><input class="sb-input" type="text" id="quiet-name-'+p+'" placeholder="e.g. Silent Assassins" maxlength="40" value="'+(nameMap[p]||'').replace(/"/g,'&quot;')+'">';editor.appendChild(row);});var ws=quietWeekStart(),d=new Date(ws+'T00:00:00'),months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],label=document.getElementById('quiet-week-label');if(label)label.textContent='Week of '+months[d.getMonth()]+' '+d.getDate();}
+async function quietSaveNames(){var status=document.getElementById('quiet-name-status');status.textContent='Saving...';var promises=[];['1','2','3','4','5','6','7'].forEach(function(p){var input=document.getElementById('quiet-name-'+p);if(!input)return;var name=input.value.trim();promises.push(fetch(SUPABASE_URL+'/rest/v1/cw2_period_names?room=eq.'+ROOM+'&period=eq.'+p,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}}).then(function(){if(!name)return;return fetch(SUPABASE_URL+'/rest/v1/cw2_period_names',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({room:ROOM,period:p,display_name:name})});}));});try{await Promise.all(promises);status.textContent='✓ Names saved.';toast('Period names saved');await quietLoadStandings();}catch(e){status.textContent='Error: '+e.message;}}
+async function quietLoadStandings(){var ws=quietWeekStart(),results=await Promise.all([sbFetch('cw2_quiet_points','room=eq.'+ROOM+'&week_start=eq.'+ws+'&select=*'),sbFetch('cw2_period_names','room=eq.'+ROOM+'&select=period,display_name')]);var pointRows=results[0]||[],nameRows=results[1]||[],nameMap={};nameRows.forEach(function(r){nameMap[r.period]=r.display_name;});var grouped={};pointRows.forEach(function(r){var name=nameMap[r.period]||('Period '+r.period);if(!grouped[name])grouped[name]={name:name,points:0,minutes:0};grouped[name].points+=r.points_earned||0;grouped[name].minutes+=r.minutes_quiet||0;});Object.values(nameMap).forEach(function(name){if(!grouped[name])grouped[name]={name:name,points:0,minutes:0};});var ranked=Object.values(grouped).sort(function(a,b){return b.points-a.points;}),el=document.getElementById('quiet-standings');if(!el)return;if(!ranked.length){el.innerHTML='<div class="bday-empty">No data yet.</div>';return;}var medals=['🥇','🥈','🥉','4.','5.','6.','7.'];el.innerHTML=ranked.map(function(entry,i){return'<div class="quiet-standing-row"><div class="quiet-standing-rank">'+(medals[i]||(i+1)+'.')+'</div><div class="quiet-standing-name">'+entry.name+'</div><div style="display:flex;align-items:center;gap:8px"><div class="quiet-standing-pts">'+entry.points.toLocaleString()+' pts</div><div class="quiet-standing-mins">'+entry.minutes+' min quiet</div></div></div>';}).join('');}
+async function quietResetWeek(){if(!confirm('Reset all quiet competition points?'))return;var ws=quietWeekStart();try{var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_quiet_points?room=eq.'+ROOM+'&week_start=eq.'+ws,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});if(!res.ok)throw new Error(await res.text());toast('Week reset');await quietLoadStandings();}catch(e){alert('Reset failed: '+e.message);}}
 </script>
 </body>
 </html>
