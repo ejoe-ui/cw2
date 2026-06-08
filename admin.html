@@ -147,8 +147,8 @@
   [data-theme="dark"] .dc-perm-badge{background:#2e1a5e;color:#a78bfa;}
   .dc-divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
   .dc-order-label{font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
-  .dc-list{display:flex;flex-direction:column;gap:4px;width:100%;}
-  .dc-list-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:border-color 0.15s;width:100%;box-sizing:border-box;min-width:0;}
+  .dc-list{display:block;width:100%;}
+  .dc-list-item{display:flex !important;flex-direction:row !important;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:border-color 0.15s;width:100%;box-sizing:border-box;margin-bottom:4px;}
   .dc-list-item.off-item{opacity:0.45;}
   .dc-list-item.drag-over-top{border-top:2px solid var(--accent);}
   .dc-list-item.drag-over-bottom{border-bottom:2px solid var(--accent);}
@@ -490,7 +490,9 @@
     <div class="dc-grid" id="dc-grid"><div class="empty" style="grid-column:1/-1;padding:1rem;">Loading...</div></div>
     <hr class="dc-divider">
     <div class="dc-order-label">Display Order — drag to reorder</div>
+    <div style="display:block;width:100%;overflow:hidden;">
     <div class="dc-list" id="dc-list"><div class="bday-empty">Loading...</div></div>
+    </div>
     <div class="dc-save-row">
       <div class="dc-dirty-label" id="dc-dirty-label"></div>
       <button class="sb-btn-primary" onclick="dcSave()" id="dc-save-btn">Save Display Settings</button>
@@ -693,14 +695,7 @@ async function unlockAdmin(){
   var hrVal=hrRows&&hrRows[0]?hrRows[0].show_honor_roll:null;
   document.getElementById('settingHonorRoll').textContent=hrVal===false?'✗ Off':'✓ On';
   await loadBoards();
-await loadDisplayControls();
-// Auto-save if boards were added to display_order by syncBoardsToOrder
-if(dcDirty) {
-  var toSave=Object.assign({},dcCats);
-  toSave.display_order=dcOrder.slice();
-  await fetch(SUPABASE_URL+'/rest/v1/cw2_settings?id=eq.'+dcSettings.id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({global_categories:toSave})});
-  dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
-}
+  await loadDisplayControls();
   await loadGlobalBoards();
   await loadObjectives();
   await bdayLoadList();
