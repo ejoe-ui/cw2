@@ -19,7 +19,7 @@
     --btn-secondary-border:#d0d0d0;--btn-secondary-text:#333;--input-bg:#ffffff;
     --shadow:0 1px 3px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.04);
     --shadow-md:0 4px 6px rgba(0,0,0,0.07),0 2px 4px rgba(0,0,0,0.04);--header-bg:#ffffff;
-    --green:#005640;--font-retro:'Courier New',Courier,monospace;
+    --green:#005640;
   }
   [data-theme="dark"] {
     --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#222222;--border:#2e2e2e;--border2:#3a3a3a;
@@ -28,7 +28,7 @@
     --btn-primary-bg:#005640;--btn-primary-text:#ffffff;--btn-secondary-bg:#2a2a2a;
     --btn-secondary-border:#3a3a3a;--btn-secondary-text:#cccccc;--input-bg:#111111;
     --shadow:0 1px 3px rgba(0,0,0,0.4);--shadow-md:0 4px 6px rgba(0,0,0,0.5);--header-bg:#111111;
-    --green:#00a86b;--font-retro:'Courier New',Courier,monospace;
+    --green:#00a86b;
   }
   html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;font-size:14px;line-height:1.5;transition:background 0.2s,color 0.2s;}
   #header{position:sticky;top:0;z-index:50;background:var(--header-bg);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;height:56px;box-shadow:var(--shadow);}
@@ -137,6 +137,32 @@
   [data-theme="dark"] #toast{background:#f0f0f0;color:#111;}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   #toast.err{background:var(--danger);color:#fff;}
+
+  /* ── DISPLAY CONTROLS ── */
+  .dc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.25rem;}
+  .dc-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:var(--shadow);cursor:pointer;user-select:none;transition:border-color 0.18s,background 0.18s;}
+  .dc-card.on{border-color:var(--accent);background:var(--accent-bg);}
+  .dc-card.off{border-color:var(--border);background:var(--surface);}
+  .dc-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+  .dc-icon{font-size:18px;line-height:1;}
+  .dc-label{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;}
+  .dc-desc{font-size:10px;color:var(--text-3);line-height:1.4;}
+  .dc-divider{border:none;border-top:1px solid var(--border);margin:1rem 0;}
+  .dc-order-label{font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;}
+  .dc-list{display:flex;flex-direction:column;gap:4px;}
+  .dc-list-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;transition:border-color 0.15s;}
+  .dc-list-item.off-item{opacity:0.45;}
+  .dc-list-num{font-size:11px;font-weight:700;color:var(--text-3);width:18px;text-align:center;flex-shrink:0;}
+  .dc-list-icon{font-size:14px;flex-shrink:0;}
+  .dc-list-name{font-size:12px;font-weight:600;color:var(--text);flex:1;}
+  .dc-list-status{font-size:10px;font-weight:600;color:var(--text-3);}
+  .dc-list-status.on{color:#15803d;}
+  .dc-list-btns{display:flex;gap:3px;flex-shrink:0;}
+  .dc-arrow{width:24px;height:24px;border-radius:4px;border:1px solid var(--border2);background:var(--surface);color:var(--text-2);font-size:11px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-family:inherit;}
+  .dc-arrow:hover:not(:disabled){border-color:var(--accent);color:var(--accent);background:var(--accent-bg);}
+  .dc-arrow:disabled{opacity:0.2;cursor:not-allowed;}
+  .dc-save-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+  .dc-dirty-label{font-size:11px;color:var(--warning);font-weight:600;min-height:16px;}
 
   /* Birthday Manager */
   .bday-tabs{display:flex;gap:6px;margin-bottom:14px;}
@@ -456,18 +482,33 @@
     <div class="bday-list-scroll" id="bday-list"><div class="bday-empty">Loading...</div></div>
   </div>
 
-  <!-- GLOBAL CATEGORY TOGGLES -->
-  <div class="sb-section" id="section-category-toggles">
+  <!-- DISPLAY CONTROLS -->
+  <div class="sb-section" id="section-display-controls">
     <div class="sb-section-header">
       <div>
-        <span>📺 Global Content Categories</span>
-        <div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Toggle which global screen types appear on your display</div>
+        <span>📺 Display Controls</span>
+        <div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Toggle screens on/off · reorder to control what shows first</div>
       </div>
     </div>
-    <div id="cat-toggle-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
-      <div class="empty">Loading...</div>
+
+    <!-- TOP: Toggle grid — rerenders to match order -->
+    <div class="dc-grid" id="dc-grid">
+      <div class="empty" style="grid-column:1/-1;padding:1rem;">Loading...</div>
     </div>
-    <div id="cat-toggle-status" style="font-size:11px;color:var(--text-3);margin-top:8px;min-height:16px;"></div>
+
+    <hr class="dc-divider">
+
+    <!-- BOTTOM: Order list with up/down arrows -->
+    <div class="dc-order-label">Display Order — first to last</div>
+    <div class="dc-list" id="dc-list">
+      <div class="bday-empty">Loading...</div>
+    </div>
+
+    <div class="dc-save-row">
+      <div class="dc-dirty-label" id="dc-dirty-label"></div>
+      <button class="sb-btn-primary" onclick="dcSave()" id="dc-save-btn">Save Display Settings</button>
+    </div>
+    <div style="font-size:11px;color:var(--text-3);margin-top:6px;min-height:16px;" id="dc-status"></div>
   </div>
 
   <!-- BOARDS -->
@@ -706,7 +747,7 @@ async function unlockAdmin() {
   var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
   document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
   await loadBoards();
-  await loadCategoryToggles();
+  await loadDisplayControls();
   await loadGlobalBoards();
   await loadObjectives();
   await bdayLoadList();
@@ -722,7 +763,7 @@ async function unlockAdmin() {
 
 function logout() {
   ROOM = ''; classroom = null; boards = []; globalBoards = []; editingId = null; editingGlobalId = null; isMasterSession = false;
-  bdayData = []; bdayExisting = []; catSettings = null;
+  bdayData = []; bdayExisting = []; dcSettings = null; dcOrder = []; dcDirty = false;
   document.getElementById('pin-screen').style.display = 'flex';
   document.getElementById('main').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
@@ -800,14 +841,12 @@ function buildLinesEditor(values) {
   }
   updateScreenPreview();
 }
-
 function updateCC(i) {
   var len = document.getElementById('line' + i).value.length;
   var el  = document.getElementById('cc' + i);
   el.textContent = len + '/28';
   el.className = 'line-cc' + (len > 28 ? ' over' : len > 22 ? ' warn' : '');
 }
-
 function updateScreenPreview() {
   var wrap  = document.getElementById('screen-preview-wrap');
   var board = document.getElementById('screen-preview-board');
@@ -829,13 +868,11 @@ function updateScreenPreview() {
       (display.length > 0 ? display : ' '.repeat(28)) + '</div>';
   }).join('');
 }
-
 function getLines() {
   var out = [];
   for (var i = 0; i < 8; i++) out.push(document.getElementById('line' + i).value.toUpperCase().trim());
   return out;
 }
-
 function openNewBoard() {
   editingId = null; document._savingGlobal = false;
   document.getElementById('modalTitle').textContent = 'Add Board';
@@ -874,18 +911,18 @@ async function saveScreen() {
   if (isGlobal) {
     if (editingGlobalId) {
       var r = await sbUpdate('cw2_screens', editingGlobalId, data);
-      if (!r) { toast('Update failed — check console', true); return; }
+      if (!r) { toast('Update failed', true); return; }
       toast('Global board updated');
     } else {
       var r = await sbInsert('cw2_screens', data);
-      if (!r) { toast('Save failed — check console', true); return; }
+      if (!r) { toast('Save failed', true); return; }
       toast('Global board added');
     }
     closeModal(); await loadGlobalBoards();
   } else {
     if (editingId) {
       var r = await sbUpdate('cw2_screens', editingId, data);
-      if (!r) { toast('Update failed — check console', true); return; }
+      if (!r) { toast('Update failed', true); return; }
       toast('Board updated');
     } else {
       var r = await sbInsert('cw2_screens', data);
@@ -953,7 +990,6 @@ async function loadGlobalBoards() {
   globalBoards = rows || [];
   renderGlobalBoards();
 }
-
 function renderGlobalBoards() {
   var list = document.getElementById('globalBoardsList');
   if (!globalBoards.length) { list.innerHTML = '<div class="empty">No global boards yet.</div>'; return; }
@@ -975,7 +1011,6 @@ function renderGlobalBoards() {
       '<div class="board-actions">' + actions + '</div></div>';
   }).join('');
 }
-
 function openNewGlobalBoard() {
   editingGlobalId = null; document._savingGlobal = true;
   document.getElementById('modalTitle').textContent = 'Add Global Board';
@@ -1117,58 +1152,137 @@ async function objClear() {
   await loadObjectives();
 }
 
-// ── GLOBAL CATEGORY TOGGLES ───────────────────────────────────
-var CAT_META = [
-  { key: 'cowboy_code',       label: 'Cowboy Code',        icon: '🤠', desc: 'School values and character boards' },
-  { key: 'fun_facts',         label: 'Fun Facts',          icon: '💡', desc: 'Teen-voiced facts with reaction lines' },
-  { key: 'word_of_day',       label: 'Word of the Day',    icon: '📖', desc: 'Vocabulary with student sentences' },
-  { key: 'positive_thoughts', label: 'Positive Thoughts',  icon: '✨', desc: 'SEL-focused affirmations' },
-  { key: 'business',          label: 'Business Facts',     icon: '📈', desc: 'Creator economy and brand stories' },
-  { key: 'this_week',         label: 'This Week',          icon: '📅', desc: 'Music, sports, tech and culture history' },
+// ── DISPLAY CONTROLS ──────────────────────────────────────────
+var DC_META = [
+  { key:'show_objectives',    label:'Period Objectives',  icon:'🎯', desc:'Shows today\'s learning goals' },
+  { key:'show_messages',      label:'Quick Messages',     icon:'📣', desc:'Announcements from teacher' },
+  { key:'show_calendar',      label:'Calendar',           icon:'📅', desc:'Date, schedule & upcoming events' },
+  { key:'show_weather',       label:'Weather',            icon:'🌤', desc:'Current conditions & forecast' },
+  { key:'show_bell',          label:'Bell Schedule',      icon:'🔔', desc:'Today\'s period times' },
+  { key:'show_birthday',      label:'Birthdays',          icon:'🎂', desc:'Student birthday shoutouts' },
+  { key:'show_quiet',         label:'Quiet Competition',  icon:'🤫', desc:'Weekly silence standings' },
+  { key:'cowboy_code',        label:'Cowboy Code',        icon:'🤠', desc:'School values & character boards' },
+  { key:'fun_facts',          label:'Fun Facts',          icon:'💡', desc:'Teen-voiced facts with reaction lines' },
+  { key:'word_of_day',        label:'Word of the Day',    icon:'📖', desc:'Vocabulary with student sentences' },
+  { key:'positive_thoughts',  label:'Positive Thoughts',  icon:'✨', desc:'SEL-focused affirmations' },
+  { key:'business',           label:'Business Facts',     icon:'📈', desc:'Creator economy & brand stories' },
+  { key:'this_week',          label:'This Week',          icon:'📅', desc:'Music, sports, tech & culture history' },
 ];
 
-var catSettings = null;
+var DC_DEFAULT_ORDER = DC_META.map(function(m) { return m.key; });
 
-async function loadCategoryToggles() {
+var dcSettings = null;
+var dcOrder    = [];
+var dcCats     = {};
+var dcDirty    = false;
+
+async function loadDisplayControls() {
   var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,global_categories');
   if (!rows || !rows.length) {
-    document.getElementById('cat-toggle-grid').innerHTML = '<div class="empty">Settings not found for this room.</div>';
+    document.getElementById('dc-grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Settings not found for this room.</div>';
     return;
   }
-  catSettings = rows[0];
-  renderCategoryToggles();
+  dcSettings = rows[0];
+  dcCats = dcSettings.global_categories ? Object.assign({}, dcSettings.global_categories) : {};
+
+  // Build order — use saved display_order if valid, else default
+  var savedOrder = dcCats.display_order;
+  if (Array.isArray(savedOrder) && savedOrder.length === DC_DEFAULT_ORDER.length) {
+    dcOrder = savedOrder.slice();
+  } else {
+    // Merge: keep any valid saved keys, append missing ones
+    var validSaved = Array.isArray(savedOrder) ? savedOrder.filter(function(k) {
+      return DC_DEFAULT_ORDER.indexOf(k) >= 0;
+    }) : [];
+    var missing = DC_DEFAULT_ORDER.filter(function(k) { return validSaved.indexOf(k) < 0; });
+    dcOrder = validSaved.concat(missing);
+  }
+
+  dcDirty = false;
+  dcRenderGrid();
+  dcRenderList();
+  dcUpdateDirty();
 }
 
-function renderCategoryToggles() {
-  var cats = (catSettings && catSettings.global_categories) ? catSettings.global_categories : {};
-  var grid = document.getElementById('cat-toggle-grid');
-  grid.innerHTML = CAT_META.map(function(cat) {
-    var isOn = cats[cat.key] !== false;
-    return '<div class="setting-card" style="cursor:pointer;user-select:none;transition:border-color 0.2s,background 0.2s;border:1px solid ' + (isOn ? 'var(--accent)' : 'var(--border)') + ';background:' + (isOn ? 'var(--accent-bg)' : 'var(--surface)') + ';" onclick="catToggle(\'' + cat.key + '\')" id="cat-card-' + cat.key + '">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
-        '<div style="font-size:18px;line-height:1;">' + cat.icon + '</div>' +
-        '<span class="status-badge ' + (isOn ? 'on' : 'off') + '" id="cat-badge-' + cat.key + '">' + (isOn ? '● On' : '○ Off') + '</span>' +
+function dcMetaFor(key) {
+  return DC_META.find(function(m) { return m.key === key; }) || { key: key, label: key, icon: '▪', desc: '' };
+}
+
+function dcRenderGrid() {
+  var grid = document.getElementById('dc-grid');
+  grid.innerHTML = dcOrder.map(function(key) {
+    var m = dcMetaFor(key);
+    var isOn = dcCats[key] !== false;
+    return '<div class="dc-card ' + (isOn ? 'on' : 'off') + '" onclick="dcToggle(\'' + key + '\')" id="dc-card-' + key + '">' +
+      '<div class="dc-card-top">' +
+        '<div class="dc-icon">' + m.icon + '</div>' +
+        '<span class="status-badge ' + (isOn ? 'on' : 'off') + '">' + (isOn ? '● On' : '○ Off') + '</span>' +
       '</div>' +
-      '<div class="setting-label" style="text-transform:none;font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">' + cat.label + '</div>' +
-      '<div style="font-size:10px;color:var(--text-3);line-height:1.4;">' + cat.desc + '</div>' +
+      '<div class="dc-label">' + m.label + '</div>' +
+      '<div class="dc-desc">' + m.desc + '</div>' +
     '</div>';
   }).join('');
 }
 
-async function catToggle(key) {
-  if (!catSettings) return;
-  var cats = catSettings.global_categories ? Object.assign({}, catSettings.global_categories) : {};
-  var current = cats[key] !== false;
-  cats[key] = !current;
+function dcRenderList() {
+  var list = document.getElementById('dc-list');
+  list.innerHTML = dcOrder.map(function(key, i) {
+    var m = dcMetaFor(key);
+    var isOn = dcCats[key] !== false;
+    var isFirst = i === 0;
+    var isLast  = i === dcOrder.length - 1;
+    return '<div class="dc-list-item ' + (isOn ? '' : 'off-item') + '" id="dc-li-' + key + '">' +
+      '<div class="dc-list-num">' + (i + 1) + '</div>' +
+      '<div class="dc-list-icon">' + m.icon + '</div>' +
+      '<div class="dc-list-name">' + m.label + '</div>' +
+      '<div class="dc-list-status ' + (isOn ? 'on' : '') + '">' + (isOn ? '● On' : '○ Off') + '</div>' +
+      '<div class="dc-list-btns">' +
+        '<button class="dc-arrow" onclick="dcMove(\'' + key + '\',-1)" ' + (isFirst ? 'disabled' : '') + ' title="Move up">↑</button>' +
+        '<button class="dc-arrow" onclick="dcMove(\'' + key + '\',1)" ' + (isLast ? 'disabled' : '') + ' title="Move down">↓</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
 
-  // Optimistic UI update
-  catSettings.global_categories = cats;
-  renderCategoryToggles();
+function dcToggle(key) {
+  dcCats[key] = dcCats[key] === false ? true : false;
+  dcDirty = true;
+  dcRenderGrid();
+  dcRenderList();
+  dcUpdateDirty();
+}
 
-  var statusEl = document.getElementById('cat-toggle-status');
-  statusEl.textContent = 'Saving...';
+function dcMove(key, dir) {
+  var idx = dcOrder.indexOf(key);
+  if (idx < 0) return;
+  var newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= dcOrder.length) return;
+  // Swap
+  var tmp = dcOrder[idx];
+  dcOrder[idx] = dcOrder[newIdx];
+  dcOrder[newIdx] = tmp;
+  dcDirty = true;
+  dcRenderGrid();
+  dcRenderList();
+  dcUpdateDirty();
+}
 
-  var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_settings?id=eq.' + catSettings.id, {
+function dcUpdateDirty() {
+  var label = document.getElementById('dc-dirty-label');
+  if (label) label.textContent = dcDirty ? '● Unsaved changes' : '';
+}
+
+async function dcSave() {
+  if (!dcSettings) return;
+  var btn = document.getElementById('dc-save-btn');
+  var status = document.getElementById('dc-status');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  // Write display_order into the cats object
+  var toSave = Object.assign({}, dcCats);
+  toSave.display_order = dcOrder.slice();
+
+  var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_settings?id=eq.' + dcSettings.id, {
     method: 'PATCH',
     headers: {
       'apikey': SUPABASE_KEY,
@@ -1176,20 +1290,20 @@ async function catToggle(key) {
       'Content-Type': 'application/json',
       'Prefer': 'return=minimal'
     },
-    body: JSON.stringify({ global_categories: cats })
+    body: JSON.stringify({ global_categories: toSave })
   });
 
+  btn.disabled = false; btn.textContent = 'Save Display Settings';
+
   if (res.ok) {
-    var meta = CAT_META.find(function(c) { return c.key === key; });
-    var label = meta ? meta.label : key;
-    statusEl.textContent = '';
-    toast(label + (cats[key] ? ' enabled — appears on display within 60s' : ' disabled'));
+    dcSettings.global_categories = toSave;
+    dcCats = Object.assign({}, toSave);
+    dcDirty = false;
+    dcUpdateDirty();
+    status.textContent = '';
+    toast('Display settings saved — board updates within 60s');
   } else {
-    // Revert on failure
-    cats[key] = current;
-    catSettings.global_categories = cats;
-    renderCategoryToggles();
-    statusEl.textContent = 'Save failed — try again';
+    status.textContent = 'Save failed — try again';
     toast('Save failed', true);
   }
 }
@@ -1204,7 +1318,6 @@ function bdayTab(tab, btn) {
   btn.classList.add('active');
   document.getElementById('bday-pane-' + tab).style.display = 'block';
 }
-
 (function initDrop() {
   var dz = document.getElementById('bday-dropzone');
   if (!dz) return;
@@ -1212,7 +1325,6 @@ function bdayTab(tab, btn) {
   dz.addEventListener('dragleave', function()  { dz.classList.remove('drag-over'); });
   dz.addEventListener('drop', function(e) { e.preventDefault(); dz.classList.remove('drag-over'); bdayHandleFiles(e.dataTransfer.files); });
 })();
-
 async function bdayHandleFiles(files) {
   if (!files || !files.length) return;
   bdayData = [];
@@ -1229,7 +1341,6 @@ async function bdayHandleFiles(files) {
   });
   bdayRenderPreview(); status.textContent = '';
 }
-
 async function bdayParseFile(file) {
   return new Promise(function(resolve, reject) {
     var reader = new FileReader();
@@ -1375,7 +1486,6 @@ async function bdayClearAll() {
 
 // ── QUICK MESSAGE ─────────────────────────────────────────────
 var msgAligns = [true,true,true,true,true,true,true,true];
-
 function msgToggleAlign(n) {
   msgAligns[n-1] = !msgAligns[n-1];
   var btn = document.getElementById('msg-align' + n);
@@ -1544,7 +1654,6 @@ async function quietResetWeek() {
     await quietLoadStandings();
   } catch(e) { alert('Reset failed: ' + e.message); }
 }
-
 </script>
 </body>
 </html>
