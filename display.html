@@ -1002,7 +1002,7 @@ function injectDynamicScreens() {
 
   var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather',
     'show_bell','show_birthday','show_quiet','cowboy_code','fun_facts',
-    'word_of_day','wise_words','business','history_drops','on_this_day'];
+    'word_of_day','wise_words','business','history_drops','on_this_day','show_countdown'];
   var order = (Array.isArray(cats.display_order) && cats.display_order.length)
     ? cats.display_order : DC_DEFAULT;
 
@@ -1013,6 +1013,7 @@ function injectDynamicScreens() {
   if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
   if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
   if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
+  if(cats['show_countdown'] !== false){var s=buildCountdownScreen();if(s)dynamicScreens['show_countdown']=[s];}
   if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
   if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
   if(cats['on_this_day'] !== false){var s=buildHistoryDropScreen();if(s)dynamicScreens['on_this_day']=[s];}
