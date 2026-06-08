@@ -975,10 +975,11 @@ function formatHistoryDrop(year,text){
     else{if(current)textLines.push(current);current=word.substring(0,COLS);}
   });
   if(current)textLines.push(current);
-  var lines=['',header,''];
+  var lines=[header,''];
   textLines.slice(0,4).forEach(function(l){lines.push(l);});
-  while(lines.length<7)lines.push('');
+  lines.push('');
   lines.push('ON THIS DAY');
+  while(lines.length<8)lines.push('');
   return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
 }
 
