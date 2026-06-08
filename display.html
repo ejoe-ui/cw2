@@ -926,7 +926,62 @@ function buildQuietScreen(){
   while(lines.length<ROWS)lines.push('');
   return{lines:lines.slice(0,ROWS),speed:14,id:'quiet',align:'left',sort_order:0.7};
 }
+// ── LIVE HISTORY DROP (Wikipedia On This Day) ─────────────────
+var CW_HISTORY_LIVE = null;
 
+async function loadLiveHistoryDrop() {
+  var now=new Date(),month=now.getMonth()+1,day=now.getDate();
+  try {
+    var url='https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/'+month+'/'+day;
+    var res=await fetch(url,{headers:{'Accept':'application/json'}});
+    if(!res.ok)throw new Error('wiki '+res.status);
+    var data=await res.json();
+    var events=data.events||[];
+    if(!events.length)throw new Error('no events');
+    var filtered=events.filter(function(e){
+      var year=parseInt(e.year)||0;if(year<1900)return false;
+      var text=(e.text||'').toLowerCase();
+      var skip=['treaty','parliament','constitution','legislature','governor','senator','appointed','signed into law'];
+      return!skip.some(function(s){return text.includes(s);});
+    });
+    if(!filtered.length)filtered=events.filter(function(e){return parseInt(e.year)>=1950;});
+    if(!filtered.length)filtered=events;
+    var pool=filtered.slice(0,20);
+    var pick=pool[Math.floor(Math.random()*pool.length)];
+    CW_HISTORY_LIVE=formatHistoryDrop(pick.year,pick.text);
+    return CW_HISTORY_LIVE;
+  } catch(e) {
+    try {
+      var res2=await fetch('http://history.muffinlabs.com/date');
+      if(!res2.ok)throw new Error();
+      var data2=await res2.json();
+      var events2=(data2.data&&data2.data.Events)||[];
+      if(!events2.length)throw new Error();
+      var pick2=events2[Math.floor(Math.random()*Math.min(events2.length,15))];
+      CW_HISTORY_LIVE=formatHistoryDrop(pick2.year,pick2.text);
+      return CW_HISTORY_LIVE;
+    } catch(e2){CW_HISTORY_LIVE=null;return null;}
+  }
+}
+
+function formatHistoryDrop(year,text){
+  text=(text||'').replace(/\[\d+\]/g,'').replace(/\s+/g,' ').trim();
+  var COLS=28,header=('ON THIS DAY  '+year).substring(0,COLS);
+  var words=text.toUpperCase().split(' '),textLines=[],current='';
+  words.forEach(function(word){
+    if((current+(current?' ':'')+word).length<=COLS){current=current?current+' '+word:word;}
+    else{if(current)textLines.push(current);current=word.substring(0,COLS);}
+  });
+  if(current)textLines.push(current);
+  var lines=['',header,''];
+  textLines.slice(0,4).forEach(function(l){lines.push(l);});
+  while(lines.length<7)lines.push('');
+  lines.push('HISTORY DROPS');
+  return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
+}
+
+function buildHistoryDropScreen(){return CW_HISTORY_LIVE||null;}
+ 
 // ── HONOR ROLL ────────────────────────────────────────────────
 async function loadHonorRoll(){
   if(SETTINGS&&SETTINGS.show_honor_roll===false){document.getElementById('honor-ticker-wrap').style.display='none';document.getElementById('honor-ticker-inner').innerHTML='';return;}
@@ -956,6 +1011,7 @@ function injectDynamicScreens() {
   if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
   if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
   if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
+  if(cats['history_drops'] !== false){var s=buildHistoryDropScreen();if(s)screensByKey['history_drops']=[s];}
   if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
   if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
   var countScreen = buildCountdownScreen();
@@ -1043,9 +1099,10 @@ async function startBoard() {
   }, SYNC_SEC * 1000);
 
   setInterval(async function() {
-    await loadSettings(); // KEY FIX: refresh settings on 5-min refresh too
+    await loadSettings();
     await loadCwEvents();await loadWeather();await loadObjectives();
     await loadBirthdays();await loadMessages();await loadQuietPoints();
+    await loadLiveHistoryDrop();
     injectDynamicScreens();buildDots();
   }, 5*60*1000);
 }
@@ -1237,6 +1294,7 @@ window.addEventListener('click',function(){if(typeof enableSound==='function'){v
   setInterval(updateClock,10000);setInterval(updatePeriodTimer,1000);updatePeriodTimer();updateSoundBtn();
   setTimeout(function(){var sp=document.getElementById('sound-prompt');if(sp){sp.style.opacity='0';setTimeout(function(){sp.remove();},600);}},8000);
   await startBoard();
+  await loadLiveHistoryDrop();
   await loadObjectives();await loadBirthdays();await loadMessages();
   await loadPeriodNames();await loadQuietPoints();
   cwStartQuietTimer();
