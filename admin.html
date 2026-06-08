@@ -955,18 +955,25 @@ function dcRenderGrid(){
 
 function dcRenderList(){
   var list=document.getElementById('dc-list');
-  list.innerHTML=dcOrder.map(function(key,i){
+  list.innerHTML='';
+  dcOrder.forEach(function(key,i){
     var m=dcMetaFor(key);
     var isOn=m.isPerm?m.boardEnabled:dcCats[key]!==false;
-    return '<div class="dc-list-item '+(isOn?'':'off-item')+'" id="dc-li-'+i+'" draggable="true" data-key="'+key+'">' +
-      '<div class="dc-handle" title="Drag to reorder">≡</div>' +
-      '<div class="dc-list-num">'+(i+1)+'</div>' +
-      '<div class="dc-list-icon">'+m.icon+'</div>' +
-      '<div class="dc-list-name">'+m.label+'</div>' +
+    var item=document.createElement('div');
+    item.className='dc-list-item'+(isOn?'':' off-item');
+    item.id='dc-li-'+i;
+    item.setAttribute('draggable','true');
+    item.dataset.key=key;
+    item.style.cssText='display:flex;flex-direction:row;align-items:center;width:100%;box-sizing:border-box;';
+    item.innerHTML=
+      '<div class="dc-handle" title="Drag to reorder">≡</div>'+
+      '<div class="dc-list-num">'+(i+1)+'</div>'+
+      '<div class="dc-list-icon">'+m.icon+'</div>'+
+      '<div class="dc-list-name">'+m.label+'</div>'+
       (m.isPerm?'<span class="dc-list-perm">Board</span>':'')+
-      '<div class="dc-list-status '+(isOn?'on':'')+'>'+(isOn?'● On':'○ Off')+'</div>' +
-    '</div>';
-  }).join('');
+      '<div class="dc-list-status '+(isOn?'on':'')+'>'+(isOn?'● On':'○ Off')+'</div>';
+    list.appendChild(item);
+  });
   dcBindDrag();
 }
 
