@@ -1577,6 +1577,12 @@ async function startBoard() {
   }, 5 * 60 * 1000);
 }
 
+// ═══════════════════════════════════════════════════════════════
+// DISPLAY.HTML PATCH — replace the injectDynamicScreens() function
+// Find the existing injectDynamicScreens() function and replace
+// the entire function body with this version.
+// ═══════════════════════════════════════════════════════════════
+
 function injectDynamicScreens() {
   // Clear all previously injected dynamic screens
   messages = messages.filter(function(m) {
@@ -1585,37 +1591,96 @@ function injectDynamicScreens() {
            m.id !== 'quiet' && !m.id.startsWith('message-');
   });
 
-  // Calendar — position 0
-  var calScreen = buildCalendarScreen();
-  if (calScreen) messages.unshift(calScreen);
+  // Read display controls from settings
+  var cats = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
 
-  // Countdown — position 2
+  // Default order if none saved
+  var DC_DEFAULT = [
+    'show_objectives','show_messages','show_calendar','show_weather',
+    'show_bell','show_birthday','show_quiet',
+    'cowboy_code','fun_facts','word_of_day','positive_thoughts','business','this_week'
+  ];
+  var order = (Array.isArray(cats.display_order) && cats.display_order.length)
+    ? cats.display_order
+    : DC_DEFAULT;
+
+  // Build each dynamic screen if its toggle is on (default: on)
+  var screensByKey = {};
+
+  if (cats['show_calendar'] !== false) {
+    var s = buildCalendarScreen();
+    if (s) screensByKey['show_calendar'] = [s];
+  }
+  if (cats['show_weather'] !== false) {
+    var s = buildWeatherScreen();
+    if (s) screensByKey['show_weather'] = [s];
+  }
+  if (cats['show_bell'] !== false) {
+    var s = buildBellScreen();
+    if (s) screensByKey['show_bell'] = [s];
+  }
+  if (cats['show_birthday'] !== false) {
+    var s = buildBirthdayScreen();
+    if (s) screensByKey['show_birthday'] = [s];
+  }
+  if (cats['show_quiet'] !== false) {
+    var s = buildQuietScreen();
+    if (s) screensByKey['show_quiet'] = [s];
+  }
+  if (cats['show_objectives'] !== false) {
+    var s = buildObjectivesScreen();
+    if (s) screensByKey['show_objectives'] = [s];
+  }
+  if (cats['show_messages'] !== false) {
+    var msgs = buildMessageScreens();
+    if (msgs.length) screensByKey['show_messages'] = msgs;
+  }
+  // Countdown always on (no toggle yet), inject after calendar
   var countScreen = buildCountdownScreen();
-  if (countScreen) messages.splice(Math.min(2, messages.length), 0, countScreen);
+  if (countScreen) screensByKey['show_countdown'] = [countScreen];
 
-  // Weather — position 3
-  var wxScreen = buildWeatherScreen();
-  if (wxScreen) messages.splice(Math.min(3, messages.length), 0, wxScreen);
+  // Build injection list in display_order sequence
+  // Objectives and messages are high-priority — always inject at position 0
+  // Everything else spreads evenly through the local boards list
+  var highPriority = ['show_objectives', 'show_messages'];
+  var highScreens  = [];
+  var normalScreens = [];
 
-  // Bell schedule — position 4, school days only
-  var bellScreen = buildBellScreen();
-  if (bellScreen) messages.splice(Math.min(4, messages.length), 0, bellScreen);
+  // Walk the order array
+  order.forEach(function(key) {
+    if (cats[key] === false) return; // explicitly off
+    var screens = screensByKey[key];
+    if (!screens || !screens.length) return;
+    if (highPriority.indexOf(key) >= 0) {
+      screens.forEach(function(s) { highScreens.push(s); });
+    } else {
+      screens.forEach(function(s) { normalScreens.push(s); });
+    }
+  });
 
-  // Birthday — position 5
-  var bdayScreen = buildBirthdayScreen();
-  if (bdayScreen) messages.splice(Math.min(5, messages.length), 0, bdayScreen);
+  // Countdown appended after calendar-group if available
+  if (screensByKey['show_countdown']) {
+    screensByKey['show_countdown'].forEach(function(s) { normalScreens.push(s); });
+  }
 
-  // Quiet Competition — position 6, only when noise meter on
-  var quietScreen = buildQuietScreen();
-  if (quietScreen) messages.splice(Math.min(6, messages.length), 0, quietScreen);
+  // Spread normal screens evenly through local boards
+  if (normalScreens.length) {
+    var localLen = messages.length;
+    var step = localLen > 0 ? Math.floor(localLen / (normalScreens.length + 1)) : 0;
+    var inserted = 0;
+    normalScreens.forEach(function(screen, i) {
+      var pos = step > 0
+        ? Math.min((i + 1) * step + inserted, messages.length)
+        : messages.length;
+      messages.splice(pos, 0, screen);
+      inserted++;
+    });
+  }
 
-  // Objectives — position 1 (current period only)
-  var objScreen = buildObjectivesScreen();
-  if (objScreen) messages.splice(1, 0, objScreen);
-
-  // Messages — inject right after calendar
-  var msgScreens = buildMessageScreens();
-  msgScreens.reverse().forEach(function(ms) { messages.splice(1, 0, ms); });
+  // High priority screens go at the very front in order
+  highScreens.reverse().forEach(function(s) {
+    messages.unshift(s);
+  });
 }
 
 // ── NOISE METER ──────────────────────────────────────
