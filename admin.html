@@ -456,6 +456,20 @@
     <div class="bday-list-scroll" id="bday-list"><div class="bday-empty">Loading...</div></div>
   </div>
 
+  <!-- GLOBAL CATEGORY TOGGLES -->
+  <div class="sb-section" id="section-category-toggles">
+    <div class="sb-section-header">
+      <div>
+        <span>📺 Global Content Categories</span>
+        <div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Toggle which global screen types appear on your display</div>
+      </div>
+    </div>
+    <div id="cat-toggle-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">
+      <div class="empty">Loading...</div>
+    </div>
+    <div id="cat-toggle-status" style="font-size:11px;color:var(--text-3);margin-top:8px;min-height:16px;"></div>
+  </div>
+
   <!-- BOARDS -->
   <div class="section">
     <div class="section-head">
@@ -692,6 +706,7 @@ async function unlockAdmin() {
   var hrVal = hrRows && hrRows[0] ? hrRows[0].show_honor_roll : null;
   document.getElementById('settingHonorRoll').textContent = hrVal === false ? '✗ Off' : '✓ On';
   await loadBoards();
+  await loadCategoryToggles();
   await loadGlobalBoards();
   await loadObjectives();
   await bdayLoadList();
@@ -707,7 +722,7 @@ async function unlockAdmin() {
 
 function logout() {
   ROOM = ''; classroom = null; boards = []; globalBoards = []; editingId = null; editingGlobalId = null; isMasterSession = false;
-  bdayData = []; bdayExisting = [];
+  bdayData = []; bdayExisting = []; catSettings = null;
   document.getElementById('pin-screen').style.display = 'flex';
   document.getElementById('main').style.display = 'none';
   document.getElementById('logoutBtn').style.display = 'none';
@@ -966,7 +981,7 @@ function openNewGlobalBoard() {
   document.getElementById('modalTitle').textContent = 'Add Global Board';
   buildLinesEditor([]);
   document.getElementById('screenSpeed').value = 12;
-  document.getElementById('screenOrder').value = globalScreens.length + 10;
+  document.getElementById('screenOrder').value = globalBoards.length + 10;
   document.getElementById('screenEnabled').value = 'true';
   document.getElementById('modal-overlay').classList.add('open');
 }
@@ -1100,6 +1115,83 @@ async function objClear() {
     objUpdateCC(id, id + 'CC', max);
   });
   await loadObjectives();
+}
+
+// ── GLOBAL CATEGORY TOGGLES ───────────────────────────────────
+var CAT_META = [
+  { key: 'cowboy_code',       label: 'Cowboy Code',        icon: '🤠', desc: 'School values and character boards' },
+  { key: 'fun_facts',         label: 'Fun Facts',          icon: '💡', desc: 'Teen-voiced facts with reaction lines' },
+  { key: 'word_of_day',       label: 'Word of the Day',    icon: '📖', desc: 'Vocabulary with student sentences' },
+  { key: 'positive_thoughts', label: 'Positive Thoughts',  icon: '✨', desc: 'SEL-focused affirmations' },
+  { key: 'business',          label: 'Business Facts',     icon: '📈', desc: 'Creator economy and brand stories' },
+  { key: 'this_week',         label: 'This Week',          icon: '📅', desc: 'Music, sports, tech and culture history' },
+];
+
+var catSettings = null;
+
+async function loadCategoryToggles() {
+  var rows = await sbFetch('cw2_settings', 'room=eq.' + ROOM + '&select=id,global_categories');
+  if (!rows || !rows.length) {
+    document.getElementById('cat-toggle-grid').innerHTML = '<div class="empty">Settings not found for this room.</div>';
+    return;
+  }
+  catSettings = rows[0];
+  renderCategoryToggles();
+}
+
+function renderCategoryToggles() {
+  var cats = (catSettings && catSettings.global_categories) ? catSettings.global_categories : {};
+  var grid = document.getElementById('cat-toggle-grid');
+  grid.innerHTML = CAT_META.map(function(cat) {
+    var isOn = cats[cat.key] !== false;
+    return '<div class="setting-card" style="cursor:pointer;user-select:none;transition:border-color 0.2s,background 0.2s;border:1px solid ' + (isOn ? 'var(--accent)' : 'var(--border)') + ';background:' + (isOn ? 'var(--accent-bg)' : 'var(--surface)') + ';" onclick="catToggle(\'' + cat.key + '\')" id="cat-card-' + cat.key + '">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">' +
+        '<div style="font-size:18px;line-height:1;">' + cat.icon + '</div>' +
+        '<span class="status-badge ' + (isOn ? 'on' : 'off') + '" id="cat-badge-' + cat.key + '">' + (isOn ? '● On' : '○ Off') + '</span>' +
+      '</div>' +
+      '<div class="setting-label" style="text-transform:none;font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;">' + cat.label + '</div>' +
+      '<div style="font-size:10px;color:var(--text-3);line-height:1.4;">' + cat.desc + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+async function catToggle(key) {
+  if (!catSettings) return;
+  var cats = catSettings.global_categories ? Object.assign({}, catSettings.global_categories) : {};
+  var current = cats[key] !== false;
+  cats[key] = !current;
+
+  // Optimistic UI update
+  catSettings.global_categories = cats;
+  renderCategoryToggles();
+
+  var statusEl = document.getElementById('cat-toggle-status');
+  statusEl.textContent = 'Saving...';
+
+  var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_settings?id=eq.' + catSettings.id, {
+    method: 'PATCH',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=minimal'
+    },
+    body: JSON.stringify({ global_categories: cats })
+  });
+
+  if (res.ok) {
+    var meta = CAT_META.find(function(c) { return c.key === key; });
+    var label = meta ? meta.label : key;
+    statusEl.textContent = '';
+    toast(label + (cats[key] ? ' enabled — appears on display within 60s' : ' disabled'));
+  } else {
+    // Revert on failure
+    cats[key] = current;
+    catSettings.global_categories = cats;
+    renderCategoryToggles();
+    statusEl.textContent = 'Save failed — try again';
+    toast('Save failed', true);
+  }
 }
 
 // ── BIRTHDAY MANAGER ──────────────────────────────────────────
