@@ -595,6 +595,9 @@ function setSyncStatus(state,label){
 }
 
 // ── LOAD SCREENS ─────────────────────────────────────────────
+var allLocalScreens = [];
+var allGlobalPicks  = [];
+
 async function loadScreens(){
   var results=await Promise.all([
     sbFetch('cw2_screens','room=eq.'+ROOM+'&order=sort_order.asc'),
@@ -603,15 +606,16 @@ async function loadScreens(){
   ]);
   var localScreens=results[0]||[],globalScreens=results[1]||[],prefs=results[2]||[];
   var prefsMap={};prefs.forEach(function(p){prefsMap[p.screen_id]=p;});
-  var mapped=[];
-  localScreens.forEach(function(r){
-    if(!r.enabled)return;
-    var pref=prefsMap[r.id];if(pref&&pref.enabled===false)return;
-    var lines=Array.isArray(r.lines)?r.lines:JSON.parse(r.lines||'[]');
-    mapped.push({lines:lines,speed:r.speed||10,id:r.id,align:r.align||'center',isGlobal:false,sort_order:pref?pref.sort_order:r.sort_order});
+  // Store all local screens globally for injectDynamicScreens to use
+  allLocalScreens = localScreens.filter(function(r){
+    if(!r.enabled)return false;
+    var pref=prefsMap[r.id];
+    return !(pref&&pref.enabled===false);
   });
-  mapped.sort(function(a,b){return a.sort_order-b.sort_order;});
+
   var cats=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
+
+  // Build one random pick per enabled global category
   var eligibleGlobals=globalScreens.filter(function(r){
     if(!r.enabled)return false;
     var pref=prefsMap[r.id];if(pref&&pref.enabled===false)return false;
@@ -620,20 +624,11 @@ async function loadScreens(){
   });
   var byCategory={};
   eligibleGlobals.forEach(function(r){var cat=r.category||'cowboy_code';if(!byCategory[cat])byCategory[cat]=[];byCategory[cat].push(r);});
-  var picks=[];
-  Object.keys(byCategory).forEach(function(cat){var pool=byCategory[cat];picks.push(pool[Math.floor(Math.random()*pool.length)]);});
-  for(var pi=picks.length-1;pi>0;pi--){var pj=Math.floor(Math.random()*(pi+1));var pt=picks[pi];picks[pi]=picks[pj];picks[pj]=pt;}
-  var finalList=mapped.slice();
-  if(picks.length){
-    var localLen=finalList.length,step=localLen>0?Math.floor(localLen/(picks.length+1)):0,inserted=0;
-    picks.forEach(function(pick,i){
-      var glines=Array.isArray(pick.lines)?pick.lines:JSON.parse(pick.lines||'[]');
-      var pos=step>0?Math.min((i+1)*step+inserted,finalList.length):finalList.length;
-      finalList.splice(pos,0,{lines:glines,speed:pick.speed||12,id:pick.id,align:pick.align||'left',_isGlobal:true});
-      inserted++;
-    });
-  }
-  return finalList.length?finalList:null;
+  allGlobalPicks=[];
+  Object.keys(byCategory).forEach(function(cat){var pool=byCategory[cat];allGlobalPicks.push(pool[Math.floor(Math.random()*pool.length)]);});
+
+  // Return non-empty signal so startBoard knows data loaded
+  return (allLocalScreens.length || allGlobalPicks.length) ? true : null;
 }
 
 // ── CALENDAR ─────────────────────────────────────────────────
@@ -943,53 +938,75 @@ async function loadHonorRoll(){
   document.getElementById('honor-ticker-wrap').style.display='flex';
 }
 
-// ── INJECT DYNAMIC SCREENS (KEY FIX) ─────────────────────────
+// ── BUILD FINAL LIST (unified order) ─────────────────────────
+// Replaces old injectDynamicScreens — now one list, one pass
 function injectDynamicScreens() {
-  messages = messages.filter(function(m) {
-    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' &&
-           m.id !== 'bell' && m.id !== 'objectives' && m.id !== 'birthday' &&
-           m.id !== 'quiet' && !m.id.startsWith('message-');
-  });
-
   var cats = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
-  var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather','show_bell','show_birthday','show_quiet','cowboy_code','fun_facts','word_of_day','positive_thoughts','business','this_week'];
-  var order = (Array.isArray(cats.display_order) && cats.display_order.length) ? cats.display_order : DC_DEFAULT;
 
-  var screensByKey = {};
-  if(cats['show_calendar'] !== false){var s=buildCalendarScreen();if(s)screensByKey['show_calendar']=[s];}
-  if(cats['show_weather'] !== false){var s=buildWeatherScreen();if(s)screensByKey['show_weather']=[s];}
-  if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)screensByKey['show_bell']=[s];}
-  if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)screensByKey['show_birthday']=[s];}
-  if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)screensByKey['show_quiet']=[s];}
-  if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)screensByKey['show_objectives']=[s];}
-  if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)screensByKey['show_messages']=msgs;}
+  var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather',
+    'show_bell','show_birthday','show_quiet','cowboy_code','fun_facts',
+    'word_of_day','wise_words','business','this_week'];
+  var order = (Array.isArray(cats.display_order) && cats.display_order.length)
+    ? cats.display_order : DC_DEFAULT;
+
+  // Build all dynamic screens
+  var dynamicScreens = {};
+  if(cats['show_calendar'] !== false){var s=buildCalendarScreen();if(s)dynamicScreens['show_calendar']=[s];}
+  if(cats['show_weather'] !== false){var s=buildWeatherScreen();if(s)dynamicScreens['show_weather']=[s];}
+  if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
+  if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
+  if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
+  if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
+  if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
   var countScreen = buildCountdownScreen();
 
-  var highPriority = ['show_objectives','show_messages'];
-  var highScreens = [], normalScreens = [];
+  // Build local boards map (keyed by board-uuid)
+  var localBoardsMap = {};
+  allLocalScreens.forEach(function(r) {
+    localBoardsMap['board-'+r.id] = r;
+  });
+
+  // Build global category picks map
+  var globalPicksMap = {};
+  allGlobalPicks.forEach(function(pick) {
+    var cat = pick.category || 'cowboy_code';
+    globalPicksMap[cat] = pick;
+  });
+
+  // Walk order array and build final message list
+  var finalMessages = [];
 
   order.forEach(function(key) {
+    // Skip if explicitly off
     if(cats[key] === false) return;
-    var screens = screensByKey[key];
-    if(!screens || !screens.length) return;
-    if(highPriority.indexOf(key) >= 0) {
-      screens.forEach(function(s){highScreens.push(s);});
-    } else {
-      screens.forEach(function(s){normalScreens.push(s);});
+
+    // Dynamic screen
+    if(dynamicScreens[key]) {
+      dynamicScreens[key].forEach(function(s){finalMessages.push(s);});
+      return;
+    }
+
+    // Permanent local board
+    if(key.startsWith('board-')) {
+      var r = localBoardsMap[key];
+      if(!r || !r.enabled) return;
+      var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines||'[]');
+      finalMessages.push({lines:lines, speed:r.speed||10, id:r.id, align:r.align||'center'});
+      return;
+    }
+
+    // Global category pick
+    var pick = globalPicksMap[key];
+    if(pick) {
+      var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines||'[]');
+      finalMessages.push({lines:glines, speed:pick.speed||12, id:pick.id, align:pick.align||'left', _isGlobal:true});
     }
   });
 
-  if(countScreen) normalScreens.push(countScreen);
+  // Countdown always appended at end if available
+  if(countScreen) finalMessages.push(countScreen);
 
-  if(normalScreens.length) {
-    var localLen=messages.length, step=localLen>0?Math.floor(localLen/(normalScreens.length+1)):0, inserted=0;
-    normalScreens.forEach(function(screen,i){
-      var pos=step>0?Math.min((i+1)*step+inserted,messages.length):messages.length;
-      messages.splice(pos,0,screen);inserted++;
-    });
-  }
-
-  highScreens.reverse().forEach(function(s){messages.unshift(s);});
+  messages = finalMessages;
 }
 
 // ── START BOARD ───────────────────────────────────────────────
@@ -998,22 +1015,25 @@ async function startBoard() {
   await loadRoomConfig();
   await loadCwEvents();
   await loadWeather();
-  var screens = await loadScreens();
-  if(screens && screens.length){messages=screens;}
-  else{messages=[{lines:['COWBOY WIRE 2.0','ROOM '+ROOM,'','RIVERDALE HIGH SCHOOL','','CONNECTING...',''],speed:10,align:'center'}];}
-  injectDynamicScreens();
+  var screensLoaded = await loadScreens();
+  if(!screensLoaded){
+    messages=[{lines:['COWBOY WIRE 2.0','ROOM '+ROOM,'','RIVERDALE HIGH SCHOOL','','CONNECTING...',''],speed:10,align:'center'}];
+  } else {
+    messages=[];
+    injectDynamicScreens();
+  }
   prevLines = Array.from({length:ROWS},function(){return '\x00'.repeat(COLS);});
   buildDots();showMessage(0);setSyncStatus('live','LIVE · ROOM '+ROOM);
 
   clearInterval(syncTimer);
   syncTimer = setInterval(async function() {
     await loadSettings(); // KEY FIX: refresh settings on every sync
-    var fresh = await loadScreens();
+    var screensOk = await loadScreens();
     await loadCwEvents();
     await loadWeather();
-    if(fresh){
+    if(screensOk){
       var savedLine=(messages[currentIdx]&&messages[currentIdx].lines)?messages[currentIdx].lines[0]:'';
-      messages=fresh;injectDynamicScreens();
+      messages=[];injectDynamicScreens();
       var ni=messages.findIndex(function(m){return m.lines&&m.lines[0]===savedLine;});
       if(ni>=0)currentIdx=ni;
       buildDots();
