@@ -646,18 +646,32 @@ function buildCalendarScreen(){
   var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var dayName=days[dow],mon=months[now.getMonth()],dayNum=now.getDate();
   var lines=[];
+
+  function eventLine(e){
+    var daysAway=daysBetween(e.start_date,ds);
+    var suffix=daysAway===0?' TODAY!':daysAway===1?' TOMORROW':' '+daysAway+' DAYS';
+    var title=(e.title||'').toUpperCase();
+    var maxTitle=COLS-suffix.length;
+    if(title.length>maxTitle)title=title.substring(0,maxTitle);
+    var pad=COLS-title.length-suffix.length;
+    return title+' '.repeat(Math.max(0,pad))+suffix;
+  }
+
   if(!sched){
-    lines.push('NO SCHOOL TODAY');lines.push('');lines.push(dayName+'  '+mon+'  '+dayNum);lines.push('');
+    lines.push('NO SCHOOL TODAY');
+    lines.push(dayName+'  '+mon+'  '+dayNum);
+    lines.push('');
     var next=new Date(now);
     for(var i=1;i<=14;i++){
       next.setDate(next.getDate()+1);var nd=dateStr(next),ndow=next.getDay();
       if(ndow!==0&&ndow!==6&&!NO_SCHOOL.includes(nd)){
-        lines.push('NEXT SCHOOL DAY');lines.push('');lines.push(days[ndow]+'  '+months[next.getMonth()]+'  '+next.getDate());
+        lines.push('NEXT SCHOOL DAY');
+        lines.push(days[ndow]+'  '+months[next.getMonth()]+'  '+next.getDate());
         var ns=getScheduleForDate(next);
         if(ns==='earlyRelease')lines.push('EARLY RELEASE');
         else if(ns==='blockWed'||ns==='blockThu')lines.push('BLOCK DAY');
         else if(ns==='minimum')lines.push('MINIMUM DAY');
-        else lines.push('');
+        else lines.push('REGULAR SCHEDULE');
         break;
       }
     }
@@ -672,20 +686,16 @@ function buildCalendarScreen(){
     else if(sn==='codeDay')schedLabel='CODE DAY';
     else if(sn==='foggy')schedLabel='LATE ARRIVAL DAY';
     lines.push('TODAY  '+dayName+'  '+mon+'  '+dayNum);
-    lines.push('');
     lines.push(schedLabel||'REGULAR SCHEDULE');
     lines.push('');
-    var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,2);
-    upcoming.forEach(function(e){
-      var daysAway=daysBetween(e.start_date,ds);
-      var suffix=daysAway===0?'TODAY!':daysAway===1?'TOMORROW':daysAway+' DAYS';
-      var title=(e.title||'').toUpperCase().substring(0,COLS);
-      lines.push(title);lines.push(suffix);
-    });
+    // Each event on one line: title left, days right
+    var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,5);
+    upcoming.forEach(function(e){lines.push(eventLine(e));});
   }
+
   while(lines.length<7)lines.push('');
   lines.push('RHS EVENTS CALENDAR');
-  return{lines:lines.slice(0,8),speed:15,id:'calendar',align:'center',sort_order:0};
+  return{lines:lines.slice(0,8),speed:15,id:'calendar',align:'left',sort_order:0};
 }
 
 function buildBellScreen(){
@@ -710,19 +720,20 @@ function buildBellScreen(){
 
 function buildCountdownScreen(){
   var now=new Date(),ds=dateStr(now);
-  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds&&e.show_countdown!==false;}).slice(0,3);
+  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds&&e.show_countdown!==false;}).slice(0,6);
   if(!upcoming.length)return null;
-  var lines=['COMING UP AT RHS',''];
-  upcoming.forEach(function(e,i){
+  var lines=['COMING UP AT RHS'];
+  upcoming.forEach(function(e){
     var daysAway=daysBetween(e.start_date,ds);
-    var suffix=daysAway===0?'TODAY!':daysAway===1?'TOMORROW':daysAway+' DAYS';
-    var title=(e.title||'').toUpperCase().substring(0,COLS);
-    lines.push(title);lines.push(suffix);
-    if(i<upcoming.length-1)lines.push('');
+    var suffix=daysAway===0?' TODAY!':daysAway===1?' TOMORROW':' '+daysAway+' DAYS';
+    var title=(e.title||'').toUpperCase();
+    var maxTitle=COLS-suffix.length;
+    if(title.length>maxTitle)title=title.substring(0,maxTitle);
+    var pad=COLS-title.length-suffix.length;
+    lines.push(title+' '.repeat(Math.max(0,pad))+suffix);
   });
-  while(lines.length<7)lines.push('');
-  lines.push('RHS  ·  ROOM 27');
-  return{lines:lines.slice(0,8),speed:15,id:'countdown',align:'center',sort_order:0.5};
+  while(lines.length<8)lines.push('');
+  return{lines:lines.slice(0,8),speed:15,id:'countdown',align:'left',sort_order:0.5};
 }
 
 function getScheduleForDate(date){
@@ -867,18 +878,26 @@ function buildBirthdayScreen(){
   var thisWeek=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>0&&d<=7;});
   var upcoming=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>7;});
   var lines=[];
-  if(todays.length){
-    lines.push('HAPPY BIRTHDAY');lines.push('');
-    todays.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push('');});
-  } else if(thisWeek.length){
-    lines.push('COMING UP  BIRTHDAYS');lines.push('');
-    thisWeek.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push(months[b.month]+' '+b.day+'  ·  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});
-  } else {
-    lines.push('UPCOMING BIRTHDAYS');lines.push('');
-    upcoming.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push(months[b.month]+' '+b.day+'  ·  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});
+
+  function personLines(b){
+    var d=daysUntil(b.month,b.day);
+    var name=b.name.toUpperCase().substring(0,COLS);
+    var dateStr=months[b.month]+' '+b.day+'  IN '+d+' DAYS';
+    return[name,dateStr];
   }
-  while(lines.length<7)lines.push('');
-  lines.push('ROOM 27  ·  RHS');
+
+  if(todays.length){
+    lines.push('HAPPY BIRTHDAY');
+    todays.slice(0,3).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));});
+  } else if(thisWeek.length){
+    lines.push('COMING UP  BIRTHDAYS');
+    thisWeek.slice(0,3).forEach(function(b){personLines(b).forEach(function(l){lines.push(l);});});
+  } else {
+    lines.push('UPCOMING BIRTHDAYS');
+    upcoming.slice(0,3).forEach(function(b){personLines(b).forEach(function(l){lines.push(l);});});
+  }
+
+  while(lines.length<8)lines.push('');
   return{lines:lines.slice(0,8),speed:16,id:'birthday',align:'center',sort_order:0.9};
 }
 
