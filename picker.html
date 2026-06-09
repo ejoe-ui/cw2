@@ -408,23 +408,28 @@ function parseRosterFile(data){
   if(!period) period = 'X';
 
   // Find student rows — start after header row (row with 'Student ID')
+  // Aeries format: col0=seq, col1=studentID, col4=name, col11=grade
   var startRow = 5;
+  var nameCol = 4, gradeCol = 11, idCol = 1;
   for(var i = 0; i < rows.length; i++){
     var row = rows[i];
-    if(row && row.some && row.some(function(c){ return String(c||'').trim() === 'Student ID'; })){
-      startRow = i + 1;
-      break;
+    if(!row) continue;
+    // Find the header row to determine exact column positions
+    for(var c = 0; c < row.length; c++){
+      if(String(row[c]||'').trim() === 'Student Name'){ nameCol = c; }
+      if(String(row[c]||'').trim() === 'GR'){ gradeCol = c; }
+      if(String(row[c]||'').trim() === 'Student ID'){ idCol = c; startRow = i + 1; }
     }
   }
 
   var studentList = [];
   for(var r = startRow; r < rows.length; r++){
     var row = rows[r];
-    if(!row || !row[2]) continue;  // name is col index 2
-    var rawName = String(row[2]).trim();
-    if(!rawName || rawName === 'null') continue;
-    var grade = row[3] ? String(row[3]).trim() : '';
-    var studentId = row[1] ? String(row[1]).trim() : '';
+    if(!row || !row[nameCol]) continue;
+    var rawName = String(row[nameCol]).trim();
+    if(!rawName || rawName === 'null' || rawName === 'undefined') continue;
+    var grade = row[gradeCol] ? String(row[gradeCol]).trim() : '';
+    var studentId = row[idCol] ? String(row[idCol]).trim() : '';
 
     // Flip "Last, First" → "First Last"
     var displayName = rawName;
