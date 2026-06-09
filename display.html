@@ -642,15 +642,17 @@ function daysBetween(a,b){var msPerDay=24*60*60*1000,da=new Date(a+'T00:00:00'),
 
 function buildCalendarScreen(){
   var now=new Date(),ds=dateStr(now),dow=now.getDay(),sched=getSchedule();
-  var lines=[],days=['SUN','MON','TUE','WED','THU','FRI','SAT'],months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var dayName=days[dow],mon=months[now.getMonth()],dayNum=now.getDate();
+  var lines=[];
   if(!sched){
-    lines.push(dayName+'  '+mon+'  '+dayNum);lines.push('NO SCHOOL TODAY');lines.push('');
+    lines.push('NO SCHOOL TODAY');lines.push('');lines.push(dayName+'  '+mon+'  '+dayNum);lines.push('');
     var next=new Date(now);
     for(var i=1;i<=14;i++){
       next.setDate(next.getDate()+1);var nd=dateStr(next),ndow=next.getDay();
       if(ndow!==0&&ndow!==6&&!NO_SCHOOL.includes(nd)){
-        lines.push('NEXT SCHOOL DAY');lines.push(days[ndow]+'  '+months[next.getMonth()]+'  '+next.getDate());
+        lines.push('NEXT SCHOOL DAY');lines.push('');lines.push(days[ndow]+'  '+months[next.getMonth()]+'  '+next.getDate());
         var ns=getScheduleForDate(next);
         if(ns==='earlyRelease')lines.push('EARLY RELEASE');
         else if(ns==='blockWed'||ns==='blockThu')lines.push('BLOCK DAY');
@@ -659,31 +661,31 @@ function buildCalendarScreen(){
         break;
       }
     }
-    lines.push('');
   } else {
-    lines.push('TODAY  '+dayName+'  '+mon+'  '+dayNum);
     var sn=getScheduleForDate(now);
-    if(sn==='earlyRelease')lines.push('EARLY RELEASE DAY');
-    else if(sn==='blockWed')lines.push('BLOCK DAY  P1 P3 P5 P7');
-    else if(sn==='blockThu')lines.push('BLOCK DAY  P2 P4 P6 P7');
-    else if(sn==='minimum')lines.push('MINIMUM DAY');
-    else if(sn==='activity')lines.push('ACTIVITY DAY');
-    else if(sn==='codeDay')lines.push('CODE DAY');
-    else if(sn==='foggy')lines.push('LATE ARRIVAL DAY');
-    else lines.push('');
+    var schedLabel='';
+    if(sn==='earlyRelease')schedLabel='EARLY RELEASE DAY';
+    else if(sn==='blockWed')schedLabel='BLOCK DAY  P1 P3 P5 P7';
+    else if(sn==='blockThu')schedLabel='BLOCK DAY  P2 P4 P6 P7';
+    else if(sn==='minimum')schedLabel='MINIMUM DAY';
+    else if(sn==='activity')schedLabel='ACTIVITY DAY';
+    else if(sn==='codeDay')schedLabel='CODE DAY';
+    else if(sn==='foggy')schedLabel='LATE ARRIVAL DAY';
+    lines.push('TODAY  '+dayName+'  '+mon+'  '+dayNum);
     lines.push('');
+    lines.push(schedLabel||'REGULAR SCHEDULE');
+    lines.push('');
+    var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,2);
+    upcoming.forEach(function(e){
+      var daysAway=daysBetween(e.start_date,ds);
+      var suffix=daysAway===0?'TODAY!':daysAway===1?'TOMORROW':daysAway+' DAYS';
+      var title=(e.title||'').toUpperCase().substring(0,COLS);
+      lines.push(title);lines.push(suffix);
+    });
   }
-  var remaining=ROWS-lines.length,maxEvents=Math.min(2,remaining);
-  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,maxEvents);
-  upcoming.forEach(function(e){
-    var daysAway=daysBetween(e.start_date,ds);
-    var suffix=daysAway===0?'TODAY':daysAway===1?'TOMORROW':daysAway+' DAYS';
-    var title=(e.title||'').toUpperCase();var maxTitle=COLS-suffix.length-2;
-    if(title.length>maxTitle)title=title.substring(0,maxTitle-1);
-    lines.push(title+'  '+suffix);
-  });
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines,speed:15,id:'calendar',align:'center',sort_order:0};
+  while(lines.length<7)lines.push('');
+  lines.push('RHS EVENTS CALENDAR');
+  return{lines:lines.slice(0,8),speed:15,id:'calendar',align:'center',sort_order:0};
 }
 
 function buildBellScreen(){
@@ -695,32 +697,32 @@ function buildBellScreen(){
   var nm=nowMins(),lines=[header];
   sched.periods.forEach(function(p){
     var s=toMins(p.start),e=toMins(p.end),isCurrent=nm>=s&&nm<e,isPast=nm>=e;
-    var label=p.label;while(label.length<7)label+=' ';
+    var label=p.label;while(label.length<6)label+=' ';
     var timeStr=p.start+' - '+p.end;
-    var prefix=isCurrent?'NOW ':(isPast&&!p.break?' .  ':'    ');
-    var suffix=isCurrent?'  <':'';
-    lines.push(prefix+label+' '+timeStr+suffix);
+    var prefix=isCurrent?'> ':(isPast&&!p.break?'  ':'  ');
+    var suffix=isCurrent?'  NOW':'';
+    lines.push(prefix+label+'  '+timeStr+suffix);
   });
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines,speed:20,id:'bell',align:'left',sort_order:1};
+  while(lines.length<7)lines.push('');
+  lines.push('ROOM 27  ·  RHS');
+  return{lines:lines.slice(0,8),speed:20,id:'bell',align:'left',sort_order:1};
 }
 
 function buildCountdownScreen(){
   var now=new Date(),ds=dateStr(now);
-  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds&&e.show_countdown!==false;}).slice(0,ROWS-1);
+  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds&&e.show_countdown!==false;}).slice(0,3);
   if(!upcoming.length)return null;
-  var lines=['COMING UP AT RHS'];
-  upcoming.forEach(function(e){
+  var lines=['COMING UP AT RHS',''];
+  upcoming.forEach(function(e,i){
     var daysAway=daysBetween(e.start_date,ds);
-    var suffix=daysAway===0?'TODAY':daysAway===1?'1 DAY':daysAway+' DAYS';
-    var title=(e.title||'').toUpperCase();var maxTitle=COLS-suffix.length-2;
-    if(title.length>maxTitle)title=title.substring(0,maxTitle-1);
-    var totalLen=title.length+2+suffix.length,extra=COLS-totalLen;
-    var padding=extra>0?' '.repeat(extra):'';
-    lines.push(title+padding+'  '+suffix);
+    var suffix=daysAway===0?'TODAY!':daysAway===1?'TOMORROW':daysAway+' DAYS';
+    var title=(e.title||'').toUpperCase().substring(0,COLS);
+    lines.push(title);lines.push(suffix);
+    if(i<upcoming.length-1)lines.push('');
   });
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines,speed:15,id:'countdown',align:'left',sort_order:0.5};
+  while(lines.length<7)lines.push('');
+  lines.push('RHS  ·  ROOM 27');
+  return{lines:lines.slice(0,8),speed:15,id:'countdown',align:'center',sort_order:0.5};
 }
 
 function getScheduleForDate(date){
@@ -796,24 +798,23 @@ function buildWeatherScreen(){
   var temp=Math.round(CW_WEATHER.temperature_2m),feels=Math.round(CW_WEATHER.apparent_temperature);
   var humidity=Math.round(CW_WEATHER.relative_humidity_2m),wind=Math.round(CW_WEATHER.wind_speed_10m);
   var code=CW_WEATHER.weather_code,desc=WEATHER_CODES[code]||'CONDITIONS UNKNOWN';
-  var aqiVal=CW_AQI!==null?Math.round(CW_AQI):null,aqiStr=aqiVal!==null?aqiLabel(aqiVal):'';
+  var aqiVal=CW_AQI!==null?Math.round(CW_AQI):null;
   var comment=pickWeatherComment(temp,feels,humidity,wind,code,aqiVal);
-  var line1=temp+' F  FEELS LIKE  '+feels+' F';
-  var line2=desc+'  HUMIDITY '+humidity+'%';
-  var line3='WIND '+wind+' MPH'+(aqiVal!==null?'  AQI '+aqiVal+' '+aqiStr.split(' ')[0]:'');
-  var lines=['WEATHER  RIVERDALE CA',line1,line2,line3,comment];
+  var lines=[];
+  lines.push('WEATHER  RIVERDALE CA');
+  lines.push('');
+  lines.push(temp+' F  ·  FEELS '+feels+' F');
+  lines.push(desc);
+  lines.push('');
+  lines.push(comment);
+  lines.push('');
   if(CW_WEATHER_DAILY&&CW_WEATHER_DAILY.time){
-    var dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'],times=CW_WEATHER_DAILY.time,highs=CW_WEATHER_DAILY.temperature_2m_max,lows=CW_WEATHER_DAILY.temperature_2m_min,count=0;
-    for(var i=0;i<times.length&&count<3;i++){
-      var d=new Date(times[i]+'T12:00:00'),label=i===0?'TODAY':dayNames[d.getDay()];
-      var hi=Math.round(highs[i]),lo=Math.round(lows[i]);
-      while(label.length<5)label+=' ';
-      lines.push(label+'  HI '+hi+'  LO '+lo);count++;
-    }
-  }
-  while(lines.length<ROWS)lines.push('');
-  var alignLines=lines.map(function(_,i){return(i===0||i>=5)?'center':'left';});
-  return{lines:lines,speed:18,id:'weather',align:'left',alignLines:alignLines,sort_order:0.8};
+    var dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'],times=CW_WEATHER_DAILY.time,highs=CW_WEATHER_DAILY.temperature_2m_max;
+    var parts=[];
+    for(var i=1;i<=3;i++){if(!times[i])break;var d=new Date(times[i]+'T12:00:00');parts.push(dayNames[d.getDay()]+' HI '+Math.round(highs[i]));}
+    lines.push(parts.join('  ·  ').substring(0,COLS));
+  } else {lines.push('WIND '+wind+' MPH'+(aqiVal!==null?'  AQI '+aqiVal:''));}
+  return{lines:lines.slice(0,8),speed:18,id:'weather',align:'center',sort_order:0.8};
 }
 
 // ── OBJECTIVES ────────────────────────────────────────────────
@@ -834,9 +835,16 @@ function buildObjectivesScreen(){
   if(!currentPeriod)return null;
   var obj=CW_OBJECTIVES[currentPeriod];if(!obj||!obj.title)return null;
   if(obj.display_mode==='timed'){var limit=obj.timed_minutes||10;if(minutesIn>limit)return null;}
-  var lines=['P'+currentPeriod+'  NOW LEARNING',obj.title?obj.title.toUpperCase():'','',obj.line1?'> '+obj.line1.toUpperCase():'','',obj.line2?'/ '+obj.line2.toUpperCase():'','',''];
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines.slice(0,ROWS),speed:15,id:'objectives',align:'left',sort_order:0.2};
+  var lines=[];
+  lines.push('PERIOD '+currentPeriod+'  ·  TODAY');
+  lines.push('');
+  lines.push(obj.title?obj.title.toUpperCase().substring(0,COLS):'');
+  lines.push('');
+  lines.push(obj.line1?('> '+obj.line1).toUpperCase().substring(0,COLS):'');
+  lines.push('');
+  lines.push(obj.line2?('/ '+obj.line2).toUpperCase().substring(0,COLS):'');
+  lines.push('ROOM 27  ·  RHS');
+  return{lines:lines.slice(0,8),speed:15,id:'objectives',align:'left',sort_order:0.2};
 }
 
 // ── BIRTHDAYS ─────────────────────────────────────────────────
@@ -850,8 +858,7 @@ function buildBirthdayScreen(){
   var now=new Date(),todayM=now.getMonth()+1,todayD=now.getDate();
   function daysUntil(month,day){
     var n=new Date(),thisYear=n.getFullYear(),bday=new Date(thisYear,month-1,day),today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
-    if(bday<today)bday.setFullYear(thisYear+1);
-    return Math.round((bday-today)/86400000);
+    if(bday<today)bday.setFullYear(thisYear+1);return Math.round((bday-today)/86400000);
   }
   var months=['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var sorted=CW_BIRTHDAYS.slice().sort(function(a,b){return daysUntil(a.month,a.day)-daysUntil(b.month,b.day);});
@@ -859,11 +866,19 @@ function buildBirthdayScreen(){
   var thisWeek=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>0&&d<=7;});
   var upcoming=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>7;});
   var lines=[];
-  if(todays.length){lines.push('HAPPY BIRTHDAY');todays.forEach(function(b){lines.push(b.name.toUpperCase());});lines.push('');}
-  else if(thisWeek.length){lines.push('BIRTHDAYS THIS WEEK');thisWeek.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase());lines.push(months[b.month]+' '+b.day+'  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});}
-  else{lines.push('COMING UP  BIRTHDAYS');upcoming.slice(0,3).forEach(function(b){lines.push(b.name.toUpperCase());lines.push(months[b.month]+' '+b.day+'  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});}
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines.slice(0,ROWS),speed:16,id:'birthday',align:'center',sort_order:0.9};
+  if(todays.length){
+    lines.push('HAPPY BIRTHDAY');lines.push('');
+    todays.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push('');});
+  } else if(thisWeek.length){
+    lines.push('COMING UP  BIRTHDAYS');lines.push('');
+    thisWeek.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push(months[b.month]+' '+b.day+'  ·  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});
+  } else {
+    lines.push('UPCOMING BIRTHDAYS');lines.push('');
+    upcoming.slice(0,2).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));lines.push(months[b.month]+' '+b.day+'  ·  IN '+daysUntil(b.month,b.day)+' DAYS');lines.push('');});
+  }
+  while(lines.length<7)lines.push('');
+  lines.push('ROOM 27  ·  RHS');
+  return{lines:lines.slice(0,8),speed:16,id:'birthday',align:'center',sort_order:0.9};
 }
 
 // ── MESSAGES ──────────────────────────────────────────────────
@@ -913,18 +928,19 @@ function buildQuietScreen(){
   var ranked=Object.values(grouped).sort(function(a,b){return b.points-a.points;});if(!ranked.length)return null;
   var nm2=nowMins(),inClass=false;
   sched.periods.forEach(function(p){if(p.break)return;var s=toMins(p.start),e=toMins(p.end);if(nm2>=s&&nm2<e)inClass=true;});
-  var statusLine=inClass&&nmOn&&cwQuietLevel<nmRed?'EARNING POINTS  STAY QUIET':inClass&&nmOn&&cwQuietLevel>=nmRed?'TOO NOISY  POINTS PAUSED':'WEEKLY STANDINGS';
-  var lines=['QUIET COMPETITION',statusLine,''],medals=['1.','2.','3.','4.','5.','6.','7.'];
-  ranked.slice(0,ROWS-3).forEach(function(entry,i){
+  var statusLine=inClass&&nmOn&&cwQuietLevel<nmRed?'EARNING POINTS  STAY QUIET':inClass&&nmOn&&cwQuietLevel>=nmRed?'TOO NOISY  PAUSED':'WEEKLY STANDINGS';
+  var medals=['1.','2.','3.','4.','5.','6.','7.'];
+  var lines=['QUIET COMPETITION','',statusLine,''];
+  ranked.slice(0,3).forEach(function(entry,i){
     var prefix=medals[i]||((i+1)+'.');var pts=String(entry.points)+' PTS';
-    var name=entry.name.toUpperCase();var maxName=COLS-prefix.length-1-pts.length;
-    if(name.length>maxName)name=name.substring(0,maxName);
-    var lineStr=prefix+' '+name,pad=COLS-lineStr.length-pts.length;
+    var name=entry.name.toUpperCase().substring(0,COLS-prefix.length-1-pts.length);
+    var lineStr=prefix+' '+name;var pad=COLS-lineStr.length-pts.length;
     if(pad>0)lineStr+=' '.repeat(pad);
     lines.push((lineStr+pts).substring(0,COLS));
   });
-  while(lines.length<ROWS)lines.push('');
-  return{lines:lines.slice(0,ROWS),speed:14,id:'quiet',align:'left',sort_order:0.7};
+  while(lines.length<7)lines.push('');
+  lines.push('ROOM 27  ·  RHS');
+  return{lines:lines.slice(0,8),speed:14,id:'quiet',align:'left',sort_order:0.7};
 }
 
 
@@ -975,11 +991,10 @@ function formatHistoryDrop(year,text){
     else{if(current)textLines.push(current);current=word.substring(0,COLS);}
   });
   if(current)textLines.push(current);
-  var lines=[header,''];
+  var lines=['',header,''];
   textLines.slice(0,4).forEach(function(l){lines.push(l);});
-  lines.push('');
+  while(lines.length<7)lines.push('');
   lines.push('ON THIS DAY');
-  while(lines.length<8)lines.push('');
   return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
 }
 
@@ -1003,7 +1018,7 @@ function injectDynamicScreens() {
 
   var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather',
     'show_bell','show_birthday','show_quiet','cowboy_code','fun_facts',
-    'word_of_day','wise_words','business','history_drops','on_this_day','show_countdown'];
+    'word_of_day','wise_words','business','history_drops','on_this_day'];
   var order = (Array.isArray(cats.display_order) && cats.display_order.length)
     ? cats.display_order : DC_DEFAULT;
 
@@ -1014,7 +1029,6 @@ function injectDynamicScreens() {
   if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
   if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
   if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
-  if(cats['show_countdown'] !== false){var s=buildCountdownScreen();if(s)dynamicScreens['show_countdown']=[s];}
   if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
   if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
   if(cats['on_this_day'] !== false){var s=buildHistoryDropScreen();if(s)dynamicScreens['on_this_day']=[s];}
