@@ -687,7 +687,6 @@ function buildCalendarScreen(){
     else if(sn==='foggy')schedLabel='LATE ARRIVAL DAY';
     lines.push('TODAY  '+dayName+'  '+mon+'  '+dayNum);
     lines.push(schedLabel||'REGULAR SCHEDULE');
-    lines.push('');
     // Each event on one line: title left, days right
     var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,5);
     upcoming.forEach(function(e){lines.push(eventLine(e));});
@@ -1092,7 +1091,8 @@ function injectDynamicScreens() {
     var pick = globalPicksMap[key];
     if(pick) {
       var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines||'[]');
-      finalMessages.push({lines:glines, speed:pick.speed||12, id:pick.id, align:pick.align||'left', _isGlobal:true});
+      var galign = (key==='wise_words') ? 'center' : (pick.align||'left');
+      finalMessages.push({lines:glines, speed:pick.speed||12, id:pick.id, align:galign, _isGlobal:true});
     }
   });
 
