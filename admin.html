@@ -508,6 +508,31 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
     <div id="globalBoardsList" style="max-height:280px;overflow-y:auto;"><div class="empty">Loading...</div></div>
   </div>
 
+
+  <!-- RANDOM NAME PICKER -->
+  <div class="section" id="section-name-picker">
+    <div class="sec-head">
+      <div>
+        <div class="sec-title">Random Name Picker</div>
+        <div style="font-size:10px;color:var(--text-3);margin-top:1px;font-weight:400;">Picks from your birthday roster · click to spin</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <select class="sb-input" id="pickerPeriod" style="max-width:100px;font-size:12px;" onchange="pickerFilterPeriod()">
+          <option value="">All</option>
+          <option value="1">P1</option><option value="2">P2</option>
+          <option value="3">P3</option><option value="4">P4</option>
+          <option value="5">P5</option><option value="6">P6</option>
+        </select>
+        <button class="sb-btn" onclick="pickerSpin()">🎲 Pick</button>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1.5rem;box-shadow:var(--shadow);text-align:center;">
+      <div id="pickerResult" style="font-size:32px;font-weight:800;letter-spacing:.04em;min-height:48px;color:var(--text);font-family:'Courier New',monospace;transition:all .15s;"></div>
+      <div id="pickerSub" style="font-size:12px;color:var(--text-3);margin-top:6px;min-height:18px;"></div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:1rem;flex-wrap:wrap;" id="pickerHistory"></div>
+    </div>
+  </div>
+
   <!-- DISPLAY URL -->
   <div class="section">
     <div class="sec-head"><div class="sec-title">Display URL</div></div>
@@ -515,6 +540,9 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <div class="url-text" id="displayUrl"></div>
       <button class="btn" onclick="copyDisplayUrl()">Copy</button>
       <button class="btn" onclick="openDisplay()">Open ↗</button>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="btn accent" onclick="window.open('/picker.html','_blank')" style="gap:6px;">🎲 Open Name Picker</button>
     </div>
   </div>
 
@@ -608,7 +636,6 @@ var DC_META=[
   {key:'business',label:'Business Facts',icon:'📈',desc:'Creator economy & brand stories'},
   {key:'history_drops',label:'History Drops',icon:'🗂',desc:'Music, sports, tech & culture history'},
   {key:'on_this_day',label:'On This Day',icon:'📆',desc:'Real event from today in history'},
-  {key:'show_countdown',label:'Coming Up',icon:'⏳',desc:'Countdown to upcoming events'},
 ];
 
 // ── THEME ──
@@ -1021,6 +1048,75 @@ async function resetRoomPin(){
   var result=await sbUpdate('cw2_classrooms',rows[0].id,{config:{admin_pin:defaultPin,pin_is_default:true}});
   if(!result){errEl.textContent='Reset failed';return;}
   document.getElementById('resetRoomNum').value='';toast('Room '+roomNum+' PIN reset — new PIN: '+defaultPin);
+}
+
+
+// ── RANDOM NAME PICKER ──────────────────────────────────────
+var pickerPool=[],pickerUsed=[],pickerSpinInterval=null;
+
+function pickerFilterPeriod(){
+  // For now uses birthday list as roster - filters by period if we add period data
+  // Currently just resets the used list
+  pickerUsed=[];
+  pickerUpdateSub();
+}
+
+function pickerBuildPool(){
+  // Use birthday roster as name source
+  var pool=bdayExisting.map(function(b){return b.name;});
+  if(!pool.length)return[];
+  return pool;
+}
+
+function pickerUpdateSub(){
+  var pool=pickerBuildPool();
+  var remaining=pool.filter(function(n){return!pickerUsed.includes(n);});
+  var sub=document.getElementById('pickerSub');
+  if(sub)sub.textContent=remaining.length+' of '+pool.length+' remaining';
+}
+
+function pickerSpin(){
+  var pool=pickerBuildPool();
+  if(!pool.length){toast('No students loaded — upload birthdays first',true);return;}
+  var remaining=pool.filter(function(n){return!pickerUsed.includes(n);});
+  if(!remaining.length){
+    // All picked — reset
+    pickerUsed=[];
+    remaining=pool.slice();
+    toast('All students picked — resetting pool');
+  }
+
+  var result=document.getElementById('pickerResult');
+  var btn=document.querySelector('#section-name-picker .sb-btn');
+  if(btn)btn.disabled=true;
+
+  // Spin animation
+  var spins=0,maxSpins=18,speed=60;
+  clearInterval(pickerSpinInterval);
+  pickerSpinInterval=setInterval(function(){
+    var idx=Math.floor(Math.random()*remaining.length);
+    if(result)result.textContent=remaining[idx].toUpperCase();
+    spins++;
+    if(spins>12)speed+=20;
+    if(spins>=maxSpins){
+      clearInterval(pickerSpinInterval);
+      // Pick final winner
+      var winner=remaining[Math.floor(Math.random()*remaining.length)];
+      pickerUsed.push(winner);
+      if(result)result.textContent=winner.toUpperCase();
+      pickerUpdateSub();
+      // Add to history
+      var hist=document.getElementById('pickerHistory');
+      if(hist){
+        var tag=document.createElement('span');
+        tag.style.cssText='font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent-text);';
+        tag.textContent=winner.split(' ')[0];
+        hist.insertBefore(tag,hist.firstChild);
+        if(hist.children.length>10)hist.removeChild(hist.lastChild);
+      }
+      if(btn)btn.disabled=false;
+    }
+  },speed);
 }
 
 // ── TOAST ──
