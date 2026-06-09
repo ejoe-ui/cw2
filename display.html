@@ -707,7 +707,8 @@ function buildBellScreen(){
   sched.periods.forEach(function(p){
     var s=toMins(p.start),e=toMins(p.end),isCurrent=nm>=s&&nm<e,isPast=nm>=e;
     var label=p.label;while(label.length<6)label+=' ';
-    var timeStr=p.start+' - '+p.end;
+    function to12(t){var parts=t.split(':'),h=parseInt(parts[0]),m=parts[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+ap;}
+    var timeStr=to12(p.start)+' - '+to12(p.end);
     var prefix=isCurrent?'> ':(isPast&&!p.break?'  ':'  ');
     var suffix=isCurrent?'  NOW':'';
     lines.push(prefix+label+'  '+timeStr+suffix);
