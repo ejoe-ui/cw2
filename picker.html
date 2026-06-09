@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Name Picker · Cowboy Wire</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#f0f2f5;--surface:#fff;--surface2:#f7f8fa;--border:#e4e6ea;--border2:#d0d3d9;
+  --text:#0d0f12;--text2:#4a5060;--text3:#9299a6;
+  --green:#16a34a;--green-bg:#dcfce7;--green-text:#15803d;
+  --red:#dc2626;--red-bg:#fee2e2;--red-text:#b91c1c;
+  --amber:#d97706;--amber-bg:#fef3c7;--amber-text:#92400e;
+  --blue:#2563eb;--blue-bg:#dbeafe;--blue-text:#1d4ed8;
+  --purple:#7c3aed;--purple-bg:#ede9fe;--purple-text:#6d28d9;
+  --accent:#005640;--accent-bg:#e6f4ef;--accent-text:#003d2e;
+  --shadow:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 12px rgba(0,0,0,.1);
+}
+[data-theme="dark"]{
+  --bg:#0c0e11;--surface:#161a1f;--surface2:#1e2329;--border:#2a2f38;--border2:#363c47;
+  --text:#f0f2f5;--text2:#9299a6;--text3:#4a5060;
+  --green:#22c55e;--green-bg:#052e16;--green-text:#4ade80;
+  --red:#f87171;--red-bg:#2a0a0a;--red-text:#fca5a5;
+  --amber:#fbbf24;--amber-bg:#1c1400;--amber-text:#fde68a;
+  --blue:#60a5fa;--blue-bg:#0c1a3a;--blue-text:#93c5fd;
+  --purple:#a78bfa;--purple-bg:#1e1a2e;--purple-text:#c4b5fd;
+  --accent:#00a86b;--accent-bg:#0a2018;--accent-text:#34d399;
+}
+html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'Inter',-apple-system,sans-serif;font-size:14px;line-height:1.5;}
+
+/* ── HEADER ── */
+#header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 1.5rem;height:54px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:40;box-shadow:var(--shadow);}
+.h-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:.05em;font-family:'JetBrains Mono',monospace;}
+.h-title{font-size:14px;font-weight:700;}
+.h-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;}
+.h-sub{font-size:11px;color:var(--text3);}
+.h-spacer{flex:1;}
+.theme-btn{background:none;border:1px solid var(--border);color:var(--text2);font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s;}
+.theme-btn:hover{border-color:var(--border2);color:var(--text);}
+
+/* ── LAYOUT ── */
+#app{max-width:1100px;margin:0 auto;padding:1.5rem;display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start;}
+@media(max-width:800px){#app{grid-template-columns:1fr;}}
+
+/* ── PANELS ── */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);}
+.panel-hd{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.panel-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text2);}
+.panel-body{padding:16px;}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;font-weight:600;padding:7px 14px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn:hover{border-color:var(--border2);background:var(--border);}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;}
+.btn-accent:hover{opacity:.88;background:var(--accent);}
+.btn-green{background:var(--green);border-color:var(--green);color:#fff;}
+.btn-green:hover{opacity:.88;background:var(--green);}
+.btn-red{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-red:hover{opacity:.88;}
+.btn-amber{background:var(--amber);border-color:var(--amber);color:#fff;}
+.btn-amber:hover{opacity:.88;}
+.btn-sm{padding:4px 10px;font-size:11px;}
+.btn-xs{padding:2px 7px;font-size:10px;border-radius:4px;}
+.btn-icon{width:30px;height:30px;padding:0;justify-content:center;border-radius:6px;}
+
+/* ── UPLOAD ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:8px;padding:24px 16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--surface2);}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:var(--accent-bg);}
+.upload-icon{font-size:28px;margin-bottom:8px;}
+.upload-text{font-size:13px;font-weight:500;color:var(--text2);}
+.upload-hint{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* ── PERIOD TABS ── */
+.period-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
+.period-tab{font-family:inherit;font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid var(--border2);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all .15s;position:relative;}
+.period-tab:hover{border-color:var(--accent);color:var(--accent);}
+.period-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.period-tab .p-count{position:absolute;top:-4px;right:-4px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:8px;min-width:16px;text-align:center;}
+
+/* ── STUDENT LIST ── */
+.student-list{display:flex;flex-direction:column;gap:3px;max-height:320px;overflow-y:auto;}
+.student-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;border:1px solid transparent;transition:all .15s;cursor:pointer;user-select:none;}
+.student-row:hover{background:var(--surface2);border-color:var(--border);}
+.student-row.absent{opacity:.4;}
+.student-row.picked-out{opacity:.5;text-decoration:line-through;}
+.s-check{width:16px;height:16px;border-radius:4px;border:1.5px solid var(--border2);background:var(--surface);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.student-row:not(.absent) .s-check{border-color:var(--accent);}
+.student-row:not(.absent) .s-check::after{content:'✓';font-size:10px;color:var(--accent);font-weight:700;}
+.student-row.absent .s-check::after{content:'';}
+.s-name{font-size:13px;font-weight:500;flex:1;}
+.s-grade{font-size:10px;font-weight:600;color:var(--text3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 5px;}
+.s-status{font-size:10px;font-weight:600;}
+.s-status.in{color:var(--green);}
+.s-status.out{color:var(--text3);}
+
+/* ── SPINNER ── */
+#spinner-panel{position:sticky;top:70px;}
+.spin-counter{display:flex;gap:8px;justify-content:center;margin-bottom:12px;}
+.counter-pill{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--text2);}
+.counter-pill span{color:var(--text);font-weight:700;}
+.counter-pill.green-pill{background:var(--green-bg);border-color:var(--green);color:var(--green-text);}
+.counter-pill.green-pill span{color:var(--green-text);}
+
+.spin-stage{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:2rem 1.5rem;text-align:center;margin-bottom:1rem;min-height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;}
+.spin-name{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;letter-spacing:.02em;color:var(--text);min-height:40px;transition:color .15s;}
+.spin-name.spinning{color:var(--accent);}
+.spin-name.result{color:var(--text);animation:pop .25s ease;}
+@keyframes pop{0%{transform:scale(.9)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
+.spin-sub{font-size:11px;color:var(--text3);font-weight:500;}
+
+.spin-btn-wrap{display:flex;justify-content:center;margin-bottom:1rem;}
+.spin-btn{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;letter-spacing:.08em;padding:14px 40px;border-radius:8px;border:2px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.spin-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,86,64,.3);}
+.spin-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+.spin-btn.pending{background:#fff;color:var(--accent);border-color:var(--accent);}
+
+.action-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+
+/* ── SESSION LOG ── */
+.log-list{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow-y:auto;}
+.log-row{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
+.log-row:hover{border-color:var(--border2);}
+.log-num{font-size:11px;font-weight:700;color:var(--text3);width:20px;text-align:center;flex-shrink:0;font-family:'JetBrains Mono',monospace;}
+.log-name{font-size:13px;font-weight:600;flex:1;}
+.log-status{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;flex-shrink:0;}
+.log-status.gotit{background:var(--green-bg);color:var(--green-text);}
+.log-status.passed{background:var(--amber-bg);color:var(--amber-text);}
+.log-status.back{background:var(--blue-bg);color:var(--blue-text);}
+.log-pts{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.pts-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;font-family:'JetBrains Mono',monospace;}
+.pts-badge.participation{background:var(--purple-bg);color:var(--purple-text);}
+.pts-badge.correct{background:var(--green-bg);color:var(--green-text);}
+.correct-btn{width:26px;height:26px;border-radius:5px;border:1.5px solid var(--green);background:transparent;color:var(--green);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.correct-btn:hover{background:var(--green-bg);}
+.correct-btn.awarded{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* ── POINTS TOGGLE ── */
+.toggle-row{display:flex;align-items:center;gap:10px;}
+.toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:20px;cursor:pointer;transition:all .2s;}
+.toggle-slider:before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:all .2s;}
+input:checked+.toggle-slider{background:var(--accent);}
+input:checked+.toggle-slider:before{transform:translateX(16px);}
+.toggle-label{font-size:12px;font-weight:600;color:var(--text2);}
+
+/* ── SUMMARY ── */
+.summary-table{width:100%;border-collapse:collapse;}
+.summary-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);}
+.summary-table td{font-size:12px;padding:7px 10px;border-bottom:1px solid var(--border);}
+.summary-table tr:last-child td{border-bottom:none;}
+.summary-table tr:hover td{background:var(--surface2);}
+.pts-num{font-family:'JetBrains Mono',monospace;font-weight:700;text-align:center;}
+
+/* ── EMPTY / STATUS ── */
+.empty{text-align:center;padding:2rem 1rem;color:var(--text3);font-size:12px;}
+.status-bar{font-size:11px;color:var(--text3);padding:6px 0;min-height:20px;}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(10px);background:var(--text);color:var(--surface);font-size:12px;font-weight:600;padding:8px 16px;border-radius:6px;opacity:0;transition:all .2s;z-index:200;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── SESSION RESET ── */
+.danger-btn{border-color:var(--red);color:var(--red);background:transparent;}
+.danger-btn:hover{background:var(--red-bg);}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div class="h-badge">CW</div>
+  <div class="h-sep"></div>
+  <div class="h-title">Name Picker</div>
+  <div class="h-sep"></div>
+  <div class="h-sub" id="hContext">No roster loaded</div>
+  <div class="h-spacer"></div>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+</div>
+
+<div id="app">
+
+  <!-- LEFT: ROSTER PANEL -->
+  <div>
+    <!-- Upload -->
+    <div class="panel" style="margin-bottom:1rem;">
+      <div class="panel-hd">
+        <div class="panel-title">Roster</div>
+        <button class="btn btn-sm" onclick="document.getElementById('rosterFile').click()">Upload xlsx</button>
+        <input type="file" id="rosterFile" accept=".xlsx" multiple style="display:none" onchange="handleRosterUpload(this.files)">
+      </div>
+      <div class="panel-body">
+        <label class="upload-zone" id="dropZone">
+          <input type="file" accept=".xlsx" multiple style="display:none" onchange="handleRosterUpload(this.files)">
+          <div class="upload-icon">📋</div>
+          <div class="upload-text">Drop Aeries roster here</div>
+          <div class="upload-hint">Class Roster xlsx · one or multiple periods</div>
+        </label>
+        <div class="status-bar" id="uploadStatus"></div>
+      </div>
+    </div>
+
+    <!-- Period selector -->
+    <div class="panel" style="margin-bottom:1rem;" id="periodPanel" style="display:none">
+      <div class="panel-hd">
+        <div class="panel-title">Period</div>
+        <div style="font-size:11px;color:var(--text3);" id="periodInfo"></div>
+      </div>
+      <div class="panel-body">
+        <div class="period-tabs" id="periodTabs"></div>
+
+        <!-- Points toggle -->
+        <div class="toggle-row" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+          <label class="toggle-switch"><input type="checkbox" id="pointsToggle" onchange="togglePoints()"><span class="toggle-slider"></span></label>
+          <span class="toggle-label">Track participation & correct points</span>
+        </div>
+
+        <!-- Student list -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);">Students <span id="studentCountLabel" style="color:var(--text3);font-weight:400;"></span></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm" onclick="toggleAllStudents(true)">All In</button>
+            <button class="btn btn-sm" onclick="toggleAllStudents(false)">All Out</button>
+          </div>
+        </div>
+        <div class="student-list" id="studentList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: SPINNER + SESSION LOG -->
+  <div>
+    <div class="panel" id="spinner-panel" style="margin-bottom:1rem;">
+      <div class="panel-hd">
+        <div class="panel-title">Spinner</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-sm danger-btn" id="resetBtn" onclick="resetSession()" style="display:none">Reset Session</button>
+          <button class="btn btn-sm" id="summaryBtn" onclick="showSummary()" style="display:none">Summary</button>
+        </div>
+      </div>
+      <div class="panel-body">
+        <!-- Counters -->
+        <div class="spin-counter">
+          <div class="counter-pill green-pill">In can: <span id="countIn">—</span></div>
+          <div class="counter-pill">Picked: <span id="countOut">—</span></div>
+          <div class="counter-pill">Total: <span id="countTotal">—</span></div>
+        </div>
+
+        <!-- Stage -->
+        <div class="spin-stage" id="spinStage">
+          <div class="spin-name" id="spinName">—</div>
+          <div class="spin-sub" id="spinSub">Load a roster to begin</div>
+        </div>
+
+        <!-- Spin button -->
+        <div class="spin-btn-wrap">
+          <button class="spin-btn" id="spinBtn" onclick="spin()" disabled>SPIN</button>
+        </div>
+
+        <!-- Action buttons (after pick) -->
+        <div class="action-row" id="actionRow" style="display:none;">
+          <button class="btn btn-green" onclick="pickAction('gotit')">✓ Got It</button>
+          <button class="btn btn-amber" onclick="pickAction('passed')">✗ Pass</button>
+          <button class="btn btn-accent" onclick="pickAction('back')">↩ Put Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session Log -->
+    <div class="panel" id="logPanel">
+      <div class="panel-hd">
+        <div class="panel-title">Session Log</div>
+        <div style="font-size:11px;color:var(--text3);" id="logCount">0 picks</div>
+      </div>
+      <div class="panel-body" style="padding:12px;">
+        <div class="log-list" id="logList">
+          <div class="empty">Picks will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary modal -->
+    <div class="panel" id="summaryPanel" style="display:none;margin-top:1rem;">
+      <div class="panel-hd">
+        <div class="panel-title">Session Summary</div>
+        <button class="btn btn-sm" onclick="closeSummary()">Close</button>
+      </div>
+      <div class="panel-body" style="padding:12px;">
+        <table class="summary-table" id="summaryTable"></table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+var roster = {};          // { period: [{name, grade, id}] }
+var activePeriod = null;
+var students = [];        // current period full list [{name, grade, inCan, absent}]
+var sessionLog = [];      // [{name, status, participation, correct, logId}]
+var currentPick = null;   // name of currently picked student
+var isSpinning = false;
+var pointsOn = false;
+var spinInterval = null;
+var darkMode = localStorage.getItem('picker-theme') === 'dark';
+
+// ── THEME ──────────────────────────────────────────────────────
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = darkMode ? '☀️ Light' : '🌙 Dark';
+  localStorage.setItem('picker-theme', darkMode ? 'dark' : 'light');
+}
+function toggleTheme(){ darkMode = !darkMode; applyTheme(); }
+applyTheme();
+
+// ── DRAG/DROP ──────────────────────────────────────────────────
+(function(){
+  var dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', function(e){ e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', function(){ dz.classList.remove('drag-over'); });
+  dz.addEventListener('drop', function(e){ e.preventDefault(); dz.classList.remove('drag-over'); handleRosterUpload(e.dataTransfer.files); });
+})();
+
+// ── ROSTER UPLOAD ──────────────────────────────────────────────
+function handleRosterUpload(files){
+  if(!files || !files.length) return;
+  var status = document.getElementById('uploadStatus');
+  status.textContent = 'Parsing ' + files.length + ' file(s)...';
+  var loaded = 0;
+  for(var i = 0; i < files.length; i++){
+    (function(file){
+      var reader = new FileReader();
+      reader.onload = function(e){
+        try {
+          parseRosterFile(e.target.result);
+          loaded++;
+          if(loaded === files.length){
+            status.textContent = '✓ ' + Object.keys(roster).length + ' period(s) loaded';
+            renderPeriodTabs();
+            document.getElementById('periodPanel').style.display = 'block';
+            // Auto-select first period
+            var periods = Object.keys(roster).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+            if(periods.length) selectPeriod(periods[0]);
+          }
+        } catch(err) {
+          status.textContent = 'Error: ' + err.message;
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    })(files[i]);
+  }
+}
+
+function parseRosterFile(data){
+  var wb = XLSX.read(data, {type:'array'});
+  var ws = wb.Sheets[wb.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+
+  // Find period number from row 2 (col 0)
+  var period = null;
+  if(rows[2] && rows[2][0] !== null && rows[2][0] !== undefined){
+    period = String(rows[2][0]).trim();
+  }
+  if(!period) period = 'X';
+
+  // Find student rows — start after header row (row with 'Student ID')
+  var startRow = 5;
+  for(var i = 0; i < rows.length; i++){
+    var row = rows[i];
+    if(row && row.some && row.some(function(c){ return String(c||'').trim() === 'Student ID'; })){
+      startRow = i + 1;
+      break;
+    }
+  }
+
+  var studentList = [];
+  for(var r = startRow; r < rows.length; r++){
+    var row = rows[r];
+    if(!row || !row[2]) continue;  // name is col index 2
+    var rawName = String(row[2]).trim();
+    if(!rawName || rawName === 'null') continue;
+    var grade = row[3] ? String(row[3]).trim() : '';
+    var studentId = row[1] ? String(row[1]).trim() : '';
+
+    // Flip "Last, First" → "First Last"
+    var displayName = rawName;
+    var commaIdx = rawName.indexOf(',');
+    if(commaIdx > -1){
+      var last = rawName.substring(0, commaIdx).trim();
+      var first = rawName.substring(commaIdx + 1).trim().split(' ')[0]; // first name only
+      displayName = first + ' ' + last;
+    }
+
+    studentList.push({ name: displayName, rawName: rawName, grade: grade, id: studentId });
+  }
+
+  // Sort alphabetically by first name
+  studentList.sort(function(a, b){ return a.name.localeCompare(b.name); });
+
+  roster[period] = studentList;
+}
+
+// ── PERIOD TABS ────────────────────────────────────────────────
+function renderPeriodTabs(){
+  var tabs = document.getElementById('periodTabs');
+  tabs.innerHTML = '';
+  var periods = Object.keys(roster).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+  periods.forEach(function(p){
+    var btn = document.createElement('button');
+    btn.className = 'period-tab' + (p === activePeriod ? ' active' : '');
+    btn.onclick = function(){ selectPeriod(p); };
+    btn.innerHTML = 'P' + p + '<span class="p-count">' + roster[p].length + '</span>';
+    tabs.appendChild(btn);
+  });
+}
+
+function selectPeriod(p){
+  activePeriod = p;
+  students = roster[p].map(function(s){
+    return { name: s.name, grade: s.grade, id: s.id, inCan: true, absent: false };
+  });
+  sessionLog = [];
+  currentPick = null;
+  isSpinning = false;
+  renderPeriodTabs();
+  renderStudentList();
+  updateCounters();
+  resetSpinUI();
+  renderLog();
+  document.getElementById('hContext').textContent = 'Period ' + p + ' · ' + students.length + ' students';
+  document.getElementById('periodInfo').textContent = students.length + ' students';
+  document.getElementById('resetBtn').style.display = 'none';
+  document.getElementById('summaryBtn').style.display = 'none';
+  document.getElementById('summaryPanel').style.display = 'none';
+}
+
+// ── STUDENT LIST ───────────────────────────────────────────────
+function renderStudentList(){
+  var list = document.getElementById('studentList');
+  list.innerHTML = '';
+  var inCount = students.filter(function(s){ return !s.absent && s.inCan; }).length;
+  var totalActive = students.filter(function(s){ return !s.absent; }).length;
+  document.getElementById('studentCountLabel').textContent = '(' + inCount + ' in can / ' + totalActive + ' active)';
+
+  students.forEach(function(s, idx){
+    var row = document.createElement('div');
+    var cls = 'student-row';
+    if(s.absent) cls += ' absent';
+    else if(!s.inCan) cls += ' picked-out';
+    row.className = cls;
+    row.onclick = function(){ toggleStudentAbsent(idx); };
+
+    var checkDiv = document.createElement('div');
+    checkDiv.className = 's-check';
+    if(s.absent) checkDiv.innerHTML = '<span style="font-size:9px;color:var(--text3)">✗</span>';
+
+    var nameDiv = document.createElement('div');
+    nameDiv.className = 's-name';
+    nameDiv.textContent = s.name;
+
+    var gradeDiv = document.createElement('div');
+    gradeDiv.className = 's-grade';
+    gradeDiv.textContent = s.grade ? 'Gr ' + s.grade : '';
+
+    var statusDiv = document.createElement('div');
+    statusDiv.className = 's-status ' + (!s.absent ? (s.inCan ? 'in' : 'out') : '');
+    statusDiv.textContent = s.absent ? 'absent' : s.inCan ? 'in' : 'out';
+
+    row.appendChild(checkDiv);
+    row.appendChild(nameDiv);
+    row.appendChild(gradeDiv);
+    row.appendChild(statusDiv);
+    list.appendChild(row);
+  });
+}
+
+function toggleStudentAbsent(idx){
+  students[idx].absent = !students[idx].absent;
+  if(students[idx].absent) students[idx].inCan = false;
+  else students[idx].inCan = true;
+  renderStudentList();
+  updateCounters();
+}
+
+function toggleAllStudents(inCan){
+  students.forEach(function(s){ if(!s.absent){ s.inCan = inCan; } });
+  renderStudentList();
+  updateCounters();
+}
+
+function togglePoints(){
+  pointsOn = document.getElementById('pointsToggle').checked;
+  renderLog();
+}
+
+// ── COUNTERS ───────────────────────────────────────────────────
+function updateCounters(){
+  var inCan = students.filter(function(s){ return !s.absent && s.inCan; }).length;
+  var picked = students.filter(function(s){ return !s.absent && !s.inCan; }).length;
+  var total = students.filter(function(s){ return !s.absent; }).length;
+  document.getElementById('countIn').textContent = inCan;
+  document.getElementById('countOut').textContent = picked;
+  document.getElementById('countTotal').textContent = total;
+
+  var btn = document.getElementById('spinBtn');
+  btn.disabled = inCan === 0 || isSpinning || currentPick !== null;
+  if(inCan === 0 && total > 0){
+    document.getElementById('spinSub').textContent = 'Can is empty — reset session to refill';
+  }
+}
+
+// ── SPIN ───────────────────────────────────────────────────────
+function spin(){
+  var available = students.filter(function(s){ return !s.absent && s.inCan; });
+  if(!available.length){ toast('Can is empty'); return; }
+  if(isSpinning || currentPick !== null) return;
+
+  isSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('actionRow').style.display = 'none';
+  var nameEl = document.getElementById('spinName');
+  var subEl = document.getElementById('spinSub');
+  nameEl.className = 'spin-name spinning';
+  subEl.textContent = '';
+
+  var spins = 0, maxSpins = 22, delay = 55;
+  clearInterval(spinInterval);
+
+  function tick(){
+    var pick = available[Math.floor(Math.random() * available.length)];
+    nameEl.textContent = pick.name.split(' ')[0].toUpperCase();
+    spins++;
+    if(spins > 14) delay += 18;
+    if(spins >= maxSpins){
+      clearInterval(spinInterval);
+      // Final pick
+      var winner = available[Math.floor(Math.random() * available.length)];
+      currentPick = winner.name;
+      nameEl.textContent = winner.name.toUpperCase();
+      nameEl.className = 'spin-name result';
+      subEl.textContent = winner.grade ? 'Grade ' + winner.grade : '';
+      isSpinning = false;
+      document.getElementById('actionRow').style.display = 'flex';
+      document.getElementById('resetBtn').style.display = 'inline-flex';
+      document.getElementById('summaryBtn').style.display = 'inline-flex';
+      // Flash the student row
+      highlightStudent(winner.name);
+    }
+  }
+  spinInterval = setInterval(tick, delay);
+}
+
+function highlightStudent(name){
+  var rows = document.querySelectorAll('.student-row');
+  rows.forEach(function(row){
+    var nameEl = row.querySelector('.s-name');
+    if(nameEl && nameEl.textContent === name){
+      row.style.background = 'var(--accent-bg)';
+      row.style.borderColor = 'var(--accent)';
+      setTimeout(function(){ row.style.background = ''; row.style.borderColor = ''; }, 1200);
+    }
+  });
+}
+
+// ── PICK ACTION ────────────────────────────────────────────────
+function pickAction(action){
+  if(!currentPick) return;
+  var name = currentPick;
+  var idx = students.findIndex(function(s){ return s.name === name; });
+
+  if(action === 'back'){
+    // Put back in can — no participation point yet
+    var logEntry = { name: name, status: 'back', participation: 0, correct: 0, logId: Date.now() };
+    sessionLog.push(logEntry);
+    // Student stays in can
+  } else {
+    // Got it or Pass — remove from can
+    if(idx > -1) students[idx].inCan = false;
+    var participation = pointsOn ? 1 : 0;
+    var logEntry = { name: name, status: action, participation: participation, correct: 0, logId: Date.now() };
+    sessionLog.push(logEntry);
+  }
+
+  currentPick = null;
+  document.getElementById('actionRow').style.display = 'none';
+  resetSpinUI();
+  renderStudentList();
+  updateCounters();
+  renderLog();
+}
+
+function awardCorrect(logId){
+  var entry = sessionLog.find(function(e){ return e.logId === logId; });
+  if(!entry) return;
+  entry.correct = (entry.correct || 0) + 1;
+  renderLog();
+  toast(entry.name.split(' ')[0] + ' +1 correct ✓');
+}
+
+// ── UI HELPERS ─────────────────────────────────────────────────
+function resetSpinUI(){
+  var nameEl = document.getElementById('spinName');
+  var subEl = document.getElementById('spinSub');
+  var available = students.filter(function(s){ return !s.absent && s.inCan; }).length;
+  nameEl.className = 'spin-name';
+
+  if(!activePeriod){
+    nameEl.textContent = '—';
+    subEl.textContent = 'Load a roster to begin';
+  } else if(available === 0){
+    nameEl.textContent = '—';
+    subEl.textContent = 'Can is empty · reset to refill';
+  } else {
+    nameEl.textContent = '?';
+    subEl.textContent = available + ' student' + (available === 1 ? '' : 's') + ' in the can';
+  }
+}
+
+// ── LOG ────────────────────────────────────────────────────────
+function renderLog(){
+  var list = document.getElementById('logList');
+  var countEl = document.getElementById('logCount');
+  countEl.textContent = sessionLog.length + ' pick' + (sessionLog.length !== 1 ? 's' : '');
+
+  if(!sessionLog.length){
+    list.innerHTML = '<div class="empty">Picks will appear here</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  var reversed = sessionLog.slice().reverse();
+  reversed.forEach(function(entry, i){
+    var row = document.createElement('div');
+    row.className = 'log-row';
+
+    var numDiv = document.createElement('div');
+    numDiv.className = 'log-num';
+    numDiv.textContent = sessionLog.length - i;
+
+    var nameDiv = document.createElement('div');
+    nameDiv.className = 'log-name';
+    nameDiv.textContent = entry.name;
+
+    var statusDiv = document.createElement('div');
+    statusDiv.className = 'log-status ' + entry.status;
+    statusDiv.textContent = entry.status === 'gotit' ? 'Got It' : entry.status === 'passed' ? 'Pass' : 'Put Back';
+
+    var ptsDiv = document.createElement('div');
+    ptsDiv.className = 'log-pts';
+
+    if(pointsOn){
+      if(entry.participation > 0){
+        var pb = document.createElement('span');
+        pb.className = 'pts-badge participation';
+        pb.textContent = '+' + entry.participation + 'P';
+        ptsDiv.appendChild(pb);
+      }
+      if(entry.correct > 0){
+        var cb = document.createElement('span');
+        cb.className = 'pts-badge correct';
+        cb.textContent = '+' + entry.correct + '✓';
+        ptsDiv.appendChild(cb);
+      }
+    }
+
+    // +Correct button — always shown, even for put-back
+    var correctBtn = document.createElement('button');
+    correctBtn.className = 'correct-btn' + (entry.correct > 0 ? ' awarded' : '');
+    correctBtn.title = 'Award correct answer point';
+    correctBtn.textContent = '✓';
+    correctBtn.onclick = function(){ awardCorrect(entry.logId); };
+    ptsDiv.appendChild(correctBtn);
+
+    row.appendChild(numDiv);
+    row.appendChild(nameDiv);
+    row.appendChild(statusDiv);
+    row.appendChild(ptsDiv);
+    list.appendChild(row);
+  });
+}
+
+// ── RESET SESSION ──────────────────────────────────────────────
+function resetSession(){
+  if(!confirm('Reset session? All picks will be cleared and everyone goes back in the can.')) return;
+  students.forEach(function(s){ if(!s.absent) s.inCan = true; });
+  sessionLog = [];
+  currentPick = null;
+  isSpinning = false;
+  clearInterval(spinInterval);
+  document.getElementById('actionRow').style.display = 'none';
+  document.getElementById('summaryPanel').style.display = 'none';
+  renderStudentList();
+  updateCounters();
+  resetSpinUI();
+  renderLog();
+  toast('Session reset — everyone back in the can');
+}
+
+// ── SUMMARY ────────────────────────────────────────────────────
+function showSummary(){
+  var panel = document.getElementById('summaryPanel');
+  panel.style.display = 'block';
+
+  // Aggregate per student
+  var agg = {};
+  sessionLog.forEach(function(e){
+    if(!agg[e.name]) agg[e.name] = { participation: 0, correct: 0, picks: 0 };
+    agg[e.name].picks++;
+    agg[e.name].participation += e.participation || 0;
+    agg[e.name].correct += e.correct || 0;
+  });
+
+  var sorted = Object.keys(agg).sort(function(a,b){ return agg[b].picks - agg[a].picks; });
+
+  var table = document.getElementById('summaryTable');
+  table.innerHTML = '<thead><tr>' +
+    '<th>Name</th><th>Picks</th><th>Last Status</th>' +
+    (pointsOn ? '<th>Participation</th><th>Correct</th>' : '') +
+    '</tr></thead>';
+
+  var tbody = document.createElement('tbody');
+  sorted.forEach(function(name){
+    var data = agg[name];
+    var lastEntry = sessionLog.slice().reverse().find(function(e){ return e.name === name; });
+    var lastStatus = lastEntry ? (lastEntry.status === 'gotit' ? '✓ Got It' : lastEntry.status === 'passed' ? '✗ Pass' : '↩ Put Back') : '';
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td style="font-weight:600">' + name + '</td>' +
+      '<td class="pts-num">' + data.picks + '</td>' +
+      '<td>' + lastStatus + '</td>' +
+      (pointsOn ? '<td class="pts-num" style="color:var(--purple)">' + data.participation + '</td><td class="pts-num" style="color:var(--green)">' + data.correct + '</td>' : '');
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeSummary(){
+  document.getElementById('summaryPanel').style.display = 'none';
+}
+
+// ── TOAST ──────────────────────────────────────────────────────
+function toast(msg){
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.className = ''; }, 2200);
+}
+</script>
+</body>
+</html>
