@@ -805,15 +805,16 @@ function buildWeatherScreen(){
   lines.push('');
   lines.push(temp+' F  ·  FEELS '+feels+' F');
   lines.push(desc);
-  lines.push('');
   lines.push(comment);
   lines.push('');
   if(CW_WEATHER_DAILY&&CW_WEATHER_DAILY.time){
-    var dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'],times=CW_WEATHER_DAILY.time,highs=CW_WEATHER_DAILY.temperature_2m_max;
+    var dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'],times=CW_WEATHER_DAILY.time,highs=CW_WEATHER_DAILY.temperature_2m_max,lows=CW_WEATHER_DAILY.temperature_2m_min;
     var parts=[];
-    for(var i=1;i<=3;i++){if(!times[i])break;var d=new Date(times[i]+'T12:00:00');parts.push(dayNames[d.getDay()]+' HI '+Math.round(highs[i]));}
+    for(var i=1;i<=2;i++){if(!times[i])break;var d=new Date(times[i]+'T12:00:00');parts.push(dayNames[d.getDay()]+' HI '+Math.round(highs[i]));}
     lines.push(parts.join('  ·  ').substring(0,COLS));
-  } else {lines.push('WIND '+wind+' MPH'+(aqiVal!==null?'  AQI '+aqiVal:''));}
+  } else {lines.push('');}
+  var windAqi='WIND '+wind+' MPH'+(aqiVal!==null?'  ·  AQI '+aqiVal:'');
+  lines.push(windAqi.substring(0,COLS));
   return{lines:lines.slice(0,8),speed:18,id:'weather',align:'center',sort_order:0.8};
 }
 
@@ -991,10 +992,9 @@ function formatHistoryDrop(year,text){
     else{if(current)textLines.push(current);current=word.substring(0,COLS);}
   });
   if(current)textLines.push(current);
-  var lines=['',header,''];
-  textLines.slice(0,4).forEach(function(l){lines.push(l);});
-  while(lines.length<7)lines.push('');
-  lines.push('ON THIS DAY');
+  var lines=[header,''];
+  textLines.slice(0,6).forEach(function(l){lines.push(l);});
+  while(lines.length<8)lines.push('');
   return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
 }
 
