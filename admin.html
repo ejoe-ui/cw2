@@ -923,7 +923,7 @@ function dcRenderList(){
       '<div class="dc-licon">'+m.icon+'</div>'+
       '<div class="dc-lname">'+m.label+'</div>'+
       (m.isPerm?'<span class="dc-lperm">Board</span>':'')+
-      '<div class="dc-lstatus '+(isOn?'on':'')+'>'+(isOn?'● On':'○ Off')+'</div>';
+      '<div class="dc-lstatus '+(isOn?'on':'')+'">'+(isOn?'● On':'○ Off')+'</div>';
     list.appendChild(item);
   });
   dcBindDrag();
