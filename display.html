@@ -14,200 +14,376 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=League+Spartan:wght@400;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
   :root {
     --font-retro:  'Courier New', Courier, monospace;
     --font-modern: 'Barlow Condensed', sans-serif;
     --font-label:  'League Spartan', sans-serif;
     --tan:         #C4BEB5;
   }
+
   [data-theme="retro-dark"] {
-    --green:#005640;--green-dark:#003d2e;--green-dim:#002a1a;
-    --tile-bg:#1a1a1a;--tile-border:#2c2c2c;--tile-text:#f0ebe0;
-    --board-bg:#0d0d0d;--header-bg:#0a0a0a;--flip-mid:#005640;
-    --font-tile:var(--font-retro);--font-ui:var(--font-retro);--scaleX:0.78;--scanline:1;
+    --green: #005640; --green-dark: #003d2e; --green-dim: #002a1a;
+    --tile-bg: #1a1a1a; --tile-border: #2c2c2c; --tile-text: #f0ebe0;
+    --board-bg: #0d0d0d; --header-bg: #0a0a0a; --flip-mid: #005640;
+    --font-tile: var(--font-retro); --font-ui: var(--font-retro);
+    --scaleX: 0.78; --scanline: 1;
   }
   [data-theme="retro-light"] {
-    --green:#005640;--green-dark:#003d2e;--green-dim:#d0e8e0;
-    --tile-bg:#e8e4dc;--tile-border:#c8c3b8;--tile-text:#005640;
-    --board-bg:#f0ede6;--header-bg:#0d0d0d;--flip-mid:#005640;
-    --font-tile:var(--font-retro);--font-ui:var(--font-retro);--scaleX:0.78;--scanline:0;
+    --green: #005640; --green-dark: #003d2e; --green-dim: #d0e8e0;
+    --tile-bg: #e8e4dc; --tile-border: #c8c3b8; --tile-text: #005640;
+    --board-bg: #f0ede6; --header-bg: #0d0d0d; --flip-mid: #005640;
+    --font-tile: var(--font-retro); --font-ui: var(--font-retro);
+    --scaleX: 0.78; --scanline: 0;
   }
   [data-theme="modern-dark"] {
-    --green:#00a86b;--green-dark:#007a4d;--green-dim:#002a1a;
-    --tile-bg:#141414;--tile-border:#242424;--tile-text:#f0ebe0;
-    --board-bg:#0a0a0a;--header-bg:#080808;--flip-mid:#00a86b;
-    --font-tile:var(--font-modern);--font-ui:var(--font-label);--scaleX:1;--scanline:0;
+    --green: #00a86b; --green-dark: #007a4d; --green-dim: #002a1a;
+    --tile-bg: #141414; --tile-border: #242424; --tile-text: #f0ebe0;
+    --board-bg: #0a0a0a; --header-bg: #080808; --flip-mid: #00a86b;
+    --font-tile: var(--font-modern); --font-ui: var(--font-label);
+    --scaleX: 1; --scanline: 0;
   }
   [data-theme="modern-light"] {
-    --green:#005640;--green-dark:#003d2e;--green-dim:#d0e8e0;
-    --tile-bg:#ffffff;--tile-border:#ddd8d0;--tile-text:#005640;
-    --board-bg:#f4f2ef;--header-bg:#0d0d0d;--flip-mid:#005640;
-    --font-tile:var(--font-modern);--font-ui:var(--font-label);--scaleX:1;--scanline:0;
+    --green: #005640; --green-dark: #003d2e; --green-dim: #d0e8e0;
+    --tile-bg: #ffffff; --tile-border: #ddd8d0; --tile-text: #005640;
+    --board-bg: #f4f2ef; --header-bg: #0d0d0d; --flip-mid: #005640;
+    --font-tile: var(--font-modern); --font-ui: var(--font-label);
+    --scaleX: 1; --scanline: 0;
   }
   [data-theme="walle"] {
-    --green:#c8a84b;--green-dark:#9a7a2a;--green-dim:#2a1a00;
-    --tile-bg:#1a1000;--tile-border:#3a2800;--tile-text:#f0c060;
-    --board-bg:#0d0800;--header-bg:#080500;--flip-mid:#c8a84b;
-    --font-tile:var(--font-retro);--font-ui:var(--font-retro);--scaleX:0.78;--scanline:1;
+    --green: #c8a84b; --green-dark: #9a7a2a; --green-dim: #2a1a00;
+    --tile-bg: #1a1000; --tile-border: #3a2800; --tile-text: #f0c060;
+    --board-bg: #0d0800; --header-bg: #080500; --flip-mid: #c8a84b;
+    --font-tile: var(--font-retro); --font-ui: var(--font-retro);
+    --scaleX: 0.78; --scanline: 1;
   }
   [data-theme="eve"] {
-    --green:#4db8ff;--green-dark:#2a8acc;--green-dim:#001a2a;
-    --tile-bg:#f0f8ff;--tile-border:#c0e0f8;--tile-text:#003366;
-    --board-bg:#e8f4ff;--header-bg:#001830;--flip-mid:#4db8ff;
-    --font-tile:var(--font-modern);--font-ui:var(--font-label);--scaleX:1;--scanline:0;
+    --green: #4db8ff; --green-dark: #2a8acc; --green-dim: #001a2a;
+    --tile-bg: #f0f8ff; --tile-border: #c0e0f8; --tile-text: #003366;
+    --board-bg: #e8f4ff; --header-bg: #001830; --flip-mid: #4db8ff;
+    --font-tile: var(--font-modern); --font-ui: var(--font-label);
+    --scaleX: 1; --scanline: 0;
   }
-  html,body{width:100%;height:100%;background:var(--board-bg);overflow:hidden;font-family:var(--font-ui);transition:background 0.3s;}
-  body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:100;opacity:var(--scanline,0);transition:opacity 0.4s;}
-  #header{position:relative;width:100%;height:10vh;min-height:56px;max-height:80px;background:var(--header-bg);border-bottom:3px solid var(--green);display:flex;align-items:center;padding:0 1.5vw;gap:1.5vw;z-index:10;overflow:hidden;transition:border-color 0.3s;}
-  .h-badge{background:var(--green);color:#fff;font-family:var(--font-ui);font-size:clamp(10px,1vw,16px);font-weight:900;letter-spacing:0.15em;padding:5px 14px;border-radius:3px;text-transform:uppercase;white-space:nowrap;flex-shrink:0;transition:background 0.3s;}
-  .h-divider{flex:1;min-width:8px;height:1px;background:linear-gradient(90deg,rgba(196,190,181,0.25),rgba(196,190,181,0.05));}
-  .h-school{color:var(--tan);font-family:var(--font-ui);font-size:clamp(10px,1.1vw,18px);letter-spacing:0.2em;text-transform:uppercase;white-space:nowrap;flex-shrink:1;overflow:hidden;text-overflow:ellipsis;min-width:0;}
-  .h-sync{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-  .sync-dot{width:7px;height:7px;border-radius:50%;background:#333;transition:background 0.4s;flex-shrink:0;}
-  .sync-dot.live{background:var(--green);animation:blink 2.5s infinite;}
-  .sync-dot.error{background:#882222;}
-  .sync-label{color:#555;font-family:var(--font-retro);font-size:clamp(8px,0.65vw,11px);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;}
-  .h-period-timer{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:1px;}
-  .h-period-label{font-family:var(--font-ui);font-size:clamp(8px,0.7vw,12px);letter-spacing:0.15em;color:var(--green);text-transform:uppercase;white-space:nowrap;font-weight:700;}
-  .h-period-time{font-family:var(--font-ui);font-size:clamp(10px,0.9vw,15px);letter-spacing:0.1em;color:var(--tan);white-space:nowrap;font-weight:700;}
-  .h-period-time.warning{color:#ff9900;}
-  .h-period-time.ending{color:#cc4444;animation:blink 1s infinite;}
-  .h-pass-status{font-family:var(--font-ui);font-size:clamp(7px,0.65vw,11px);font-weight:700;letter-spacing:0.1em;text-transform:uppercase;white-space:nowrap;padding:2px 7px;border-radius:3px;transition:background 0.4s,color 0.4s;}
-  .h-pass-status.green{background:#166534;color:#fff;}
-  .h-pass-status.yellow{background:#d97706;color:#fff;}
-  .h-pass-status.red{background:#dc2626;color:#fff;}
-  .h-pass-status.blue{background:#1d4ed8;color:#fff;}
-  .h-pass-status.hidden{display:none;}
-  .h-clock{color:#f0ebe0;font-family:var(--font-ui);font-size:clamp(18px,2.2vw,38px);font-weight:700;letter-spacing:0.08em;white-space:nowrap;flex-shrink:0;text-align:right;}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
-  #noise-meter{display:none;align-items:center;gap:3px;flex-shrink:0;height:32px;padding:0 4px;cursor:pointer;}
-  #noise-meter.active{display:flex;}
-  #noise-meter .nm-bar{width:6px;height:20px;border-radius:2px;background:#222;transition:background 0.1s ease;}
-  #noise-meter .nm-bar.on-green{background:var(--green);}
-  #noise-meter .nm-bar.on-yellow{background:#d97706;}
-  #noise-meter .nm-bar.on-red{background:#dc2626;}
-  #noise-panel{position:fixed;top:calc(10vh + 8px);left:20px;background:#1e1e1e;border:1px solid #444;border-radius:10px;padding:14px 16px;z-index:70;opacity:0;pointer-events:none;transform:translateY(-6px) scale(0.97);transition:opacity 0.2s,transform 0.2s;min-width:220px;display:flex;flex-direction:column;gap:10px;}
-  #noise-panel.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1);}
-  .np-title{font-family:var(--font-retro);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#888;}
-  .np-presets{display:flex;gap:5px;}
-  .np-preset{flex:1;padding:5px 4px;border-radius:3px;border:1px solid #444;background:#2a2a2a;color:#aaa;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;text-align:center;}
-  .np-preset.active{border-color:var(--green);color:var(--green);background:#0d1f18;}
-  .np-row{display:flex;align-items:center;justify-content:space-between;gap:8px;}
-  .np-row-label{font-family:var(--font-retro);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:#999;white-space:nowrap;}
-  .np-slider{flex:1;accent-color:var(--green);cursor:pointer;}
-  .np-val{font-family:var(--font-retro);font-size:9px;color:#ccc;width:28px;text-align:right;}
-  .np-toggle{width:100%;padding:8px;border-radius:4px;border:1px solid #2a2a2a;background:#0a0a0a;color:#555;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;text-align:center;}
-  .np-toggle.on{background:var(--green);border-color:var(--green);color:#fff;}
-  #board-wrap{width:100%;height:calc(100vh - 10vh - 3px);display:flex;flex-direction:column;padding:1.2vh 1.5vw;gap:0.5vh;}
-  .tile-row{flex:1;display:flex;gap:0.3vw;align-items:stretch;}
-  .tile{flex:1;background:var(--tile-bg);border:1px solid var(--tile-border);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;transition:background 0.3s,border-color 0.3s;}
-  .tile::after{content:'';position:absolute;left:4%;right:4%;top:50%;height:1px;background:rgba(0,0,0,0.2);transform:translateY(-50%);z-index:2;}
-  .tile-char{font-size:clamp(24px,6.4vh,112px);font-weight:900;color:var(--tile-text);line-height:1;letter-spacing:-0.02em;user-select:none;position:relative;z-index:3;font-family:var(--font-tile);transform:scaleX(var(--scaleX,0.78));transition:font-family 0s,color 0.3s;}
-  @keyframes flipDown{0%{transform:scaleY(1) scaleX(var(--scaleX,0.78));background:var(--tile-bg)}25%{transform:scaleY(0.3) scaleX(var(--scaleX,0.78));background:var(--flip-mid)}45%{transform:scaleY(0.02) scaleX(var(--scaleX,0.78));background:var(--flip-mid)}65%{transform:scaleY(0.02) scaleX(var(--scaleX,0.78));background:var(--flip-mid)}85%{transform:scaleY(0.4) scaleX(var(--scaleX,0.78));background:var(--tile-bg)}100%{transform:scaleY(1) scaleX(var(--scaleX,0.78));background:var(--tile-bg)}}
-  .tile.flipping{animation:flipDown 0.65s cubic-bezier(0.4,0,0.2,1) forwards;}
-  #honor-ticker-wrap{position:fixed;bottom:4px;left:0;right:0;height:28px;background:rgba(0,0,0,0.82);border-top:1px solid var(--green-dim);z-index:9;overflow:hidden;display:none;align-items:center;transition:opacity 0.5s;}
-  #honor-ticker-label{background:var(--green);color:#fff;font-family:var(--font-retro);font-size:10px;font-weight:900;letter-spacing:0.18em;text-transform:uppercase;padding:0 12px;height:100%;display:flex;align-items:center;white-space:nowrap;flex-shrink:0;}
-  #honor-ticker-track{flex:1;overflow:hidden;position:relative;height:100%;}
-  #honor-ticker-inner{display:inline-flex;align-items:center;height:100%;white-space:nowrap;animation:tickerScroll 400s linear infinite;will-change:transform;}
-  @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
-  .ticker-name{font-size:11px;font-weight:700;color:var(--tan);letter-spacing:0.1em;text-transform:uppercase;padding:0 6px;}
-  .ticker-sep{color:var(--green);font-size:10px;padding:0 4px;opacity:0.7;}
-  #bottom-accent{position:fixed;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--green-dark) 0%,var(--green) 30%,var(--tan) 50%,var(--green) 70%,var(--green-dark) 100%);z-index:10;}
-  #indicator-bar{position:fixed;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:7px;align-items:center;z-index:50;}
-  .ind-dot{width:7px;height:7px;border-radius:50%;background:#2a2a2a;transition:background 0.3s;}
-  .ind-dot.active{background:var(--green);}
-  #dial-trigger{position:fixed;bottom:0;right:0;width:80px;height:80px;z-index:60;cursor:pointer;}
-  #dial-panel{position:fixed;bottom:20px;right:20px;background:#1e1e1e;border:1px solid #444;border-radius:12px;padding:16px 18px;z-index:60;opacity:0;pointer-events:none;transform:translateY(8px) scale(0.96);transition:opacity 0.2s,transform 0.2s;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:200px;}
-  #dial-panel.open{opacity:1;pointer-events:all;transform:translateY(0) scale(1);}
-  .dial-panel-title{font-family:var(--font-retro);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:#888;}
-  .dial-mode-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);transition:color 0.3s;min-height:24px;}
-  .dial-knob-wrap{position:relative;width:80px;height:80px;cursor:pointer;}
-  .dial-knob{width:80px;height:80px;border-radius:50%;background:#2a2a2a;border:2px solid #555;box-shadow:inset 0 2px 6px rgba(0,0,0,0.8);position:relative;transition:transform 0.05s;}
-  .dial-knob:active{transform:scale(0.96);}
-  .dial-needle{position:absolute;width:3px;height:18px;background:var(--green);border-radius:2px;left:50%;top:6px;transform-origin:50% 34px;transform:translateX(-50%) rotate(-135deg);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1),background 0.3s;}
-  .dial-center-dot{position:absolute;width:14px;height:14px;background:#222;border:1px solid #333;border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);}
-  .dial-positions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:center;}
-  .dial-pos{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;}
-  .dial-pos-dot{width:7px;height:7px;border-radius:50%;background:#2a2a2a;border:1px solid #333;transition:background 0.2s,transform 0.2s;}
-  .dial-pos-dot.active{background:var(--green);border-color:var(--green);transform:scale(1.4);}
-  .dial-pos-label{font-family:var(--font-retro);font-size:7px;letter-spacing:0.1em;color:#777;text-transform:uppercase;transition:color 0.2s;}
-  .dial-pos-label.active{color:var(--green);}
-  .dial-divider{width:1px;height:16px;background:#444;}
-  .dial-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding-top:10px;border-top:1px solid #1e1e1e;gap:8px;}
-  .dial-row-label{font-family:var(--font-retro);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#888;}
-  .dial-btn{background:#2a2a2a;border:1px solid #555;color:#aaa;font-family:var(--font-retro);font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:5px 10px;border-radius:3px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
-  .dial-btn:hover{border-color:var(--green);color:var(--green);}
-  .dial-btn.on{border-color:var(--green);color:var(--green);background:#0d1f18;}
-  #dial-hint{position:fixed;bottom:12px;right:16px;font-family:var(--font-retro);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#2a2a2a;z-index:59;cursor:pointer;transition:color 0.2s;}
-  #dial-hint:hover{color:#444;}
-  body:hover #dial-hint{color:#2e2e2e;}
-  #sound-prompt{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,86,64,0.85);color:#fff;font-family:var(--font-retro);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;padding:7px 18px;border-radius:4px;cursor:pointer;z-index:200;transition:opacity 0.5s;}
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--board-bg); overflow: hidden;
+    font-family: var(--font-ui); transition: background 0.3s;
+  }
+  body::after {
+    content: ''; position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none; z-index: 100;
+    opacity: var(--scanline, 0); transition: opacity 0.4s;
+  }
+
+  #header {
+    position: relative; width: 100%; height: 10vh;
+    min-height: 56px; max-height: 80px;
+    background: var(--header-bg); border-bottom: 3px solid var(--green);
+    display: flex; align-items: center; padding: 0 1.5vw; gap: 1.5vw;
+    z-index: 10; overflow: hidden; transition: border-color 0.3s;
+  }
+  .h-badge {
+    background: var(--green); color: #fff;
+    font-family: var(--font-ui); font-size: clamp(10px,1vw,16px);
+    font-weight: 900; letter-spacing: 0.15em;
+    padding: 5px 14px; border-radius: 3px;
+    text-transform: uppercase; white-space: nowrap;
+    flex-shrink: 0; transition: background 0.3s;
+  }
+  .h-divider {
+    flex: 1; min-width: 8px; height: 1px;
+    background: linear-gradient(90deg, rgba(196,190,181,0.25), rgba(196,190,181,0.05));
+  }
+  .h-school {
+    color: var(--tan); font-family: var(--font-ui);
+    font-size: clamp(10px,1.1vw,18px); letter-spacing: 0.2em;
+    text-transform: uppercase; white-space: nowrap;
+    flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .h-sync { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #333; transition: background 0.4s; flex-shrink: 0;
+  }
+  .sync-dot.live { background: var(--green); animation: blink 2.5s infinite; }
+  .sync-dot.error { background: #882222; }
+  .sync-label {
+    color: #555; font-family: var(--font-retro);
+    font-size: clamp(8px,0.65vw,11px); letter-spacing: 0.12em;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .h-period-timer {
+    display: flex; flex-direction: column;
+    align-items: flex-end; flex-shrink: 0; gap: 1px;
+  }
+  .h-period-label {
+    font-family: var(--font-ui); font-size: clamp(8px,0.7vw,12px);
+    letter-spacing: 0.15em; color: var(--green);
+    text-transform: uppercase; white-space: nowrap; font-weight: 700;
+  }
+  .h-period-time {
+    font-family: var(--font-ui); font-size: clamp(10px,0.9vw,15px);
+    letter-spacing: 0.1em; color: var(--tan);
+    white-space: nowrap; font-weight: 700;
+  }
+  .h-period-time.warning { color: #ff9900; }
+  .h-period-time.ending  { color: #cc4444; animation: blink 1s infinite; }
+  .h-pass-status {
+    font-family: var(--font-ui); font-size: clamp(7px,0.65vw,11px);
+    font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    white-space: nowrap; padding: 2px 7px; border-radius: 3px;
+    transition: background 0.4s, color 0.4s;
+  }
+  .h-pass-status.green  { background: #166534; color: #fff; }
+  .h-pass-status.yellow { background: #d97706; color: #fff; }
+  .h-pass-status.red    { background: #dc2626; color: #fff; }
+  .h-pass-status.blue   { background: #1d4ed8; color: #fff; }
+  .h-pass-status.hidden { display: none; }
+  .h-clock {
+    color: #f0ebe0; font-family: var(--font-ui);
+    font-size: clamp(18px,2.2vw,38px); font-weight: 700;
+    letter-spacing: 0.08em; white-space: nowrap;
+    flex-shrink: 0; text-align: right;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+  #noise-meter {
+    display: none; align-items: center; gap: 3px;
+    flex-shrink: 0; height: 32px; padding: 0 4px;
+    cursor: pointer; position: relative;
+  }
+  #noise-meter.active { display: flex; }
+  #noise-meter .nm-bar {
+    width: 6px; height: 20px; border-radius: 2px;
+    background: #222; transition: background 0.1s ease;
+  }
+  #noise-meter .nm-bar.on-green  { background: var(--green); }
+  #noise-meter .nm-bar.on-yellow { background: #d97706; }
+  #noise-meter .nm-bar.on-red    { background: #dc2626; }
+
+  #noise-panel {
+    position: fixed; top: calc(10vh + 8px); left: 20px;
+    background: #1e1e1e; border: 1px solid #444; border-radius: 10px;
+    padding: 14px 16px; z-index: 70; opacity: 0; pointer-events: none;
+    transform: translateY(-6px) scale(0.97);
+    transition: opacity 0.2s, transform 0.2s;
+    min-width: 220px; display: flex; flex-direction: column; gap: 10px;
+  }
+  #noise-panel.open { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+  .np-title { font-family: var(--font-retro); font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #888; }
+  .np-presets { display: flex; gap: 5px; }
+  .np-preset {
+    flex: 1; padding: 5px 4px; border-radius: 3px;
+    border: 1px solid #444; background: #2a2a2a; color: #aaa;
+    font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center;
+  }
+  .np-preset.active { border-color: var(--green); color: var(--green); background: #0d1f18; }
+  .np-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .np-row-label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: #999; white-space: nowrap; }
+  .np-slider { flex: 1; accent-color: var(--green); cursor: pointer; }
+  .np-val { font-family: var(--font-retro); font-size: 9px; color: #ccc; width: 28px; text-align: right; }
+  .np-toggle {
+    width: 100%; padding: 8px; border-radius: 4px;
+    border: 1px solid #2a2a2a; background: #0a0a0a; color: #555;
+    font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+    cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center;
+  }
+  .np-toggle.on { background: var(--green); border-color: var(--green); color: #fff; }
+
+  #board-wrap {
+    width: 100%; height: calc(100vh - 10vh - 3px);
+    display: flex; flex-direction: column;
+    padding: 1.2vh 1.5vw; gap: 0.5vh;
+  }
+  .tile-row { flex: 1; display: flex; gap: 0.3vw; align-items: stretch; }
+  .tile {
+    flex: 1; background: var(--tile-bg); border: 1px solid var(--tile-border);
+    border-radius: 4px; display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; transition: background 0.3s, border-color 0.3s;
+  }
+  .tile::after {
+    content: ''; position: absolute; left: 4%; right: 4%; top: 50%;
+    height: 1px; background: rgba(0,0,0,0.2);
+    transform: translateY(-50%); z-index: 2;
+  }
+  .tile-char {
+    font-size: clamp(24px,6.4vh,112px); font-weight: 900;
+    color: var(--tile-text); line-height: 1; letter-spacing: -0.02em;
+    user-select: none; position: relative; z-index: 3;
+    font-family: var(--font-tile);
+    transform: scaleX(var(--scaleX, 0.78));
+    transition: font-family 0s, color 0.3s;
+  }
+  @keyframes flipDown {
+    0%  { transform: scaleY(1) scaleX(var(--scaleX,0.78)); background: var(--tile-bg) }
+    25% { transform: scaleY(0.3) scaleX(var(--scaleX,0.78)); background: var(--flip-mid) }
+    45% { transform: scaleY(0.02) scaleX(var(--scaleX,0.78)); background: var(--flip-mid) }
+    65% { transform: scaleY(0.02) scaleX(var(--scaleX,0.78)); background: var(--flip-mid) }
+    85% { transform: scaleY(0.4) scaleX(var(--scaleX,0.78)); background: var(--tile-bg) }
+    100%{ transform: scaleY(1) scaleX(var(--scaleX,0.78)); background: var(--tile-bg) }
+  }
+  .tile.flipping { animation: flipDown 0.65s cubic-bezier(0.4,0,0.2,1) forwards; }
+
+  #honor-ticker-wrap {
+    position: fixed; bottom: 4px; left: 0; right: 0; height: 28px;
+    background: rgba(0,0,0,0.82); border-top: 1px solid var(--green-dim);
+    z-index: 9; overflow: hidden; display: none; align-items: center; transition: opacity 0.5s;
+  }
+  #honor-ticker-label {
+    background: var(--green); color: #fff; font-family: var(--font-retro);
+    font-size: 10px; font-weight: 900; letter-spacing: 0.18em; text-transform: uppercase;
+    padding: 0 12px; height: 100%; display: flex; align-items: center;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  #honor-ticker-track { flex: 1; overflow: hidden; position: relative; height: 100%; }
+  #honor-ticker-inner {
+    display: inline-flex; align-items: center; height: 100%; white-space: nowrap;
+    animation: tickerScroll 400s linear infinite; will-change: transform;
+  }
+  @keyframes tickerScroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  .ticker-name { font-size: 11px; font-weight: 700; color: var(--tan); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 6px; }
+  .ticker-sep  { color: var(--green); font-size: 10px; padding: 0 4px; opacity: 0.7; }
+
+  #bottom-accent {
+    position: fixed; bottom: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, var(--green-dark) 0%, var(--green) 30%, var(--tan) 50%, var(--green) 70%, var(--green-dark) 100%);
+    z-index: 10;
+  }
+
+  #indicator-bar {
+    position: fixed; bottom: 8px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 7px; align-items: center; z-index: 50;
+  }
+  .ind-dot { width: 7px; height: 7px; border-radius: 50%; background: #2a2a2a; transition: background 0.3s; }
+  .ind-dot.active { background: var(--green); }
+
+  #dial-trigger { position: fixed; bottom: 0; right: 0; width: 80px; height: 80px; z-index: 60; cursor: pointer; }
+  #dial-panel {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1e1e1e; border: 1px solid #444; border-radius: 12px;
+    padding: 16px 18px; z-index: 60; opacity: 0; pointer-events: none;
+    transform: translateY(8px) scale(0.96); transition: opacity 0.2s, transform 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 12px; min-width: 200px;
+  }
+  #dial-panel.open { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+  .dial-panel-title { font-family: var(--font-retro); font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase; color: #888; }
+  .dial-mode-name  { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); transition: color 0.3s; min-height: 24px; }
+  .dial-knob-wrap  { position: relative; width: 80px; height: 80px; cursor: pointer; }
+  .dial-knob { width: 80px; height: 80px; border-radius: 50%; background: #2a2a2a; border: 2px solid #555; box-shadow: inset 0 2px 6px rgba(0,0,0,0.8); position: relative; transition: transform 0.05s; }
+  .dial-knob:active { transform: scale(0.96); }
+  .dial-needle { position: absolute; width: 3px; height: 18px; background: var(--green); border-radius: 2px; left: 50%; top: 6px; transform-origin: 50% 34px; transform: translateX(-50%) rotate(-135deg); transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1), background 0.3s; }
+  .dial-center-dot { position: absolute; width: 14px; height: 14px; background: #222; border: 1px solid #333; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+  .dial-positions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .dial-pos { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .dial-pos-dot { width: 7px; height: 7px; border-radius: 50%; background: #2a2a2a; border: 1px solid #333; transition: background 0.2s, transform 0.2s; }
+  .dial-pos-dot.active { background: var(--green); border-color: var(--green); transform: scale(1.4); }
+  .dial-pos-label { font-family: var(--font-retro); font-size: 7px; letter-spacing: 0.1em; color: #777; text-transform: uppercase; transition: color 0.2s; }
+  .dial-pos-label.active { color: var(--green); }
+  .dial-divider { width: 1px; height: 16px; background: #444; }
+  .dial-row { display: flex; align-items: center; justify-content: space-between; width: 100%; padding-top: 10px; border-top: 1px solid #1e1e1e; gap: 8px; }
+  .dial-row-label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; }
+  .dial-btn { background: #2a2a2a; border: 1px solid #555; color: #aaa; font-family: var(--font-retro); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; padding: 5px 10px; border-radius: 3px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .dial-btn:hover { border-color: var(--green); color: var(--green); }
+  .dial-btn.on { border-color: var(--green); color: var(--green); background: #0d1f18; }
+  #dial-hint { position: fixed; bottom: 12px; right: 16px; font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: #2a2a2a; z-index: 59; cursor: pointer; transition: color 0.2s; }
+  #dial-hint:hover { color: #444; }
+  body:hover #dial-hint { color: #2e2e2e; }
+
+  #sound-prompt {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,86,64,0.85); color: #fff; font-family: var(--font-retro);
+    font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 7px 18px; border-radius: 4px; cursor: pointer; z-index: 200; transition: opacity 0.5s;
+  }
+
   /* ── PICK OVERLAY ───────────────────────────────────────── */
-#pick-overlay { position: fixed; inset: 0; top: calc(10vh + 3px);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2vh; background: var(--board-bg); opacity: 0; pointer-events: none;
-  transition: opacity 0.4s; z-index: 90; }
-#pick-overlay.visible { opacity: 1; }
-#pick-label { font-family: var(--font-ui); font-size: clamp(14px,1.8vw,30px);
-  letter-spacing: .35em; color: var(--green); text-transform: uppercase; }
-#pick-name { font-family: var(--font-tile); font-size: clamp(48px,10vw,170px);
-  font-weight: 900; color: var(--tile-text); transform: scaleX(var(--scaleX,1));
-  text-align: center; line-height: 1.1; padding: 0 2vw; }
-  #version-badge{position:fixed;top:calc(10vh + 6px);right:8px;font-family:var(--font-retro);font-size:7px;letter-spacing:0.15em;text-transform:uppercase;color:#222;z-index:5;}
-  #timer-hint{position:fixed;bottom:12px;left:16px;font-family:var(--font-retro);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#2a2a2a;z-index:59;cursor:pointer;transition:color 0.2s,opacity 0.3s;opacity:0;}
-  body:hover #timer-hint{opacity:1;color:#2e2e2e;}
-  #timer-hint:hover{color:var(--green) !important;}
-  #timer-hint.active{color:var(--green) !important;opacity:1 !important;}
-  #timer-trigger{position:fixed;bottom:0;left:0;width:80px;height:80px;z-index:60;cursor:pointer;}
-  #timer-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.82);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.25s;}
-  #timer-overlay.open{opacity:1;pointer-events:all;}
-  #timer-card{background:#1e1e1e;border:1px solid var(--green);border-radius:12px;padding:24px 28px;min-width:320px;max-width:400px;display:flex;flex-direction:column;gap:16px;transform:translateY(12px);transition:transform 0.25s;}
-  #timer-overlay.open #timer-card{transform:translateY(0);}
-  .tc-title{font-family:var(--font-retro);font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--green);display:flex;justify-content:space-between;align-items:center;}
-  .tc-close{color:#888;cursor:pointer;font-size:16px;line-height:1;transition:color 0.2s;}
-  .tc-close:hover{color:var(--tan);}
-  .tc-tabs{display:flex;gap:6px;}
-  .tc-tab{flex:1;padding:6px;text-align:center;border-radius:4px;border:1px solid #555;background:#2a2a2a;color:#aaa;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;}
-  .tc-tab.active{background:var(--green);color:#fff;border-color:var(--green);}
-  .tc-time{display:flex;align-items:center;justify-content:center;gap:10px;}
-  .tc-time label{font-family:var(--font-retro);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#888;}
-  .tc-input{width:60px;background:#2a2a2a;border:1px solid #555;border-radius:4px;color:var(--green);font-size:22px;font-weight:700;text-align:center;padding:6px 4px;font-family:var(--font-retro);outline:none;transition:border-color 0.2s;}
-  .tc-input:focus{border-color:var(--green);}
-  .tc-sep{color:var(--green);font-size:24px;font-weight:700;font-family:var(--font-retro);}
-  .tc-sound{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .tc-sound-label{font-family:var(--font-retro);font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:#888;flex-shrink:0;}
-  .tc-snd{flex:1;min-width:80px;padding:5px 6px;border-radius:3px;border:1px solid #555;background:#2a2a2a;color:#aaa;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;text-align:center;}
-  .tc-snd.active{border-color:var(--green);color:var(--green);background:#0d1f18;}
-  .tc-btns{display:flex;gap:8px;}
-  .tc-btn{flex:1;padding:10px;border-radius:5px;border:1px solid #555;background:#2a2a2a;color:#bbb;font-size:9px;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;text-align:center;}
-  .tc-btn.primary{background:var(--green);border-color:var(--green);color:#fff;}
-  .tc-btn.primary:hover{opacity:0.85;}
-  .tc-btn:hover:not(.primary){border-color:#444;color:#666;}
-  #timer-board{position:fixed;inset:0;top:calc(10vh + 3px);z-index:8;display:none;pointer-events:none;padding:1.2vh 1.5vw 40px;gap:0.5vh;flex-direction:column;background:var(--board-bg);opacity:0;transition:opacity 0.4s;}
-  #timer-board.visible{display:flex;}
-  #timer-board.show{opacity:1;}
-  .tt-row{flex:1;display:flex;gap:0.3vw;align-items:stretch;}
-  .tt{flex:1;border-radius:4px;background:var(--tile-bg);border:1px solid var(--tile-border);transition:background 0.18s,border-color 0.18s;}
-  .tt.on{background:var(--green);border-color:var(--green);}
-  .tt.warn{background:#cc4400;border-color:#cc4400;}
-  .tt.tan{background:var(--tan);border-color:var(--tan);}
-  @keyframes ttFlip{0%{transform:scaleY(1)}40%{transform:scaleY(0);opacity:.3}100%{transform:scaleY(1)}}
-  .tt.flip{animation:ttFlip 0.32s ease forwards;}
-  #timer-bar{position:fixed;bottom:4px;left:0;right:0;height:32px;background:rgba(0,0,0,0.92);border-top:1px solid var(--green-dim);z-index:9;display:none;align-items:center;padding:0 16px;gap:16px;opacity:0;transition:opacity 0.4s;}
-  #timer-bar.visible{display:flex;}
-  #timer-bar.show{opacity:1;}
-  .tb-label{font-family:var(--font-retro);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--green);}
-  .tb-btns{display:flex;gap:6px;}
-  .tb-btn{padding:4px 12px;border-radius:3px;border:1px solid #2a2a2a;background:#0a0a0a;color:#555;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;font-family:var(--font-retro);transition:all 0.2s;}
-  .tb-btn:hover{border-color:var(--green);color:var(--green);}
-  .tb-btn.danger{border-color:#4a1a1a;color:#664444;}
-  .tb-btn.danger:hover{border-color:#cc4400;color:#cc4400;}
+  #pick-overlay {
+    position: fixed; inset: 0; top: calc(10vh + 3px);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2vh; background: var(--board-bg); opacity: 0; pointer-events: none;
+    transition: opacity 0.4s; z-index: 90;
+  }
+  #pick-overlay.visible { opacity: 1; }
+  #pick-label {
+    font-family: var(--font-ui); font-size: clamp(14px,1.8vw,30px);
+    letter-spacing: .35em; color: var(--green); text-transform: uppercase;
+  }
+  #pick-name {
+    font-family: var(--font-tile); font-size: clamp(48px,10vw,170px);
+    font-weight: 900; color: var(--tile-text); transform: scaleX(var(--scaleX,1));
+    text-align: center; line-height: 1.1; padding: 0 2vw;
+  }
+
+  #version-badge {
+    position: fixed; top: calc(10vh + 6px); right: 8px;
+    font-family: var(--font-retro); font-size: 7px;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: #222; z-index: 5;
+  }
+
+  /* ── CLASSROOM TIMER ────────────────────────────────────── */
+  #timer-hint { position: fixed; bottom: 12px; left: 16px; font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: #2a2a2a; z-index: 59; cursor: pointer; transition: color 0.2s, opacity 0.3s; opacity: 0; }
+  body:hover #timer-hint { opacity: 1; color: #2e2e2e; }
+  #timer-hint:hover { color: var(--green) !important; }
+  #timer-hint.active { color: var(--green) !important; opacity: 1 !important; }
+  #timer-trigger { position: fixed; bottom: 0; left: 0; width: 80px; height: 80px; z-index: 60; cursor: pointer; }
+
+  #timer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+  #timer-overlay.open { opacity: 1; pointer-events: all; }
+  #timer-card { background: #1e1e1e; border: 1px solid var(--green); border-radius: 12px; padding: 24px 28px; min-width: 320px; max-width: 400px; display: flex; flex-direction: column; gap: 16px; transform: translateY(12px); transition: transform 0.25s; }
+  #timer-overlay.open #timer-card { transform: translateY(0); }
+  .tc-title { font-family: var(--font-retro); font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--green); display: flex; justify-content: space-between; align-items: center; }
+  .tc-close { color: #888; cursor: pointer; font-size: 16px; line-height: 1; transition: color 0.2s; }
+  .tc-close:hover { color: var(--tan); }
+  .tc-tabs { display: flex; gap: 6px; }
+  .tc-tab { flex: 1; padding: 6px; text-align: center; border-radius: 4px; border: 1px solid #555; background: #2a2a2a; color: #aaa; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; }
+  .tc-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+  .tc-time { display: flex; align-items: center; justify-content: center; gap: 10px; }
+  .tc-time label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; }
+  .tc-input { width: 60px; background: #2a2a2a; border: 1px solid #555; border-radius: 4px; color: var(--green); font-size: 22px; font-weight: 700; text-align: center; padding: 6px 4px; font-family: var(--font-retro); outline: none; transition: border-color 0.2s; }
+  .tc-input:focus { border-color: var(--green); }
+  .tc-sep { color: var(--green); font-size: 24px; font-weight: 700; font-family: var(--font-retro); }
+  .tc-sound { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tc-sound-label { font-family: var(--font-retro); font-size: 8px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; flex-shrink: 0; }
+  .tc-snd { flex: 1; min-width: 80px; padding: 5px 6px; border-radius: 3px; border: 1px solid #555; background: #2a2a2a; color: #aaa; font-size: 8px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center; }
+  .tc-snd.active { border-color: var(--green); color: var(--green); background: #0d1f18; }
+  .tc-btns { display: flex; gap: 8px; }
+  .tc-btn { flex: 1; padding: 10px; border-radius: 5px; border: 1px solid #555; background: #2a2a2a; color: #bbb; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; text-align: center; }
+  .tc-btn.primary { background: var(--green); border-color: var(--green); color: #fff; }
+  .tc-btn.primary:hover { opacity: 0.85; }
+  .tc-btn:hover:not(.primary) { border-color: #444; color: #666; }
+
+  #timer-board { position: fixed; inset: 0; top: calc(10vh + 3px); z-index: 8; display: none; pointer-events: none; padding: 1.2vh 1.5vw 40px; gap: 0.5vh; flex-direction: column; background: var(--board-bg); opacity: 0; transition: opacity 0.4s; }
+  #timer-board.visible { display: flex; }
+  #timer-board.show { opacity: 1; }
+  .tt-row { flex: 1; display: flex; gap: 0.3vw; align-items: stretch; }
+  .tt { flex: 1; border-radius: 4px; background: var(--tile-bg); border: 1px solid var(--tile-border); transition: background 0.18s, border-color 0.18s; }
+  .tt.on   { background: var(--green); border-color: var(--green); }
+  .tt.warn { background: #cc4400;      border-color: #cc4400; }
+  .tt.tan  { background: var(--tan);   border-color: var(--tan); }
+  @keyframes ttFlip { 0%{transform:scaleY(1)} 40%{transform:scaleY(0);opacity:.3} 100%{transform:scaleY(1)} }
+  .tt.flip { animation: ttFlip 0.32s ease forwards; }
+
+  #timer-bar { position: fixed; bottom: 4px; left: 0; right: 0; height: 32px; background: rgba(0,0,0,0.92); border-top: 1px solid var(--green-dim); z-index: 9; display: none; align-items: center; padding: 0 16px; gap: 16px; opacity: 0; transition: opacity 0.4s; }
+  #timer-bar.visible { display: flex; }
+  #timer-bar.show { opacity: 1; }
+  .tb-label { font-family: var(--font-retro); font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); }
+  .tb-btns { display: flex; gap: 6px; }
+  .tb-btn { padding: 4px 12px; border-radius: 3px; border: 1px solid #2a2a2a; background: #0a0a0a; color: #555; font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; font-family: var(--font-retro); transition: all 0.2s; }
+  .tb-btn:hover { border-color: var(--green); color: var(--green); }
+  .tb-btn.danger { border-color: #4a1a1a; color: #664444; }
+  .tb-btn.danger:hover { border-color: #cc4400; color: #cc4400; }
 </style>
 </head>
 <body>
+
 <div id="header">
   <div class="h-badge" id="roomBadge">CW · LOADING</div>
-  <div id="noise-meter" title="Noise level" onclick="toggleNoisePanel()">
+
+  <div id="noise-meter" title="Noise level — click to adjust" onclick="toggleNoisePanel()">
     <div class="nm-bar" id="nm0"></div><div class="nm-bar" id="nm1"></div>
     <div class="nm-bar" id="nm2"></div><div class="nm-bar" id="nm3"></div>
     <div class="nm-bar" id="nm4"></div><div class="nm-bar" id="nm5"></div>
@@ -215,17 +391,20 @@
     <div class="nm-bar" id="nm8"></div><div class="nm-bar" id="nm9"></div>
     <div class="nm-bar" id="nm10"></div><div class="nm-bar" id="nm11"></div>
   </div>
+
   <div class="h-divider"></div>
   <div class="h-school" id="headerTitle">COWBOY WIRE · RIVERDALE PONY EXPRESS</div>
   <div class="h-divider"></div>
+
   <div class="h-sync">
     <div class="sync-dot" id="syncDot"></div>
     <span class="sync-label" id="syncLabel">Starting...</span>
   </div>
   <div class="h-divider" style="max-width:1vw"></div>
+
   <div class="h-period-timer" id="periodTimer" style="display:none">
     <div class="h-period-label" id="periodLabel"></div>
-    <div class="h-period-time" id="periodTime"></div>
+    <div class="h-period-time"  id="periodTime"></div>
     <div class="h-pass-status hidden" id="passStatusPill"></div>
   </div>
   <div class="h-divider" style="max-width:1vw"></div>
@@ -235,9 +414,9 @@
 <div id="noise-panel">
   <div class="np-title">🎙 Noise Meter</div>
   <div class="np-presets">
-    <div class="np-preset active" id="np-quiet" onclick="nmPreset('quiet')">Quiet</div>
-    <div class="np-preset" id="np-normal" onclick="nmPreset('normal')">Normal</div>
-    <div class="np-preset" id="np-loud" onclick="nmPreset('loud')">Loud Room</div>
+    <div class="np-preset active" id="np-quiet"  onclick="nmPreset('quiet')">Quiet</div>
+    <div class="np-preset"        id="np-normal" onclick="nmPreset('normal')">Normal</div>
+    <div class="np-preset"        id="np-loud"   onclick="nmPreset('loud')">Loud Room</div>
   </div>
   <div class="np-row">
     <span class="np-row-label">🟡 Yellow at</span>
@@ -253,18 +432,22 @@
 </div>
 
 <div id="board-wrap"></div>
+
 <div id="honor-ticker-wrap">
   <div id="honor-ticker-label">🎓 Honor Roll</div>
   <div id="honor-ticker-track"><div id="honor-ticker-inner"></div></div>
 </div>
+
 <div id="pick-overlay">
   <div id="pick-label">THE PICK IS IN</div>
   <div id="pick-name"></div>
-</div> 
+</div>
+
 <div id="bottom-accent"></div>
 <div id="indicator-bar"></div>
 <div id="version-badge">CW 2.0</div>
 <div id="sound-prompt" onclick="enableSound(this)">▶ Click to enable flip sound</div>
+
 <div id="timer-hint" onclick="openTimerOverlay()">⏱ TIMER</div>
 <div id="timer-trigger" onclick="openTimerOverlay()"></div>
 <div id="timer-board"></div>
@@ -276,6 +459,7 @@
     <div class="tb-btn danger" onclick="timerEnd()">END TIMER</div>
   </div>
 </div>
+
 <div id="timer-overlay">
   <div id="timer-card">
     <div class="tc-title">
@@ -305,6 +489,7 @@
     </div>
   </div>
 </div>
+
 <div id="dial-hint" onclick="toggleDial()">◎ MODE</div>
 <div id="dial-trigger" onclick="toggleDial()"></div>
 <div id="dial-panel">
@@ -326,840 +511,1137 @@
     <button class="dial-btn" id="noiseToggleBtn" onclick="toggleNoiseMeter()">📊 OFF</button>
   </div>
 </div>
+
 <script>
-const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+const SUPABASE_URL  = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 
 async function sbFetch(table, query) {
-  const res = await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+query,{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}});
-  if(!res.ok)return null;
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  if (!res.ok) return null;
   return res.json();
 }
 
-const params = new URLSearchParams(location.search);
-const ROOM   = params.get('room') || '27';
-let CLASSROOM = null;
-let SETTINGS  = null;
-
-// ── KEY FIX: loadSettings() is now standalone, called on every sync ──
-async function loadSettings() {
-  const rows = await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=*');
-  SETTINGS = (rows && rows[0]) ? rows[0] : null;
-}
+const params    = new URLSearchParams(location.search);
+const ROOM      = params.get('room') || '27';
+let   CLASSROOM = null;
+let   SETTINGS  = null;
 
 async function loadRoomConfig() {
-  const classrooms = await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');
+  const classrooms = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
+  const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
   CLASSROOM = (classrooms && classrooms[0]) ? classrooms[0] : null;
-  await loadSettings();
-  if(CLASSROOM){
-    document.getElementById('roomBadge').textContent = CLASSROOM.badge||('CW · ROOM '+ROOM);
-    document.title = 'Cowboy Wire · Room '+ROOM;
+  SETTINGS  = (settings && settings[0])     ? settings[0]   : null;
+  if (CLASSROOM) {
+    document.getElementById('roomBadge').textContent = CLASSROOM.badge || ('CW · ROOM ' + ROOM);
+    document.title = 'Cowboy Wire · Room ' + ROOM;
   } else {
-    document.getElementById('roomBadge').textContent = 'CW · ROOM '+ROOM;
-    document.title = 'Cowboy Wire · Room '+ROOM;
+    document.getElementById('roomBadge').textContent = 'CW · ROOM ' + ROOM;
+    document.title = 'Cowboy Wire · Room ' + ROOM;
   }
-  const savedTheme = localStorage.getItem('cw2-theme-'+ROOM)||'retro-dark';
-  const idx = DISPLAY_MODES.findIndex(function(m){return m.key===savedTheme;});
-  dialModeIdx = idx>=0?idx:0;
-  applyDisplayMode(dialModeIdx,false);
+  const savedTheme = localStorage.getItem('cw2-theme-' + ROOM) || 'retro-dark';
+  const idx = DISPLAY_MODES.findIndex(function(m) { return m.key === savedTheme; });
+  dialModeIdx = idx >= 0 ? idx : 0;
+  applyDisplayMode(dialModeIdx, false);
 }
 
-const ROWS=8,COLS=28,SYNC_SEC=60,SCRAMBLE_MS=28,SCRAMBLE_STP=6;
-const CHARS='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?:-/\'#@&%+';
+const ROWS         = 8;
+const COLS         = 28;
+const SYNC_SEC     = 60;
+const SCRAMBLE_MS  = 28;
+const SCRAMBLE_STP = 6;
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,!?:-/\'#@&%+';
 
-let messages=[],currentIdx=0,tiles=[],rotateTimer=null,syncTimer=null;
-let prevLines=Array.from({length:ROWS},function(){return ' '.repeat(COLS);});
+let messages    = [];
+let currentIdx  = 0;
+let tiles       = [];
+let prevLines   = Array.from({ length: ROWS }, function() { return ' '.repeat(COLS); });
+let rotateTimer = null;
+let syncTimer   = null;
 
-const SCHEDULES={
-  regular:{periods:[
-    {id:'1',label:'P1',start:'08:10',end:'09:02'},
-    {id:'2',label:'P2',start:'09:06',end:'09:56'},
-    {id:'brunch',label:'Brunch',start:'09:56',end:'10:11',break:true},
-    {id:'3',label:'P3',start:'10:15',end:'11:05'},
-    {id:'4',label:'P4',start:'11:09',end:'11:59'},
-    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',break:true},
-    {id:'5',label:'P5',start:'12:37',end:'13:27'},
-    {id:'6',label:'P6',start:'13:31',end:'14:21'},
-    {id:'7',label:'P7',start:'14:25',end:'15:15'},
+const SCHEDULES = {
+  regular: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'09:02' },
+    { id:'2', label:'P2', start:'09:06', end:'09:56' },
+    { id:'brunch', label:'Brunch', start:'09:56', end:'10:11', break:true },
+    { id:'3', label:'P3', start:'10:15', end:'11:05' },
+    { id:'4', label:'P4', start:'11:09', end:'11:59' },
+    { id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'5', label:'P5', start:'12:37', end:'13:27' },
+    { id:'6', label:'P6', start:'13:31', end:'14:21' },
+    { id:'7', label:'P7', start:'14:25', end:'15:15' },
   ]},
-  blockWed:{periods:[
-    {id:'1',label:'P1/2',start:'08:10',end:'09:57'},
-    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',break:true},
-    {id:'3',label:'P3/4',start:'10:16',end:'11:59'},
-    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',break:true},
-    {id:'5',label:'P5/6',start:'12:37',end:'14:20'},
-    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  blockWed: { periods: [
+    { id:'1', label:'P1/2', start:'08:10', end:'09:57' },
+    { id:'brunch', label:'Brunch', start:'09:57', end:'10:12', break:true },
+    { id:'3', label:'P3/4', start:'10:16', end:'11:59' },
+    { id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'5', label:'P5/6', start:'12:37', end:'14:20' },
+    { id:'7', label:'P7', start:'14:24', end:'15:15' },
   ]},
-  blockThu:{periods:[
-    {id:'2',label:'P1/2',start:'08:10',end:'09:57'},
-    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',break:true},
-    {id:'4',label:'P3/4',start:'10:16',end:'11:59'},
-    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',break:true},
-    {id:'6',label:'P5/6',start:'12:37',end:'14:20'},
-    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  blockThu: { periods: [
+    { id:'2', label:'P1/2', start:'08:10', end:'09:57' },
+    { id:'brunch', label:'Brunch', start:'09:57', end:'10:12', break:true },
+    { id:'4', label:'P3/4', start:'10:16', end:'11:59' },
+    { id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'6', label:'P5/6', start:'12:37', end:'14:20' },
+    { id:'7', label:'P7', start:'14:24', end:'15:15' },
   ]},
-  minimum:{periods:[
-    {id:'1',label:'P1',start:'08:10',end:'08:46'},
-    {id:'2',label:'P2',start:'08:50',end:'09:23'},
-    {id:'3',label:'P3',start:'09:27',end:'10:00'},
-    {id:'4',label:'P4',start:'10:04',end:'10:37'},
-    {id:'brunch',label:'Lunch',start:'10:37',end:'11:10',break:true},
-    {id:'5',label:'P5',start:'11:14',end:'11:47'},
-    {id:'6',label:'P6',start:'11:51',end:'12:24'},
-    {id:'7',label:'P7',start:'12:28',end:'13:01'},
+  minimum: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:46' },
+    { id:'2', label:'P2', start:'08:50', end:'09:23' },
+    { id:'3', label:'P3', start:'09:27', end:'10:00' },
+    { id:'4', label:'P4', start:'10:04', end:'10:37' },
+    { id:'brunch', label:'Lunch', start:'10:37', end:'11:10', break:true },
+    { id:'5', label:'P5', start:'11:14', end:'11:47' },
+    { id:'6', label:'P6', start:'11:51', end:'12:24' },
+    { id:'7', label:'P7', start:'12:28', end:'13:01' },
   ]},
-  earlyRelease:{periods:[
-    {id:'1',label:'P1',start:'08:10',end:'08:56'},
-    {id:'2',label:'P2',start:'09:00',end:'09:41'},
-    {id:'3',label:'P3',start:'09:45',end:'10:26'},
-    {id:'4',label:'P4',start:'10:30',end:'11:11'},
-    {id:'lunch',label:'Lunch',start:'11:11',end:'11:45',break:true},
-    {id:'5',label:'P5',start:'11:49',end:'12:30'},
-    {id:'6',label:'P6',start:'12:34',end:'13:15'},
-    {id:'7',label:'P7',start:'13:19',end:'14:00'},
+  earlyRelease: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },
+    { id:'2', label:'P2', start:'09:00', end:'09:41' },
+    { id:'3', label:'P3', start:'09:45', end:'10:26' },
+    { id:'4', label:'P4', start:'10:30', end:'11:11' },
+    { id:'lunch', label:'Lunch', start:'11:11', end:'11:45', break:true },
+    { id:'5', label:'P5', start:'11:49', end:'12:30' },
+    { id:'6', label:'P6', start:'12:34', end:'13:15' },
+    { id:'7', label:'P7', start:'13:19', end:'14:00' },
   ]},
-  foggy:{periods:[
-    {id:'1',label:'P1',start:'10:00',end:'10:44'},
-    {id:'2',label:'P2',start:'10:48',end:'11:28'},
-    {id:'3',label:'P3',start:'11:32',end:'12:12'},
-    {id:'lunch',label:'Lunch',start:'12:12',end:'12:49',break:true},
-    {id:'4',label:'P4',start:'12:53',end:'13:33'},
-    {id:'5',label:'P5',start:'13:37',end:'14:17'},
-    {id:'6',label:'P6',start:'14:21',end:'15:01'},
-    {id:'7',label:'P7',start:'15:05',end:'15:45'},
+  foggy: { periods: [
+    { id:'1', label:'P1', start:'10:00', end:'10:44' },
+    { id:'2', label:'P2', start:'10:48', end:'11:28' },
+    { id:'3', label:'P3', start:'11:32', end:'12:12' },
+    { id:'lunch', label:'Lunch', start:'12:12', end:'12:49', break:true },
+    { id:'4', label:'P4', start:'12:53', end:'13:33' },
+    { id:'5', label:'P5', start:'13:37', end:'14:17' },
+    { id:'6', label:'P6', start:'14:21', end:'15:01' },
+    { id:'7', label:'P7', start:'15:05', end:'15:45' },
   ]},
-  activity:{periods:[
-    {id:'1',label:'P1',start:'08:10',end:'08:56'},
-    {id:'2',label:'P2',start:'09:00',end:'09:44'},
-    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',break:true},
-    {id:'3',label:'P3',start:'10:03',end:'10:47'},
-    {id:'4',label:'P4',start:'10:51',end:'11:35'},
-    {id:'5',label:'P5',start:'11:39',end:'12:23'},
-    {id:'lunch',label:'Lunch',start:'12:23',end:'12:57',break:true},
-    {id:'6',label:'P6',start:'13:01',end:'13:45'},
-    {id:'7',label:'P7',start:'13:49',end:'14:33'},
+  activity: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },
+    { id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },
+    { id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'5', label:'P5', start:'11:39', end:'12:23' },
+    { id:'lunch', label:'Lunch', start:'12:23', end:'12:57', break:true },
+    { id:'6', label:'P6', start:'13:01', end:'13:45' },
+    { id:'7', label:'P7', start:'13:49', end:'14:33' },
   ]},
-  codeDay:{periods:[
-    {id:'1',label:'P1',start:'08:10',end:'08:56'},
-    {id:'2',label:'P2',start:'09:00',end:'09:44'},
-    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',break:true},
-    {id:'3',label:'P3',start:'10:03',end:'10:47'},
-    {id:'4',label:'P4',start:'10:51',end:'11:35'},
-    {id:'rally',label:'Rally',start:'11:39',end:'12:17',break:true},
-    {id:'lunch',label:'Lunch',start:'12:17',end:'12:51',break:true},
-    {id:'5',label:'P5',start:'12:55',end:'13:39'},
-    {id:'6',label:'P6',start:'13:43',end:'14:27'},
-    {id:'7',label:'P7',start:'14:31',end:'15:15'},
+  codeDay: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },
+    { id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },
+    { id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'rally', label:'Rally', start:'11:39', end:'12:17', break:true },
+    { id:'lunch', label:'Lunch', start:'12:17', end:'12:51', break:true },
+    { id:'5', label:'P5', start:'12:55', end:'13:39' },
+    { id:'6', label:'P6', start:'13:43', end:'14:27' },
+    { id:'7', label:'P7', start:'14:31', end:'15:15' },
   ]},
 };
 
-const NO_SCHOOL=[
+const NO_SCHOOL = [
   '2026-09-07','2026-11-11','2026-11-26','2026-11-27',
   '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
   '2026-12-28','2026-12-29','2026-12-30','2026-12-31',
   '2027-01-01','2027-01-18','2027-02-15','2027-04-05',
   '2027-04-06','2027-04-07','2027-04-08','2027-04-09',
 ];
-const DATE_OVERRIDES={};
 
-function toMins(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);}
-function nowMins(){var n=new Date();return n.getHours()*60+n.getMinutes();}
-function dateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+const DATE_OVERRIDES = {};
 
-function schoolDaysThisWeek(date){
-  var dow=date.getDay(),mon=new Date(date),count=0;
-  mon.setDate(date.getDate()-(dow===0?6:dow-1));
-  for(var i=0;i<5;i++){var d=new Date(mon);d.setDate(mon.getDate()+i);if(!NO_SCHOOL.includes(dateStr(d)))count++;}
+function toMins(t) { var p = t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+function nowMins() { var n = new Date(); return n.getHours()*60+n.getMinutes(); }
+function dateStr(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth()+1).padStart(2,'0');
+  var day = String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+function schoolDaysThisWeek(date) {
+  var dow = date.getDay();
+  var mon = new Date(date);
+  mon.setDate(date.getDate() - (dow === 0 ? 6 : dow - 1));
+  var count = 0;
+  for (var i = 0; i < 5; i++) {
+    var d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    if (!NO_SCHOOL.includes(dateStr(d))) count++;
+  }
   return count;
 }
 
-function getSchedule(){
-  var now=new Date(),ds=dateStr(now),dow=now.getDay();
-  if(dow===0||dow===6||NO_SCHOOL.includes(ds))return null;
-  if(DATE_OVERRIDES[ds])return SCHEDULES[DATE_OVERRIDES[ds]];
-  var events=window._cwCalEvents||[];
-  var todayTitles=events.filter(function(e){return e.start&&e.start.substring(0,10)===ds;}).map(function(e){return(e.title||'').toLowerCase();});
-  var has=function(kw){return todayTitles.some(function(t){return t.includes(kw);});};
-  if(has('foggy')||has('late arrival'))return SCHEDULES.foggy;
-  if(has('minimum'))return SCHEDULES.minimum;
-  if(has('code day'))return SCHEDULES.codeDay;
-  if(has('activity'))return SCHEDULES.activity;
-  if(has('early release'))return SCHEDULES.earlyRelease;
-  if(has('block')){return dow===3?SCHEDULES.blockWed:SCHEDULES.blockThu;}
-  if(schoolDaysThisWeek(now)<=4)return SCHEDULES.regular;
-  if(dow===1)return SCHEDULES.earlyRelease;
-  if(dow===3)return SCHEDULES.blockWed;
-  if(dow===4)return SCHEDULES.blockThu;
+function getSchedule() {
+  var now = new Date();
+  var ds  = dateStr(now);
+  var dow = now.getDay();
+  if (dow === 0 || dow === 6 || NO_SCHOOL.includes(ds)) return null;
+  if (DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
+  var events = window._cwCalEvents || [];
+  var todayTitles = events
+    .filter(function(e) { return e.start && e.start.substring(0,10) === ds; })
+    .map(function(e) { return (e.title || '').toLowerCase(); });
+  var has = function(kw) { return todayTitles.some(function(t) { return t.includes(kw); }); };
+  if (has('foggy') || has('late arrival'))  return SCHEDULES.foggy;
+  if (has('minimum'))                        return SCHEDULES.minimum;
+  if (has('code day'))                       return SCHEDULES.codeDay;
+  if (has('activity'))                       return SCHEDULES.activity;
+  if (has('early release'))                  return SCHEDULES.earlyRelease;
+  if (has('block')) { return dow === 3 ? SCHEDULES.blockWed : SCHEDULES.blockThu; }
+  if (schoolDaysThisWeek(now) <= 4) return SCHEDULES.regular;
+  if (dow === 1) return SCHEDULES.earlyRelease;
+  if (dow === 3) return SCHEDULES.blockWed;
+  if (dow === 4) return SCHEDULES.blockThu;
   return SCHEDULES.regular;
 }
 
-function updatePeriodTimer(){
-  var wrap=document.getElementById('periodTimer'),label=document.getElementById('periodLabel'),time=document.getElementById('periodTime');
-  if(!wrap)return;
-  var sched=getSchedule();
-  if(!sched){wrap.style.display='none';return;}
-  var nm=nowMins();
-  for(var i=0;i<sched.periods.length;i++){
-    var p=sched.periods[i],s=toMins(p.start),e=toMins(p.end);
-    if(nm>=s&&nm<e){
-      var left=e-nm;
-      if(p.break){label.textContent=p.label;time.textContent=left+' MIN';time.className='h-period-time';}
-      else{var sinceStart=nm-s;label.textContent=p.label;time.textContent=left+' MIN LEFT';time.className='h-period-time'+(left<=5?' ending':left<=15?' warning':'');updatePassPill(left,sinceStart);}
-      wrap.style.display='flex';return;
+function updatePeriodTimer() {
+  var wrap  = document.getElementById('periodTimer');
+  var label = document.getElementById('periodLabel');
+  var time  = document.getElementById('periodTime');
+  if (!wrap) return;
+  var sched = getSchedule();
+  if (!sched) { wrap.style.display = 'none'; return; }
+  var nm = nowMins();
+  for (var i = 0; i < sched.periods.length; i++) {
+    var p = sched.periods[i];
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm >= s && nm < e) {
+      var left = e - nm;
+      if (p.break) {
+        label.textContent = p.label;
+        time.textContent  = left + ' MIN';
+        time.className    = 'h-period-time';
+      } else {
+        var sinceStart = nm - s;
+        label.textContent = p.label;
+        time.textContent  = left + ' MIN LEFT';
+        time.className    = 'h-period-time' + (left<=5?' ending':left<=15?' warning':'');
+        updatePassPill(left, sinceStart);
+      }
+      wrap.style.display = 'flex';
+      return;
     }
-    if(nm<s){label.textContent='NEXT: '+p.label;time.textContent='IN '+(s-nm)+' MIN';time.className='h-period-time';wrap.style.display='flex';document.getElementById('passStatusPill').className='h-pass-status hidden';return;}
-  }
-  wrap.style.display='none';
-}
-
-function updatePassPill(left,sinceStart){
-  var pill=document.getElementById('passStatusPill');if(!pill)return;
-  if(sinceStart<15){pill.className='h-pass-status red';pill.textContent='🔴 Hold · OK in '+(15-sinceStart)+'m';}
-  else if(left<=15){pill.className='h-pass-status red';pill.textContent='🔴 Last '+left+' min';}
-  else if(left<=20){pill.className='h-pass-status yellow';pill.textContent='🟡 Last chance · '+left+' min';}
-  else{pill.className='h-pass-status green';pill.textContent='🟢 OK · '+left+' min';}
-}
-
-function buildBoard(){
-  var wrap=document.getElementById('board-wrap');wrap.innerHTML='';tiles=[];
-  for(var r=0;r<ROWS;r++){
-    var rowEl=document.createElement('div');rowEl.className='tile-row';var rowTiles=[];
-    for(var c=0;c<COLS;c++){
-      var tileEl=document.createElement('div');tileEl.className='tile';
-      var charEl=document.createElement('span');charEl.className='tile-char';charEl.textContent='';
-      tileEl.appendChild(charEl);rowEl.appendChild(tileEl);rowTiles.push({el:tileEl,charEl:charEl});
+    if (nm < s) {
+      label.textContent = 'NEXT: ' + p.label;
+      time.textContent  = 'IN ' + (s-nm) + ' MIN';
+      time.className    = 'h-period-time';
+      wrap.style.display = 'flex';
+      document.getElementById('passStatusPill').className = 'h-pass-status hidden';
+      return;
     }
-    wrap.appendChild(rowEl);tiles.push(rowTiles);
+  }
+  wrap.style.display = 'none';
+}
+
+function updatePassPill(left, sinceStart) {
+  var pill = document.getElementById('passStatusPill');
+  if (!pill) return;
+  if (sinceStart < 15)     { pill.className = 'h-pass-status red';    pill.textContent = '🔴 Hold · OK in '+(15-sinceStart)+'m'; }
+  else if (left <= 15)     { pill.className = 'h-pass-status red';    pill.textContent = '🔴 Last '+left+' min'; }
+  else if (left <= 20)     { pill.className = 'h-pass-status yellow'; pill.textContent = '🟡 Last chance · '+left+' min'; }
+  else                     { pill.className = 'h-pass-status green';  pill.textContent = '🟢 OK · '+left+' min'; }
+}
+
+function buildBoard() {
+  var wrap = document.getElementById('board-wrap');
+  wrap.innerHTML = ''; tiles = [];
+  for (var r = 0; r < ROWS; r++) {
+    var rowEl = document.createElement('div');
+    rowEl.className = 'tile-row';
+    var rowTiles = [];
+    for (var c = 0; c < COLS; c++) {
+      var tileEl = document.createElement('div');
+      tileEl.className = 'tile';
+      var charEl = document.createElement('span');
+      charEl.className = 'tile-char';
+      charEl.textContent = '';
+      tileEl.appendChild(charEl);
+      rowEl.appendChild(tileEl);
+      rowTiles.push({ el: tileEl, charEl: charEl });
+    }
+    wrap.appendChild(rowEl);
+    tiles.push(rowTiles);
   }
 }
 
-function padLine(text,cols,align){
-  text=(text||'').toUpperCase().substring(0,cols);
-  if(align==='left'){return text+' '.repeat(cols-text.length);}
-  var total=cols-text.length,left=Math.floor(total/2);
-  return ' '.repeat(left)+text+' '.repeat(total-left);
+function padLine(text, cols, align) {
+  text = (text || '').toUpperCase().substring(0, cols);
+  if (align === 'left') { return text + ' '.repeat(cols - text.length); }
+  var total = cols - text.length, left = Math.floor(total / 2);
+  return ' '.repeat(left) + text + ' '.repeat(total - left);
 }
 
-function animateTile(tile,finalChar,delay){
-  return new Promise(function(resolve){
-    setTimeout(function(){
-      var step=0;
-      var iv=setInterval(function(){
-        var rnd=CHARS[Math.floor(Math.random()*CHARS.length)];
-        tile.charEl.textContent=rnd;
-        tile.el.style.background=step%2===0?'#0f2a1a':'#162c1e';
-        tile.charEl.style.color=step%2===0?'#00cc66':'#C4BEB5';
+function animateTile(tile, finalChar, delay) {
+  return new Promise(function(resolve) {
+    setTimeout(function() {
+      var step = 0;
+      var iv = setInterval(function() {
+        var rnd = CHARS[Math.floor(Math.random() * CHARS.length)];
+        tile.charEl.textContent = rnd;
+        tile.el.style.background = step % 2 === 0 ? '#0f2a1a' : '#162c1e';
+        tile.charEl.style.color  = step % 2 === 0 ? '#00cc66' : '#C4BEB5';
         step++;
-        if(step>=SCRAMBLE_STP){
+        if (step >= SCRAMBLE_STP) {
           clearInterval(iv);
-          var ch=(finalChar||' ').trim();
-          tile.charEl.textContent=ch;
-          tile.charEl.style.color='var(--tile-text)';
-          tile.el.style.background='var(--tile-bg)';
+          var ch = (finalChar || ' ').trim();
+          tile.charEl.textContent = ch;
+          tile.charEl.style.color = 'var(--tile-text)';
+          tile.el.style.background = 'var(--tile-bg)';
           tile.el.classList.add('flipping');
-          tile.el.addEventListener('animationend',function(){tile.el.classList.remove('flipping');resolve();},{once:true});
+          tile.el.addEventListener('animationend', function() {
+            tile.el.classList.remove('flipping');
+            resolve();
+          }, { once: true });
         }
-      },SCRAMBLE_MS);
-    },delay);
+      }, SCRAMBLE_MS);
+    }, delay);
   });
 }
 
-function showMessage(idx){
-  if(!messages.length)return;
-  idx=((idx%messages.length)+messages.length)%messages.length;
-  currentIdx=idx;
-  var msg=messages[idx],align=msg.align||'center';
-  var newLines=Array.from({length:ROWS},function(_,r){
-    var lineAlign=(msg.alignLines&&msg.alignLines[r])?msg.alignLines[r]:align;
-    return padLine(msg.lines[r]||'',COLS,lineAlign);
+function showMessage(idx) {
+  if (!messages.length) return;
+  idx = ((idx % messages.length) + messages.length) % messages.length;
+  currentIdx = idx;
+  var msg = messages[idx];
+  var align = msg.align || 'center';
+  var newLines = Array.from({ length: ROWS }, function(_, r) {
+    var lineAlign = (msg.alignLines && msg.alignLines[r]) ? msg.alignLines[r] : align;
+    return padLine(msg.lines[r] || '', COLS, lineAlign);
   });
   updateDots();
-  var changedTiles=0;
-  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)if(newLines[r][c]!==prevLines[r][c])changedTiles++;
-  if(changedTiles>0)playFlipSound(changedTiles);
-  for(var r2=0;r2<ROWS;r2++)for(var c2=0;c2<COLS;c2++)if(newLines[r2][c2]!==prevLines[r2][c2])animateTile(tiles[r2][c2],newLines[r2][c2],Math.random()*1200);
-  prevLines=newLines;
-  scheduleNext(msg.speed||10);
+  var changedTiles = 0;
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      if (newLines[r][c] !== prevLines[r][c]) changedTiles++;
+  if (changedTiles > 0) playFlipSound(changedTiles);
+  for (var r2 = 0; r2 < ROWS; r2++)
+    for (var c2 = 0; c2 < COLS; c2++)
+      if (newLines[r2][c2] !== prevLines[r2][c2])
+        animateTile(tiles[r2][c2], newLines[r2][c2], Math.random() * 1200);
+  prevLines = newLines;
+  scheduleNext(msg.speed || 10);
 }
 
-function scheduleNext(speedSec){
+function scheduleNext(speedSec) {
   clearTimeout(rotateTimer);
-  if(messages.length>1)rotateTimer=setTimeout(function(){showMessage(currentIdx+1);},(speedSec||10)*1000);
+  if (messages.length > 1)
+    rotateTimer = setTimeout(function() { showMessage(currentIdx + 1); }, (speedSec || 10) * 1000);
 }
-function nextMsg(){clearTimeout(rotateTimer);showMessage(currentIdx+1);}
-function prevMsg(){clearTimeout(rotateTimer);showMessage(currentIdx-1);}
 
-function buildDots(){
-  var bar=document.getElementById('indicator-bar');bar.innerHTML='';
-  var count=Math.min(messages.length,16);
-  for(var i=0;i<count;i++){var d=document.createElement('div');d.className='ind-dot';bar.appendChild(d);}
-  if(messages.length>16){var sp=document.createElement('span');sp.style.cssText='color:#333;font-size:10px;letter-spacing:0.1em';sp.textContent='+'+(messages.length-16);bar.appendChild(sp);}
+function nextMsg() { clearTimeout(rotateTimer); showMessage(currentIdx + 1); }
+function prevMsg() { clearTimeout(rotateTimer); showMessage(currentIdx - 1); }
+
+function buildDots() {
+  var bar = document.getElementById('indicator-bar');
+  bar.innerHTML = '';
+  var count = Math.min(messages.length, 16);
+  for (var i = 0; i < count; i++) {
+    var d = document.createElement('div');
+    d.className = 'ind-dot';
+    bar.appendChild(d);
+  }
+  if (messages.length > 16) {
+    var sp = document.createElement('span');
+    sp.style.cssText = 'color:#333;font-size:10px;letter-spacing:0.1em';
+    sp.textContent = '+' + (messages.length - 16);
+    bar.appendChild(sp);
+  }
   updateDots();
 }
-function updateDots(){document.querySelectorAll('.ind-dot').forEach(function(d,i){d.className='ind-dot'+(i===currentIdx?' active':'');});}
 
-function updateClock(){
-  var now=new Date(),h=now.getHours(),m=now.getMinutes().toString().padStart(2,'0'),ap=h>=12?'PM':'AM';
-  h=h%12||12;document.getElementById('clock').textContent=h+':'+m+' '+ap;
+function updateDots() {
+  document.querySelectorAll('.ind-dot').forEach(function(d, i) {
+    d.className = 'ind-dot' + (i === currentIdx ? ' active' : '');
+  });
 }
 
-function setSyncStatus(state,label){
-  var dot=document.getElementById('syncDot');
-  dot.className='sync-dot'+(state==='live'?' live':state==='error'?' error':'');
-  document.getElementById('syncLabel').textContent=label;
+function updateClock() {
+  var now = new Date();
+  var h = now.getHours();
+  var m = now.getMinutes().toString().padStart(2, '0');
+  var ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  document.getElementById('clock').textContent = h + ':' + m + ' ' + ap;
 }
 
-// ── LOAD SCREENS ─────────────────────────────────────────────
-var allLocalScreens = [];
-var allGlobalPicks  = [];
+function setSyncStatus(state, label) {
+  var dot = document.getElementById('syncDot');
+  dot.className = 'sync-dot' + (state==='live'?' live':state==='error'?' error':'');
+  document.getElementById('syncLabel').textContent = label;
+}
 
-async function loadScreens(){
-  var results=await Promise.all([
-    sbFetch('cw2_screens','room=eq.'+ROOM+'&order=sort_order.asc'),
-    sbFetch('cw2_screens','room=eq.global&order=sort_order.asc'),
-    sbFetch('cw2_room_screen_prefs','room=eq.'+ROOM+'&select=*'),
+// ── LOAD SCREENS ─────────────────────────────────────
+async function loadScreens() {
+  var results = await Promise.all([
+    sbFetch('cw2_screens', 'room=eq.' + ROOM + '&order=sort_order.asc'),
+    sbFetch('cw2_screens', 'room=eq.global&order=sort_order.asc'),
+    sbFetch('cw2_room_screen_prefs', 'room=eq.' + ROOM + '&select=*'),
   ]);
-  var localScreens=results[0]||[],globalScreens=results[1]||[],prefs=results[2]||[];
-  var prefsMap={};prefs.forEach(function(p){prefsMap[p.screen_id]=p;});
-  // Store all local screens globally for injectDynamicScreens to use
-  allLocalScreens = localScreens.filter(function(r){
-    if(!r.enabled)return false;
-    var pref=prefsMap[r.id];
-    return !(pref&&pref.enabled===false);
+  var localScreens  = results[0] || [];
+  var globalScreens = results[1] || [];
+  var prefs         = results[2] || [];
+  var prefsMap = {};
+  prefs.forEach(function(p) { prefsMap[p.screen_id] = p; });
+
+  // ── Local boards ──────────────────────────────────
+  var mapped = [];
+  localScreens.forEach(function(r) {
+    if (!r.enabled) return;
+    var pref = prefsMap[r.id];
+    if (pref && pref.enabled === false) return;
+    var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines || '[]');
+    mapped.push({ lines: lines, speed: r.speed || 10, id: r.id, align: r.align || 'center', isGlobal: false, sort_order: pref ? pref.sort_order : r.sort_order });
+  });
+  mapped.sort(function(a, b) { return a.sort_order - b.sort_order; });
+
+  // ── Global boards — filter by enabled categories ──
+  var enabledCats = SETTINGS && SETTINGS.global_categories
+    ? SETTINGS.global_categories
+    : { cowboy_code: true, fun_facts: true, word_of_day: true, positive_thoughts: true, business: true };
+
+  var eligibleGlobals = globalScreens.filter(function(r) {
+    if (!r.enabled) return false;
+    var pref = prefsMap[r.id];
+    if (pref && pref.enabled === false) return false;
+    var cat = r.category || 'cowboy_code';
+    return enabledCats[cat] !== false;
   });
 
-  var cats=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
-
-  // Build one random pick per enabled global category
-  var eligibleGlobals=globalScreens.filter(function(r){
-    if(!r.enabled)return false;
-    var pref=prefsMap[r.id];if(pref&&pref.enabled===false)return false;
-    var cat=r.category||'cowboy_code';
-    return cats[cat]!==false;
+  // ── Pick 1 random per enabled category ───────────
+  var picks = [];
+  var byCategory = {};
+  eligibleGlobals.forEach(function(r) {
+    var cat = r.category || 'cowboy_code';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(r);
   });
-  var byCategory={};
-  eligibleGlobals.forEach(function(r){var cat=r.category||'cowboy_code';if(!byCategory[cat])byCategory[cat]=[];byCategory[cat].push(r);});
-  allGlobalPicks=[];
-  Object.keys(byCategory).forEach(function(cat){var pool=byCategory[cat];allGlobalPicks.push(pool[Math.floor(Math.random()*pool.length)]);});
+  Object.keys(byCategory).forEach(function(cat) {
+    var pool = byCategory[cat];
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    picks.push(pick);
+  });
 
-  // Return non-empty signal so startBoard knows data loaded
-  return (allLocalScreens.length || allGlobalPicks.length) ? true : null;
-}
-
-// ── CALENDAR ─────────────────────────────────────────────────
-var CW_EVENTS=[];
-async function loadCwEvents(){
-  var now=new Date(),ds=dateStr(now);
-  var rows=await sbFetch('cw2_events','active=eq.true&end_date=gte.'+ds+'&order=start_date.asc');
-  CW_EVENTS=rows||[];window._cwCalEvents=CW_EVENTS;return CW_EVENTS;
-}
-function daysBetween(a,b){var msPerDay=24*60*60*1000,da=new Date(a+'T00:00:00'),db=new Date(b+'T00:00:00');return Math.round((da-db)/msPerDay);}
-
-function buildCalendarScreen(){
-  var now=new Date(),ds=dateStr(now),dow=now.getDay(),sched=getSchedule();
-  var days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
-  var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  var dayName=days[dow],mon=months[now.getMonth()],dayNum=now.getDate();
-  var lines=[];
-
-  function eventLine(e){
-    var daysAway=daysBetween(e.start_date,ds);
-    var suffix=daysAway===0?' TODAY!':daysAway===1?' TOMORROW':' '+daysAway+' DAYS';
-    var title=(e.title||'').toUpperCase();
-    var maxTitle=COLS-suffix.length;
-    if(title.length>maxTitle)title=title.substring(0,maxTitle);
-    var pad=COLS-title.length-suffix.length;
-    return title+' '.repeat(Math.max(0,pad))+suffix;
+  // ── Shuffle picks so category order varies each cycle ──
+  for (var pi = picks.length - 1; pi > 0; pi--) {
+    var pj = Math.floor(Math.random() * (pi + 1));
+    var pt = picks[pi]; picks[pi] = picks[pj]; picks[pj] = pt;
   }
 
-  if(!sched){
+  // ── Inject: one per enabled category, spread evenly ──
+  var finalList = mapped.slice();
+  if (picks.length) {
+    var localLen = finalList.length;
+    var step = localLen > 0 ? Math.floor(localLen / (picks.length + 1)) : 0;
+    var inserted = 0;
+    picks.forEach(function(pick, i) {
+      var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines || '[]');
+      var pos = step > 0
+        ? Math.min((i + 1) * step + inserted, finalList.length)
+        : finalList.length;
+      finalList.splice(pos, 0, {
+        lines: glines,
+        speed: pick.speed || 12,
+        id: pick.id,
+        align: pick.align || 'left',
+        _isGlobal: true
+      });
+      inserted++;
+    });
+  }
+
+  return finalList.length ? finalList : null;
+}
+
+// ── CALENDAR & EVENTS ────────────────────────────────
+var CW_EVENTS = [];
+
+async function loadCwEvents() {
+  var now = new Date();
+  var ds = dateStr(now);
+  var rows = await sbFetch('cw2_events', 'active=eq.true&end_date=gte.' + ds + '&order=start_date.asc');
+  CW_EVENTS = rows || [];
+  window._cwCalEvents = CW_EVENTS;
+  return CW_EVENTS;
+}
+
+function daysBetween(a, b) {
+  var msPerDay = 24 * 60 * 60 * 1000;
+  var da = new Date(a + 'T00:00:00');
+  var db = new Date(b + 'T00:00:00');
+  return Math.round((da - db) / msPerDay);
+}
+
+function buildCalendarScreen() {
+  var now = new Date();
+  var ds = dateStr(now);
+  var dow = now.getDay();
+  var sched = getSchedule();
+  var lines = [];
+  var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var dayName = days[dow];
+  var mon = months[now.getMonth()];
+  var dayNum = now.getDate();
+
+  if (!sched) {
+    // Row 1: date line
+    lines.push(dayName + '  ' + mon + '  ' + dayNum);
+    // Row 2: NO SCHOOL TODAY
     lines.push('NO SCHOOL TODAY');
-    lines.push(dayName+'  '+mon+'  '+dayNum);
+    // Row 3: blank
     lines.push('');
-    var next=new Date(now);
-    for(var i=1;i<=14;i++){
-      next.setDate(next.getDate()+1);var nd=dateStr(next),ndow=next.getDay();
-      if(ndow!==0&&ndow!==6&&!NO_SCHOOL.includes(nd)){
+    // Find next school day
+    var next = new Date(now);
+    for (var i = 1; i <= 14; i++) {
+      next.setDate(next.getDate() + 1);
+      var nd = dateStr(next);
+      var ndow = next.getDay();
+      if (ndow !== 0 && ndow !== 6 && !NO_SCHOOL.includes(nd)) {
+        var nextDays = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+        var nextMons = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+        // Row 4: NEXT SCHOOL DAY
         lines.push('NEXT SCHOOL DAY');
-        lines.push(days[ndow]+'  '+months[next.getMonth()]+'  '+next.getDate());
-        var ns=getScheduleForDate(next);
-        if(ns==='earlyRelease')lines.push('EARLY RELEASE');
-        else if(ns==='blockWed'||ns==='blockThu')lines.push('BLOCK DAY');
-        else if(ns==='minimum')lines.push('MINIMUM DAY');
-        else lines.push('REGULAR SCHEDULE');
+        // Row 5: date
+        lines.push(nextDays[ndow] + '  ' + nextMons[next.getMonth()] + '  ' + next.getDate());
+        // Row 6: schedule type
+        var nextSched = getScheduleForDate(next);
+        if (nextSched === 'earlyRelease') lines.push('EARLY RELEASE');
+        else if (nextSched === 'blockWed' || nextSched === 'blockThu') lines.push('BLOCK DAY');
+        else if (nextSched === 'minimum') lines.push('MINIMUM DAY');
+        else if (nextSched === 'activity') lines.push('ACTIVITY DAY');
+        else lines.push('');
         break;
       }
     }
+    // Row 7: blank before announcements
+    lines.push('');
   } else {
-    var sn=getScheduleForDate(now);
-    var schedLabel='';
-    if(sn==='earlyRelease')schedLabel='EARLY RELEASE DAY';
-    else if(sn==='blockWed')schedLabel='BLOCK DAY  P1 P3 P5 P7';
-    else if(sn==='blockThu')schedLabel='BLOCK DAY  P2 P4 P6 P7';
-    else if(sn==='minimum')schedLabel='MINIMUM DAY';
-    else if(sn==='activity')schedLabel='ACTIVITY DAY';
-    else if(sn==='codeDay')schedLabel='CODE DAY';
-    else if(sn==='foggy')schedLabel='LATE ARRIVAL DAY';
-    lines.push('TODAY  '+dayName+'  '+mon+'  '+dayNum);
-    lines.push(schedLabel||'REGULAR SCHEDULE');
-    // Each event on one line: title left, days right
-    var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds;}).slice(0,5);
-    upcoming.forEach(function(e){lines.push(eventLine(e));});
+    lines.push('TODAY  ' + dayName + '  ' + mon + '  ' + dayNum);
+    var schedName = getScheduleForDate(now);
+    if (schedName === 'earlyRelease')      lines.push('EARLY RELEASE DAY');
+    else if (schedName === 'blockWed')     lines.push('BLOCK DAY  P1 P3 P5 P7');
+    else if (schedName === 'blockThu')     lines.push('BLOCK DAY  P2 P4 P6 P7');
+    else if (schedName === 'minimum')      lines.push('MINIMUM DAY');
+    else if (schedName === 'activity')     lines.push('ACTIVITY DAY');
+    else if (schedName === 'codeDay')      lines.push('CODE DAY');
+    else if (schedName === 'foggy')        lines.push('LATE ARRIVAL DAY');
+    else                                   lines.push('');
+    lines.push('');
   }
 
-  while(lines.length<7)lines.push('');
-  lines.push('RHS EVENTS CALENDAR');
-  return{lines:lines.slice(0,8),speed:15,id:'calendar',align:'left',sort_order:0};
-}
-
-function buildBellScreen(){
-  var sched=getSchedule();if(!sched)return null;
-  var sn=getScheduleForDate(new Date());
-  var schedLabels={regular:'REGULAR BELL',earlyRelease:'EARLY RELEASE',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',foggy:'LATE ARRIVAL',activity:'ACTIVITY DAY',codeDay:'CODE DAY'};
-  var days=['SUN','MON','TUE','WED','THU','FRI','SAT'],now=new Date();
-  var header=(schedLabels[sn]||'BELL SCHEDULE')+'  '+days[now.getDay()];
-  var nm=nowMins(),lines=[header];
-  sched.periods.forEach(function(p){
-    var s=toMins(p.start),e=toMins(p.end),isCurrent=nm>=s&&nm<e,isPast=nm>=e;
-    var label=p.label;while(label.length<6)label+=' ';
-    function to12(t){var parts=t.split(':'),h=parseInt(parts[0]),m=parts[1],ap=h>=12?'PM':'AM';h=h%12||12;return h+':'+m+ap;}
-    var timeStr=to12(p.start)+' - '+to12(p.end);
-    var prefix=isCurrent?'> ':(isPast&&!p.break?'  ':'  ');
-    var suffix=isCurrent?'  NOW':'';
-    lines.push(prefix+label+'  '+timeStr+suffix);
+  // Upcoming events — max 2 to avoid cramming
+  var remaining = ROWS - lines.length;
+  var maxEvents = Math.min(2, remaining);
+  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds; }).slice(0, maxEvents);
+  upcoming.forEach(function(e) {
+    var daysAway = daysBetween(e.start_date, ds);
+    var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : daysAway + ' DAYS';
+    var title = (e.title || '').toUpperCase();
+    var maxTitle = COLS - suffix.length - 2;
+    if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
+    lines.push(title + '  ' + suffix);
   });
-  while(lines.length<7)lines.push('');
-  lines.push('ROOM 27  ·  RHS');
-  return{lines:lines.slice(0,8),speed:20,id:'bell',align:'left',sort_order:1};
+
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines, speed: 15, id: 'calendar', align: 'center', sort_order: 0 };
 }
 
-function buildCountdownScreen(){
-  var now=new Date(),ds=dateStr(now);
-  var upcoming=CW_EVENTS.filter(function(e){return e.start_date>=ds&&e.show_countdown!==false;}).slice(0,6);
-  if(!upcoming.length)return null;
-  var lines=['COMING UP AT RHS'];
-  upcoming.forEach(function(e){
-    var daysAway=daysBetween(e.start_date,ds);
-    var suffix=daysAway===0?' TODAY!':daysAway===1?' TOMORROW':' '+daysAway+' DAYS';
-    var title=(e.title||'').toUpperCase();
-    var maxTitle=COLS-suffix.length;
-    if(title.length>maxTitle)title=title.substring(0,maxTitle);
-    var pad=COLS-title.length-suffix.length;
-    lines.push(title+' '.repeat(Math.max(0,pad))+suffix);
+function buildBellScreen() {
+  var sched = getSchedule();
+  if (!sched) return null;
+  var schedName = getScheduleForDate(new Date());
+  var schedLabels = {
+    regular:'REGULAR BELL', earlyRelease:'EARLY RELEASE',
+    blockWed:'BLOCK DAY', blockThu:'BLOCK DAY',
+    minimum:'MINIMUM DAY', foggy:'LATE ARRIVAL',
+    activity:'ACTIVITY DAY', codeDay:'CODE DAY'
+  };
+  var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var now = new Date();
+  var header = (schedLabels[schedName] || 'BELL SCHEDULE') + '  ' + days[now.getDay()];
+  var nm = nowMins();
+  var lines = [header];
+  sched.periods.forEach(function(p) {
+    var s = toMins(p.start), e = toMins(p.end);
+    var isCurrent = nm >= s && nm < e;
+    var isPast    = nm >= e;
+    var label = p.label;
+    while (label.length < 7) label += ' ';
+    var timeStr = p.start + ' - ' + p.end;
+    var prefix = isCurrent ? 'NOW ' : (isPast && !p.break ? ' .  ' : '    ');
+    var suffix = isCurrent ? '  <' : '';
+    lines.push(prefix + label + ' ' + timeStr + suffix);
   });
-  while(lines.length<8)lines.push('');
-  return{lines:lines.slice(0,8),speed:15,id:'countdown',align:'left',sort_order:0.5};
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines, speed: 20, id: 'bell', align: 'left', sort_order: 1 };
 }
 
-function getScheduleForDate(date){
-  var ds=dateStr(date),dow=date.getDay();
-  if(DATE_OVERRIDES[ds])return DATE_OVERRIDES[ds];
-  var events=window._cwCalEvents||[];
-  var titles=events.filter(function(e){return e.start_date&&e.start_date.substring(0,10)===ds;}).map(function(e){return(e.title||'').toLowerCase();});
-  var has=function(kw){return titles.some(function(t){return t.includes(kw);});};
-  if(has('foggy')||has('late arrival'))return 'foggy';
-  if(has('minimum'))return 'minimum';
-  if(has('code day'))return 'codeDay';
-  if(has('activity'))return 'activity';
-  if(has('early release'))return 'earlyRelease';
-  if(has('block'))return dow===3?'blockWed':'blockThu';
-  if(schoolDaysThisWeek(date)<=4)return 'regular';
-  if(dow===1)return 'earlyRelease';
-  if(dow===3)return 'blockWed';
-  if(dow===4)return 'blockThu';
+function buildCountdownScreen() {
+  var now = new Date();
+  var ds = dateStr(now);
+  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds && e.show_countdown !== false; }).slice(0, ROWS - 1);
+  if (!upcoming.length) return null;
+  var lines = ['COMING UP AT RHS'];
+  upcoming.forEach(function(e) {
+    var daysAway = daysBetween(e.start_date, ds);
+    var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? '1 DAY' : daysAway + ' DAYS';
+    var title = (e.title || '').toUpperCase();
+    var maxTitle = COLS - suffix.length - 2;
+    if (title.length > maxTitle) title = title.substring(0, maxTitle - 1);
+    var totalLen = title.length + 2 + suffix.length;
+    var extra = COLS - totalLen;
+    var padding = extra > 0 ? ' '.repeat(extra) : '';
+    lines.push(title + padding + '  ' + suffix);
+  });
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines, speed: 15, id: 'countdown', align: 'left', sort_order: 0.5 };
+}
+
+function getScheduleForDate(date) {
+  var ds = dateStr(date);
+  var dow = date.getDay();
+  if (DATE_OVERRIDES[ds]) return DATE_OVERRIDES[ds];
+  var events = window._cwCalEvents || [];
+  var titles = events
+    .filter(function(e) { return e.start_date && e.start_date.substring(0,10) === ds; })
+    .map(function(e) { return (e.title || '').toLowerCase(); });
+  var has = function(kw) { return titles.some(function(t) { return t.includes(kw); }); };
+  if (has('foggy') || has('late arrival')) return 'foggy';
+  if (has('minimum'))       return 'minimum';
+  if (has('code day'))      return 'codeDay';
+  if (has('activity'))      return 'activity';
+  if (has('early release')) return 'earlyRelease';
+  if (has('block')) return dow === 3 ? 'blockWed' : 'blockThu';
+  if (schoolDaysThisWeek(date) <= 4) return 'regular';
+  if (dow === 1) return 'earlyRelease';
+  if (dow === 3) return 'blockWed';
+  if (dow === 4) return 'blockThu';
   return 'regular';
 }
 
-// ── WEATHER ───────────────────────────────────────────────────
-var CW_WEATHER=null,CW_WEATHER_DAILY=null,CW_AQI=null;
-var WEATHER_CODES={0:'CLEAR SKIES',1:'MOSTLY CLEAR',2:'PARTLY CLOUDY',3:'OVERCAST',45:'FOGGY',48:'FOGGY',51:'LIGHT DRIZZLE',53:'DRIZZLE',55:'HEAVY DRIZZLE',61:'LIGHT RAIN',63:'RAIN',65:'HEAVY RAIN',71:'LIGHT SNOW',73:'SNOW',75:'HEAVY SNOW',77:'SNOW GRAINS',80:'RAIN SHOWERS',81:'RAIN SHOWERS',82:'HEAVY SHOWERS',85:'SNOW SHOWERS',86:'HEAVY SNOW SHOWERS',95:'THUNDERSTORM',96:'THUNDERSTORM',99:'THUNDERSTORM'};
-var WEATHER_COMMENTS={
-  scorching:['HYDRATE OR HIBERNATE COWBOYS','ITS AN OVEN OUT THERE TODAY','STAY IN THE SHADE COWBOYS','HOT ENOUGH TO FRY AN EGG','DRINK WATER BEFORE YOU GO OUT','THIS IS WHAT SUMMER FEELS LIKE','SUNSCREEN IS NOT OPTIONAL TODAY','TRIPLE DIGITS ARE NO JOKE','COWBOYS DO NOT MELT STAY COOL','HEAT ADVISORY IN EFFECT TODAY','STAY HYDRATED OUT THERE','AC IS YOUR BEST FRIEND TODAY','VALLEY HEAT IS NO JOKE COWBOYS','TAKE IT EASY OUT THERE TODAY','WATER FIRST EVERYTHING ELSE SECOND'],
-  hot:['HOT ONE TODAY COWBOYS','STAY COOL OUT THERE','CLASSIC VALLEY SUMMER DAY','DRINK PLENTY OF WATER TODAY','SUNSCREEN UP BEFORE YOU HEAD OUT','PERFECT WEATHER FOR STAYING INSIDE','HOT BUT WE HAVE BEEN THROUGH WORSE','KEEP THAT WATER BOTTLE HANDY','SHADE IS YOUR FRIEND TODAY','VALLEY HEAT DOING ITS THING','STAY HYDRATED COWBOYS','WARM ONE OUT THERE TODAY','SUMMER IN THE VALLEY IS REAL','COWBOYS HANDLE THE HEAT','HOT OUTSIDE COOL INSIDE LETS GO','PROTECT YOUR SKIN OUT THERE','FIND THE SHADE WHEN YOU CAN','HEAT INDEX IS UP TODAY','BRING WATER TO PRACTICE TODAY','THAT CENTRAL VALLEY SUN IS NO JOKE'],
-  warm:['NICE DAY OUT THERE COWBOYS','BEAUTIFUL VALLEY WEATHER TODAY','PERFECT WEATHER FOR COWBOYS','GET OUTSIDE AND ENJOY IT','NOT TOO HOT NOT TOO COLD','GREAT DAY TO BE A COWBOY','SUNSHINE AND GOOD VIBES TODAY','ENJOY THE WEATHER OUT THERE','VALLEY WEATHER AT ITS FINEST','GOOD WEATHER FOR A GREAT DAY','MAKE THE MOST OF TODAY COWBOYS','GOLDEN STATE LIVING TODAY','PERFECT GAME DAY WEATHER','APPRECIATE DAYS LIKE THIS','OUTSIDE IS CALLING YOUR NAME','CALIFORNIA WEATHER DOING ITS THING','GREAT DAY TO BE AT RIVERDALE','SUNSHINE ON THE COWBOYS TODAY','ENJOY EVERY MINUTE OF TODAY','WEATHER LIKE THIS DOES NOT LAST'],
-  mild:['MILD AND BEAUTIFUL OUT THERE','PERFECT HOODIE WEATHER','JACKET WEATHER IS HERE COWBOYS','FRESH AIR AND GOOD VIBES','NICE AND COMFORTABLE TODAY','LIGHT JACKET WEATHER TODAY','VALLEY SHOWING OFF TODAY','GREAT WEATHER FOR LEARNING','COMFORTABLE DAY OUT THERE','PERFECT DAY FOR OUTDOOR CLASS','ENJOY THE MILD WEATHER COWBOYS','NOT TOO WARM NOT TOO COOL','CALIFORNIA FALL FEELING TODAY','CRISP AND CLEAR OUT THERE','LAYERING WEATHER TODAY','REFRESHING DAY OUT THERE','GOOD WEATHER GOOD VIBES','MILD ENOUGH TO ENJOY OUTSIDE','SWEATER WEATHER IS HERE','PLEASANT DAY AT RIVERDALE'],
-  cool:['A LITTLE CHILLY OUT THERE','BUNDLE UP BEFORE YOU HEAD OUT','JACKET RECOMMENDED TODAY COWBOYS','COOL MORNING WARM UP INSIDE','BRING A LAYER TODAY','CHILLY BUT MANAGEABLE','COOLER THAN USUAL OUT THERE','BREAK OUT THE HOODIE TODAY','GOOD COFFEE WEATHER OUT THERE','CRISP MORNING OUT THERE COWBOYS','FEELS LIKE FALL TODAY','LAYER UP BEFORE YOU HEAD OUTSIDE','COLD ENOUGH FOR A JACKET TODAY','VALLEY WINTER VIBES TODAY','WARM UP INSIDE BEFORE HEADING OUT','GRAB SOMETHING WARM TODAY','COOLER START TO THE DAY','BUNDLE UP COWBOYS','JACKET WEATHER FOR SURE TODAY','FRESH AND COOL OUT THERE'],
-  cold:['BUNDLE UP OUT THERE COWBOYS','COLD ONE TODAY STAY WARM','WINTER IS HERE COWBOYS','LAYER UP BEFORE YOU HEAD OUT','COLD OUTSIDE WARM INSIDE LETS GO','BREAK OUT THE HEAVY JACKET','CHILLY START TO THE DAY','COLD BUT COWBOYS PUSH THROUGH','STAY WARM OUT THERE TODAY','EXTRA LAYER RECOMMENDED TODAY','FROST ON THE FIELDS THIS MORNING','VALLEY COLD IS REAL BUNDLE UP','HOT DRINK WEATHER OUT THERE','COLD START WARM FINISH COWBOYS','TOUGHEN UP COWBOYS ITS COLD'],
-  rainy:['UMBRELLA WEATHER OUT THERE','GRAB YOUR RAIN GEAR TODAY','RAINY DAY COWBOYS STAY DRY','WET OUT THERE WATCH YOUR STEP','RAIN DOES NOT STOP COWBOYS','PUDDLE WATCH IS IN EFFECT','STAY DRY OUT THERE TODAY','RAIN BOOTS WOULD NOT HURT TODAY','LIQUID SUNSHINE OUT THERE','RAIN MAKES THE VALLEY GREEN','COWBOYS PLAY IN ANY WEATHER','DRIZZLY OUT THERE STAY COVERED','RAINY DAYS MAKE GREAT STUDY DAYS','WET WEATHER GOOD ATTITUDES','RAIN FALLS COWBOYS RISE'],
-  foggy:['FOGGY MORNING OUT THERE COWBOYS','TULE FOG IN THE VALLEY TODAY','VISIBILITY LOW DRIVE SLOW','CLASSIC VALLEY FOG THIS MORNING','FOGGY BUT WE STILL SHOW UP','TULE FOG SEASON IS REAL','DRIVE CAREFUL IN THE FOG TODAY','MISTY MORNING AT RIVERDALE','FOG WILL LIFT COWBOYS PERSIST','HEADLIGHTS ON IN THE FOG','VALLEY FOG DOING ITS THING','SLOW DOWN IN THE FOG TODAY','FOGGY START CLEAR FINISH','TULE FOG WATCH OUT THERE','DRIVE SAFE IN THIS MORNING FOG'],
-  windy:['WINDY OUT THERE HOLD YOUR HAT','BREEZY DAY IN THE VALLEY','HOLD ONTO YOUR STUFF OUT THERE','WIND IS PICKING UP TODAY','GUSTY OUT THERE COWBOYS','WINDY DAY IN THE CENTRAL VALLEY','GOOD KITE FLYING WEATHER','WIND IN YOUR FACE COWBOYS PUSH','HAIR DAY IS CANCELLED TODAY','NATURE IS BLOWING TODAY','BREEZY BUT WE SHOW UP','WIND CANNOT STOP COWBOYS','HOLD THOSE PAPERS DOWN TODAY','GUSTY CONDITIONS OUT THERE','WIND ADVISORY IN EFFECT'],
-  aqi_poor:['AIR QUALITY IS MODERATE TODAY','SENSITIVE GROUPS LIMIT TIME OUTSIDE','CHECK THE AQI BEFORE HEADING OUT','MODERATE AIR QUALITY TODAY','THOSE WITH ASTHMA TAKE PRECAUTIONS','AQI IS UP LIMIT OUTDOOR ACTIVITY','MODERATE AIR QUALITY OUT THERE','SENSITIVE TO AIR QUALITY STAY IN','VALLEY AIR IS A BIT HEAVY TODAY','LIMIT STRENUOUS OUTDOOR ACTIVITY'],
-  aqi_bad:['POOR AIR QUALITY TODAY STAY INSIDE','LIMIT TIME OUTDOORS TODAY','HIGH AQI AVOID OUTDOOR EXERCISE','AIR QUALITY IS POOR OUT THERE','STAY INDOORS IF POSSIBLE TODAY','AQI IS HIGH PROTECT YOUR LUNGS','UNHEALTHY AIR TODAY STAY INSIDE','MASK UP IF HEADING OUTSIDE','AIR QUALITY ALERT IN EFFECT','PROTECT YOUR HEALTH STAY INSIDE'],
-  humid:['MUGGY OUT THERE TODAY','HUMID AND HEAVY AIR OUT THERE','FEELS STICKIER THAN IT LOOKS','HIGH HUMIDITY STAY HYDRATED','MUGGY MORNING OUT THERE COWBOYS','HUMIDITY IS HIGH TODAY','FEELS LIKE A SAUNA OUT THERE','HEAVY AIR OUT THERE TODAY','HUMIDITY MAKING IT FEEL HOTTER','STICKY DAY IN THE VALLEY'],
+// ── WEATHER ──────────────────────────────────────────
+var CW_WEATHER = null;
+var CW_WEATHER_DAILY = null;
+var CW_AQI = null;
+
+var WEATHER_CODES = {
+  0:'CLEAR SKIES', 1:'MOSTLY CLEAR', 2:'PARTLY CLOUDY', 3:'OVERCAST',
+  45:'FOGGY', 48:'FOGGY', 51:'LIGHT DRIZZLE', 53:'DRIZZLE', 55:'HEAVY DRIZZLE',
+  61:'LIGHT RAIN', 63:'RAIN', 65:'HEAVY RAIN',
+  71:'LIGHT SNOW', 73:'SNOW', 75:'HEAVY SNOW', 77:'SNOW GRAINS',
+  80:'RAIN SHOWERS', 81:'RAIN SHOWERS', 82:'HEAVY SHOWERS',
+  85:'SNOW SHOWERS', 86:'HEAVY SNOW SHOWERS',
+  95:'THUNDERSTORM', 96:'THUNDERSTORM', 99:'THUNDERSTORM'
 };
-function pickWeatherComment(temp,feels,humidity,wind,code,aqi){
-  var pool=[];
-  if(aqi!==null&&aqi>150)pool=WEATHER_COMMENTS.aqi_bad;
-  else if(aqi!==null&&aqi>100)pool=WEATHER_COMMENTS.aqi_poor;
-  else if([45,48].includes(code))pool=WEATHER_COMMENTS.foggy;
-  else if(code>=61&&code<=82)pool=WEATHER_COMMENTS.rainy;
-  else if(wind>20)pool=WEATHER_COMMENTS.windy;
-  else if(humidity>70)pool=WEATHER_COMMENTS.humid;
-  else if(feels>=105)pool=WEATHER_COMMENTS.scorching;
-  else if(feels>=90)pool=WEATHER_COMMENTS.hot;
-  else if(feels>=75)pool=WEATHER_COMMENTS.warm;
-  else if(feels>=60)pool=WEATHER_COMMENTS.mild;
-  else if(feels>=45)pool=WEATHER_COMMENTS.cool;
-  else pool=WEATHER_COMMENTS.cold;
-  if(!pool||!pool.length)return'';
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-var AQI_LABELS=[[50,'GOOD'],[100,'MODERATE'],[150,'UNHEALTHY FOR SOME'],[200,'UNHEALTHY'],[300,'VERY UNHEALTHY'],[999,'HAZARDOUS']];
-function aqiLabel(val){for(var i=0;i<AQI_LABELS.length;i++){if(val<=AQI_LABELS[i][0])return AQI_LABELS[i][1];}return'HAZARDOUS';}
 
-async function loadWeather(){
-  try{
-    var url='https://api.open-meteo.com/v1/forecast?latitude=36.4327&longitude=-119.8668&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America/Los_Angeles&forecast_days=4';
-    var res=await fetch(url);if(!res.ok)return null;
-    var data=await res.json();CW_WEATHER=data.current;CW_WEATHER_DAILY=data.daily;
-    var aqUrl='https://air-quality-api.open-meteo.com/v1/air-quality?latitude=36.4327&longitude=-119.8668&current=us_aqi&timezone=America/Los_Angeles';
-    var aqRes=await fetch(aqUrl);
-    if(aqRes.ok){var aqData=await aqRes.json();CW_AQI=aqData.current?aqData.current.us_aqi:null;}
+var WEATHER_COMMENTS = {
+  scorching: ['HYDRATE OR HIBERNATE COWBOYS','ITS AN OVEN OUT THERE TODAY','STAY IN THE SHADE COWBOYS','HOT ENOUGH TO FRY AN EGG','DRINK WATER BEFORE YOU GO OUT','THIS IS WHAT SUMMER FEELS LIKE','SUNSCREEN IS NOT OPTIONAL TODAY','TRIPLE DIGITS ARE NO JOKE','COWBOYS DO NOT MELT STAY COOL','HEAT ADVISORY IN EFFECT TODAY','STAY HYDRATED OUT THERE','AC IS YOUR BEST FRIEND TODAY','VALLEY HEAT IS NO JOKE COWBOYS','TAKE IT EASY OUT THERE TODAY','WATER FIRST EVERYTHING ELSE SECOND'],
+  hot: ['HOT ONE TODAY COWBOYS','STAY COOL OUT THERE','CLASSIC VALLEY SUMMER DAY','DRINK PLENTY OF WATER TODAY','SUNSCREEN UP BEFORE YOU HEAD OUT','PERFECT WEATHER FOR STAYING INSIDE','HOT BUT WE HAVE BEEN THROUGH WORSE','KEEP THAT WATER BOTTLE HANDY','SHADE IS YOUR FRIEND TODAY','VALLEY HEAT DOING ITS THING','STAY HYDRATED COWBOYS','WARM ONE OUT THERE TODAY','SUMMER IN THE VALLEY IS REAL','COWBOYS HANDLE THE HEAT','HOT OUTSIDE COOL INSIDE LETS GO','PROTECT YOUR SKIN OUT THERE','FIND THE SHADE WHEN YOU CAN','HEAT INDEX IS UP TODAY','BRING WATER TO PRACTICE TODAY','THAT CENTRAL VALLEY SUN IS NO JOKE'],
+  warm: ['NICE DAY OUT THERE COWBOYS','BEAUTIFUL VALLEY WEATHER TODAY','PERFECT WEATHER FOR COWBOYS','GET OUTSIDE AND ENJOY IT','NOT TOO HOT NOT TOO COLD','GREAT DAY TO BE A COWBOY','SUNSHINE AND GOOD VIBES TODAY','ENJOY THE WEATHER OUT THERE','VALLEY WEATHER AT ITS FINEST','GOOD WEATHER FOR A GREAT DAY','MAKE THE MOST OF TODAY COWBOYS','GOLDEN STATE LIVING TODAY','PERFECT GAME DAY WEATHER','APPRECIATE DAYS LIKE THIS','OUTSIDE IS CALLING YOUR NAME','CALIFORNIA WEATHER DOING ITS THING','GREAT DAY TO BE AT RIVERDALE','SUNSHINE ON THE COWBOYS TODAY','ENJOY EVERY MINUTE OF TODAY','WEATHER LIKE THIS DOES NOT LAST'],
+  mild: ['MILD AND BEAUTIFUL OUT THERE','PERFECT HOODIE WEATHER','JACKET WEATHER IS HERE COWBOYS','FRESH AIR AND GOOD VIBES','NICE AND COMFORTABLE TODAY','LIGHT JACKET WEATHER TODAY','VALLEY SHOWING OFF TODAY','GREAT WEATHER FOR LEARNING','COMFORTABLE DAY OUT THERE','PERFECT DAY FOR OUTDOOR CLASS','ENJOY THE MILD WEATHER COWBOYS','NOT TOO WARM NOT TOO COOL','CALIFORNIA FALL FEELING TODAY','CRISP AND CLEAR OUT THERE','LAYERING WEATHER TODAY','REFRESHING DAY OUT THERE','GOOD WEATHER GOOD VIBES','MILD ENOUGH TO ENJOY OUTSIDE','SWEATER WEATHER IS HERE','PLEASANT DAY AT RIVERDALE'],
+  cool: ['A LITTLE CHILLY OUT THERE','BUNDLE UP BEFORE YOU HEAD OUT','JACKET RECOMMENDED TODAY COWBOYS','COOL MORNING WARM UP INSIDE','BRING A LAYER TODAY','CHILLY BUT MANAGEABLE','COOLER THAN USUAL OUT THERE','BREAK OUT THE HOODIE TODAY','GOOD COFFEE WEATHER OUT THERE','CRISP MORNING OUT THERE COWBOYS','FEELS LIKE FALL TODAY','LAYER UP BEFORE YOU HEAD OUTSIDE','COLD ENOUGH FOR A JACKET TODAY','VALLEY WINTER VIBES TODAY','WARM UP INSIDE BEFORE HEADING OUT','GRAB SOMETHING WARM TODAY','COOLER START TO THE DAY','BUNDLE UP COWBOYS','JACKET WEATHER FOR SURE TODAY','FRESH AND COOL OUT THERE'],
+  cold: ['BUNDLE UP OUT THERE COWBOYS','COLD ONE TODAY STAY WARM','WINTER IS HERE COWBOYS','LAYER UP BEFORE YOU HEAD OUT','COLD OUTSIDE WARM INSIDE LETS GO','BREAK OUT THE HEAVY JACKET','CHILLY START TO THE DAY','COLD BUT COWBOYS PUSH THROUGH','STAY WARM OUT THERE TODAY','EXTRA LAYER RECOMMENDED TODAY','FROST ON THE FIELDS THIS MORNING','VALLEY COLD IS REAL BUNDLE UP','HOT DRINK WEATHER OUT THERE','COLD START WARM FINISH COWBOYS','TOUGHEN UP COWBOYS ITS COLD'],
+  rainy: ['UMBRELLA WEATHER OUT THERE','GRAB YOUR RAIN GEAR TODAY','RAINY DAY COWBOYS STAY DRY','WET OUT THERE WATCH YOUR STEP','RAIN DOES NOT STOP COWBOYS','PUDDLE WATCH IS IN EFFECT','STAY DRY OUT THERE TODAY','RAIN BOOTS WOULD NOT HURT TODAY','LIQUID SUNSHINE OUT THERE','RAIN MAKES THE VALLEY GREEN','COWBOYS PLAY IN ANY WEATHER','DRIZZLY OUT THERE STAY COVERED','RAINY DAYS MAKE GREAT STUDY DAYS','WET WEATHER GOOD ATTITUDES','RAIN FALLS COWBOYS RISE'],
+  foggy: ['FOGGY MORNING OUT THERE COWBOYS','TULE FOG IN THE VALLEY TODAY','VISIBILITY LOW DRIVE SLOW','CLASSIC VALLEY FOG THIS MORNING','FOGGY BUT WE STILL SHOW UP','TULE FOG SEASON IS REAL','DRIVE CAREFUL IN THE FOG TODAY','MISTY MORNING AT RIVERDALE','FOG WILL LIFT COWBOYS PERSIST','HEADLIGHTS ON IN THE FOG','VALLEY FOG DOING ITS THING','SLOW DOWN IN THE FOG TODAY','FOGGY START CLEAR FINISH','TULE FOG WATCH OUT THERE','DRIVE SAFE IN THIS MORNING FOG'],
+  windy: ['WINDY OUT THERE HOLD YOUR HAT','BREEZY DAY IN THE VALLEY','HOLD ONTO YOUR STUFF OUT THERE','WIND IS PICKING UP TODAY','GUSTY OUT THERE COWBOYS','WINDY DAY IN THE CENTRAL VALLEY','GOOD KITE FLYING WEATHER','WIND IN YOUR FACE COWBOYS PUSH','HAIR DAY IS CANCELLED TODAY','NATURE IS BLOWING TODAY','BREEZY BUT WE SHOW UP','WIND CANNOT STOP COWBOYS','HOLD THOSE PAPERS DOWN TODAY','GUSTY CONDITIONS OUT THERE','WIND ADVISORY IN EFFECT'],
+  aqi_poor: ['AIR QUALITY IS MODERATE TODAY','SENSITIVE GROUPS LIMIT TIME OUTSIDE','CHECK THE AQI BEFORE HEADING OUT','MODERATE AIR QUALITY TODAY','THOSE WITH ASTHMA TAKE PRECAUTIONS','AQI IS UP LIMIT OUTDOOR ACTIVITY','MODERATE AIR QUALITY OUT THERE','SENSITIVE TO AIR QUALITY STAY IN','VALLEY AIR IS A BIT HEAVY TODAY','LIMIT STRENUOUS OUTDOOR ACTIVITY'],
+  aqi_bad: ['POOR AIR QUALITY TODAY STAY INSIDE','LIMIT TIME OUTDOORS TODAY','HIGH AQI AVOID OUTDOOR EXERCISE','AIR QUALITY IS POOR OUT THERE','STAY INDOORS IF POSSIBLE TODAY','AQI IS HIGH PROTECT YOUR LUNGS','UNHEALTHY AIR TODAY STAY INSIDE','MASK UP IF HEADING OUTSIDE','AIR QUALITY ALERT IN EFFECT','PROTECT YOUR HEALTH STAY INSIDE'],
+  humid: ['MUGGY OUT THERE TODAY','HUMID AND HEAVY AIR OUT THERE','FEELS STICKIER THAN IT LOOKS','HIGH HUMIDITY STAY HYDRATED','MUGGY MORNING OUT THERE COWBOYS','HUMIDITY IS HIGH TODAY','FEELS LIKE A SAUNA OUT THERE','HEAVY AIR OUT THERE TODAY','HUMIDITY MAKING IT FEEL HOTTER','STICKY DAY IN THE VALLEY'],
+};
+
+function pickWeatherComment(temp, feels, humidity, wind, code, aqi) {
+  var pool = [];
+  if (aqi !== null && aqi > 150)         pool = WEATHER_COMMENTS.aqi_bad;
+  else if (aqi !== null && aqi > 100)    pool = WEATHER_COMMENTS.aqi_poor;
+  else if ([45,48].includes(code))       pool = WEATHER_COMMENTS.foggy;
+  else if (code >= 61 && code <= 82)     pool = WEATHER_COMMENTS.rainy;
+  else if (wind > 20)                    pool = WEATHER_COMMENTS.windy;
+  else if (humidity > 70)                pool = WEATHER_COMMENTS.humid;
+  else if (feels >= 105)                 pool = WEATHER_COMMENTS.scorching;
+  else if (feels >= 90)                  pool = WEATHER_COMMENTS.hot;
+  else if (feels >= 75)                  pool = WEATHER_COMMENTS.warm;
+  else if (feels >= 60)                  pool = WEATHER_COMMENTS.mild;
+  else if (feels >= 45)                  pool = WEATHER_COMMENTS.cool;
+  else                                   pool = WEATHER_COMMENTS.cold;
+  if (!pool || !pool.length) return '';
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+var AQI_LABELS = [
+  [50,'GOOD'],[100,'MODERATE'],[150,'UNHEALTHY FOR SOME'],
+  [200,'UNHEALTHY'],[300,'VERY UNHEALTHY'],[999,'HAZARDOUS']
+];
+
+function aqiLabel(val) {
+  for (var i = 0; i < AQI_LABELS.length; i++) { if (val <= AQI_LABELS[i][0]) return AQI_LABELS[i][1]; }
+  return 'HAZARDOUS';
+}
+
+async function loadWeather() {
+  try {
+    var url = 'https://api.open-meteo.com/v1/forecast' +
+      '?latitude=36.4327&longitude=-119.8668' +
+      '&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature' +
+      '&daily=temperature_2m_max,temperature_2m_min,weather_code' +
+      '&temperature_unit=fahrenheit&wind_speed_unit=mph' +
+      '&timezone=America/Los_Angeles&forecast_days=4';
+    var res = await fetch(url);
+    if (!res.ok) return null;
+    var data = await res.json();
+    CW_WEATHER = data.current;
+    CW_WEATHER_DAILY = data.daily;
+    var aqUrl = 'https://air-quality-api.open-meteo.com/v1/air-quality' +
+      '?latitude=36.4327&longitude=-119.8668' +
+      '&current=us_aqi&timezone=America/Los_Angeles';
+    var aqRes = await fetch(aqUrl);
+    if (aqRes.ok) {
+      var aqData = await aqRes.json();
+      CW_AQI = aqData.current ? aqData.current.us_aqi : null;
+    }
     return CW_WEATHER;
-  }catch(e){return null;}
+  } catch(e) { return null; }
 }
 
-function buildWeatherScreen(){
-  if(!CW_WEATHER)return null;
-  var temp=Math.round(CW_WEATHER.temperature_2m),feels=Math.round(CW_WEATHER.apparent_temperature);
-  var humidity=Math.round(CW_WEATHER.relative_humidity_2m),wind=Math.round(CW_WEATHER.wind_speed_10m);
-  var code=CW_WEATHER.weather_code,desc=WEATHER_CODES[code]||'CONDITIONS UNKNOWN';
-  var aqiVal=CW_AQI!==null?Math.round(CW_AQI):null;
-  var comment=pickWeatherComment(temp,feels,humidity,wind,code,aqiVal);
-  var lines=[];
-  lines.push('WEATHER  RIVERDALE CA');
-  lines.push('');
-  lines.push(temp+' F  ·  FEELS '+feels+' F');
-  lines.push(desc);
-  lines.push(comment);
-  lines.push('');
-  if(CW_WEATHER_DAILY&&CW_WEATHER_DAILY.time){
-    var dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT'],times=CW_WEATHER_DAILY.time,highs=CW_WEATHER_DAILY.temperature_2m_max,lows=CW_WEATHER_DAILY.temperature_2m_min;
-    var parts=[];
-    for(var i=1;i<=2;i++){if(!times[i])break;var d=new Date(times[i]+'T12:00:00');parts.push(dayNames[d.getDay()]+' HI '+Math.round(highs[i]));}
-    lines.push(parts.join('  ·  ').substring(0,COLS));
-  } else {lines.push('');}
-  var windAqi='WIND '+wind+' MPH'+(aqiVal!==null?'  ·  AQI '+aqiVal:'');
-  lines.push(windAqi.substring(0,COLS));
-  return{lines:lines.slice(0,8),speed:18,id:'weather',align:'center',sort_order:0.8};
-}
-
-// ── OBJECTIVES ────────────────────────────────────────────────
-var CW_OBJECTIVES={};
-async function loadObjectives(){
-  var today=dateStr(new Date());
-  var rows=await sbFetch('cw2_objectives','room=eq.'+ROOM+'&active=eq.true&select=*');
-  CW_OBJECTIVES={};
-  (rows||[]).forEach(function(r){if(r.scheduled_date&&r.scheduled_date!==today)return;CW_OBJECTIVES[r.period]=r;});
-}
-function buildObjectivesScreen(){
-  var sched=getSchedule();if(!sched)return null;
-  var nm=nowMins(),currentPeriod=null,minutesIn=0;
-  sched.periods.forEach(function(p){
-    if(p.break)return;var s=toMins(p.start),e=toMins(p.end);
-    if(nm>=s&&nm<e){var match=(p.label||'').match(/\d+/);if(match){currentPeriod=match[0];minutesIn=nm-s;}}
+function buildWeatherScreen() {
+  if (!CW_WEATHER) return null;
+  var temp     = Math.round(CW_WEATHER.temperature_2m);
+  var feels    = Math.round(CW_WEATHER.apparent_temperature);
+  var humidity = Math.round(CW_WEATHER.relative_humidity_2m);
+  var wind     = Math.round(CW_WEATHER.wind_speed_10m);
+  var code     = CW_WEATHER.weather_code;
+  var desc     = WEATHER_CODES[code] || 'CONDITIONS UNKNOWN';
+  var aqiVal   = CW_AQI !== null ? Math.round(CW_AQI) : null;
+  var aqiStr   = aqiVal !== null ? aqiLabel(aqiVal) : '';
+  var comment  = pickWeatherComment(temp, feels, humidity, wind, code, aqiVal);
+  var line1 = temp + ' F  FEELS LIKE  ' + feels + ' F';
+  var line2 = desc + '  HUMIDITY ' + humidity + '%';
+  var line3 = 'WIND ' + wind + ' MPH' + (aqiVal !== null ? '  AQI ' + aqiVal + ' ' + aqiStr.split(' ')[0] : '');
+  var lines = ['WEATHER  RIVERDALE CA', line1, line2, line3, comment];
+  if (CW_WEATHER_DAILY && CW_WEATHER_DAILY.time) {
+    var dayNames = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    var times = CW_WEATHER_DAILY.time;
+    var highs = CW_WEATHER_DAILY.temperature_2m_max;
+    var lows  = CW_WEATHER_DAILY.temperature_2m_min;
+    var count = 0;
+    for (var i = 0; i < times.length && count < 3; i++) {
+      var d = new Date(times[i] + 'T12:00:00');
+      var label = i === 0 ? 'TODAY' : dayNames[d.getDay()];
+      var hi = Math.round(highs[i]);
+      var lo = Math.round(lows[i]);
+      while (label.length < 5) label += ' ';
+      lines.push(label + '  HI ' + hi + '  LO ' + lo);
+      count++;
+    }
+  }
+  while (lines.length < ROWS) lines.push('');
+  // Row 0 = title (center), rows 1-4 = stats (left), rows 5-7 = forecast (center)
+  var alignLines = lines.map(function(_, i) {
+    return (i === 0 || i >= 5) ? 'center' : 'left';
   });
-  if(!currentPeriod)return null;
-  var obj=CW_OBJECTIVES[currentPeriod];if(!obj||!obj.title)return null;
-  if(obj.display_mode==='timed'){var limit=obj.timed_minutes||10;if(minutesIn>limit)return null;}
-  var lines=[];
-  lines.push('PERIOD '+currentPeriod+'  ·  TODAY');
-  lines.push('');
-  lines.push(obj.title?obj.title.toUpperCase().substring(0,COLS):'');
-  lines.push('');
-  lines.push(obj.line1?('> '+obj.line1).toUpperCase().substring(0,COLS):'');
-  lines.push('');
-  lines.push(obj.line2?('/ '+obj.line2).toUpperCase().substring(0,COLS):'');
-  lines.push('ROOM 27  ·  RHS');
-  return{lines:lines.slice(0,8),speed:15,id:'objectives',align:'left',sort_order:0.2};
+  return { lines: lines, speed: 18, id: 'weather', align: 'left', alignLines: alignLines, sort_order: 0.8 };
 }
 
-// ── BIRTHDAYS ─────────────────────────────────────────────────
-var CW_BIRTHDAYS=[];
-async function loadBirthdays(){
-  var rows=await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&select=*');
-  CW_BIRTHDAYS=rows||[];
+// ── OBJECTIVES ───────────────────────────────────────
+var CW_OBJECTIVES = {};
+
+async function loadObjectives() {
+  var today = dateStr(new Date());
+  var rows = await sbFetch('cw2_objectives', 'room=eq.' + ROOM + '&active=eq.true&select=*');
+  CW_OBJECTIVES = {};
+  (rows || []).forEach(function(r) {
+    if (r.scheduled_date && r.scheduled_date !== today) return;
+    CW_OBJECTIVES[r.period] = r;
+  });
 }
-function buildBirthdayScreen(){
-  if(!CW_BIRTHDAYS.length)return null;
-  var now=new Date(),todayM=now.getMonth()+1,todayD=now.getDate();
-  function daysUntil(month,day){
-    var n=new Date(),thisYear=n.getFullYear(),bday=new Date(thisYear,month-1,day),today=new Date(n.getFullYear(),n.getMonth(),n.getDate());
-    if(bday<today)bday.setFullYear(thisYear+1);return Math.round((bday-today)/86400000);
-  }
-  var months=['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  var sorted=CW_BIRTHDAYS.slice().sort(function(a,b){return daysUntil(a.month,a.day)-daysUntil(b.month,b.day);});
-  var todays=sorted.filter(function(b){return b.month===todayM&&b.day===todayD;});
-  var thisWeek=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>0&&d<=7;});
-  var upcoming=sorted.filter(function(b){var d=daysUntil(b.month,b.day);return d>7;});
-  var lines=[];
 
-  function personLines(b){
-    var d=daysUntil(b.month,b.day);
-    var name=b.name.toUpperCase().substring(0,COLS);
-    var dateStr=months[b.month]+' '+b.day+'  IN '+d+' DAYS';
-    return[name,dateStr];
+function buildObjectivesScreen() {
+  var sched = getSchedule();
+  if (!sched) return null;
+  var nm = nowMins();
+  var currentPeriod = null;
+  var minutesIn = 0;
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm >= s && nm < e) {
+      var match = (p.label || '').match(/\d+/);
+      if (match) { currentPeriod = match[0]; minutesIn = nm - s; }
+    }
+  });
+  if (!currentPeriod) return null;
+  var obj = CW_OBJECTIVES[currentPeriod];
+  if (!obj || !obj.title) return null;
+  if (obj.display_mode === 'timed') {
+    var limit = obj.timed_minutes || 10;
+    if (minutesIn > limit) return null;
+  }
+  var lines = [
+    'P' + currentPeriod + '  NOW LEARNING',
+    obj.title ? obj.title.toUpperCase() : '',
+    '',
+    obj.line1 ? '> ' + obj.line1.toUpperCase() : '',
+    '',
+    obj.line2 ? '/ ' + obj.line2.toUpperCase() : '',
+    '', '',
+  ];
+  while (lines.length < ROWS) lines.push('');
+  lines = lines.slice(0, ROWS);
+  return { lines: lines, speed: 15, id: 'objectives', align: 'left', sort_order: 0.2 };
+}
+
+// ── BIRTHDAYS ────────────────────────────────────────
+var CW_BIRTHDAYS = [];
+
+async function loadBirthdays() {
+  var rows = await sbFetch('cw2_birthdays', 'room=eq.' + ROOM + '&active=eq.true&select=*');
+  CW_BIRTHDAYS = rows || [];
+}
+
+function buildBirthdayScreen() {
+  if (!CW_BIRTHDAYS.length) return null;
+  var now = new Date();
+  var todayM = now.getMonth() + 1;
+  var todayD = now.getDate();
+
+  function daysUntil(month, day) {
+    var n = new Date();
+    var thisYear = n.getFullYear();
+    var bday = new Date(thisYear, month - 1, day);
+    var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    if (bday < today) bday.setFullYear(thisYear + 1);
+    return Math.round((bday - today) / 86400000);
   }
 
-  if(todays.length){
+  var months = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var sorted = CW_BIRTHDAYS.slice().sort(function(a, b) {
+    return daysUntil(a.month, a.day) - daysUntil(b.month, b.day);
+  });
+
+  var todays   = sorted.filter(function(b) { return b.month === todayM && b.day === todayD; });
+  var thisWeek = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 0 && d <= 7; });
+  var upcoming = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 7; });
+
+  var lines = [];
+  if (todays.length) {
     lines.push('HAPPY BIRTHDAY');
-    todays.slice(0,3).forEach(function(b){lines.push(b.name.toUpperCase().substring(0,COLS));});
-  } else if(thisWeek.length){
-    lines.push('COMING UP  BIRTHDAYS');
-    thisWeek.slice(0,3).forEach(function(b){personLines(b).forEach(function(l){lines.push(l);});});
+    todays.forEach(function(b) { lines.push(b.name.toUpperCase()); });
+    lines.push('');
+  } else if (thisWeek.length) {
+    lines.push('BIRTHDAYS THIS WEEK');
+    thisWeek.slice(0, 2).forEach(function(b) {
+      lines.push(b.name.toUpperCase());
+      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
+      lines.push('');
+    });
   } else {
-    lines.push('UPCOMING BIRTHDAYS');
-    upcoming.slice(0,3).forEach(function(b){personLines(b).forEach(function(l){lines.push(l);});});
+    lines.push('COMING UP  BIRTHDAYS');
+    upcoming.slice(0, 3).forEach(function(b) {
+      lines.push(b.name.toUpperCase());
+      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
+      lines.push('');
+    });
   }
 
-  while(lines.length<8)lines.push('');
-  return{lines:lines.slice(0,8),speed:16,id:'birthday',align:'center',sort_order:0.9};
+  while (lines.length < ROWS) lines.push('');
+  lines = lines.slice(0, ROWS);
+  return { lines: lines, speed: 16, id: 'birthday', align: 'center', sort_order: 0.9 };
 }
 
-// ── MESSAGES ──────────────────────────────────────────────────
-var CW_MESSAGES=[];
-async function loadMessages(){
-  var now=new Date().toISOString();
-  var rows=await sbFetch('cw2_messages','room=eq.'+ROOM+'&active=eq.true&expires_at=gte.'+now+'&select=*');
-  CW_MESSAGES=rows||[];
+// ── MESSAGES ─────────────────────────────────────────
+var CW_MESSAGES = [];
+
+async function loadMessages() {
+  var now = new Date().toISOString();
+  var rows = await sbFetch('cw2_messages', 'room=eq.' + ROOM + '&active=eq.true&expires_at=gte.' + now + '&select=*');
+  CW_MESSAGES = rows || [];
 }
-function buildMessageScreens(){
-  return CW_MESSAGES.map(function(m){
-    var lines=[m.line1||'',m.line2||'',m.line3||'',m.line4||'',m.line5||'',m.line6||'','',m.sender?'FROM  '+m.sender.toUpperCase():''];
-    while(lines.length<ROWS)lines.push('');
-    return{lines:lines,speed:12,id:'message-'+m.id,align:'center',sort_order:0.1};
+
+function buildMessageScreens() {
+  return CW_MESSAGES.map(function(m) {
+    var lines = [
+      m.line1 || '',
+      m.line2 || '',
+      m.line3 || '',
+      m.line4 || '',
+      m.line5 || '',
+      m.line6 || '',
+      '',
+      m.sender ? 'FROM  ' + (m.sender).toUpperCase() : ''
+    ];
+    while (lines.length < ROWS) lines.push('');
+    return { lines: lines, speed: 12, id: 'message-' + m.id, align: 'center', sort_order: 0.1 };
   });
 }
+
 
 // ── QUIET COMPETITION ─────────────────────────────────────────
-var CW_QUIET_POINTS=[],CW_PERIOD_NAMES={},CW_QUIET_CURRENT=null,cwQuietTimer=null,cwQuietLevel=0;
-function cwWeekStart(){var d=new Date();d.setDate(d.getDate()-d.getDay());return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-async function loadPeriodNames(){var rows=await sbFetch('cw2_period_names','room=eq.'+ROOM+'&select=period,display_name');CW_PERIOD_NAMES={};(rows||[]).forEach(function(r){CW_PERIOD_NAMES[r.period]=r.display_name;});}
-async function loadQuietPoints(){var ws=cwWeekStart();var rows=await sbFetch('cw2_quiet_points','room=eq.'+ROOM+'&week_start=eq.'+ws+'&select=*');CW_QUIET_POINTS=rows||[];}
+var CW_QUIET_POINTS  = [];
+var CW_PERIOD_NAMES  = {};
+var CW_QUIET_CURRENT = null;
+var cwQuietTimer     = null;
+var cwQuietLevel     = 0;
 
-async function cwAwardQuietPoints(){
-  var sched=getSchedule();if(!sched)return;
-  var nm=nowMins(),currentPeriod=null;
-  sched.periods.forEach(function(p){if(p.break)return;var s=toMins(p.start),e=toMins(p.end);if(nm>=s&&nm<e){var match=(p.label||'').match(/[0-9]+/);if(match)currentPeriod=match[0];}});
-  if(!currentPeriod)return;if(!nmOn||cwQuietLevel>=nmRed)return;
-  var ws=cwWeekStart(),existing=CW_QUIET_POINTS.find(function(r){return r.period===currentPeriod&&r.week_start===ws;});
-  var newPoints=(existing?existing.points_earned:0)+10,newMinutes=(existing?existing.minutes_quiet:0)+1;
-  if(existing){
-    var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_quiet_points?id=eq.'+existing.id,{method:'PATCH',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({points_earned:newPoints,minutes_quiet:newMinutes,updated_at:new Date().toISOString()})});
-    if(res.ok){var updated=await res.json();var idx=CW_QUIET_POINTS.findIndex(function(r){return r.id===existing.id;});if(idx>=0&&updated[0])CW_QUIET_POINTS[idx]=updated[0];}
-  } else {
-    var res2=await fetch(SUPABASE_URL+'/rest/v1/cw2_quiet_points',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify({room:ROOM,period:currentPeriod,week_start:ws,points_earned:newPoints,minutes_quiet:newMinutes})});
-    if(res2.ok){var inserted=await res2.json();if(inserted&&inserted[0])CW_QUIET_POINTS.push(inserted[0]);}
-  }
-  CW_QUIET_CURRENT={period:currentPeriod,points:newPoints,minutes:newMinutes};
+function cwWeekStart() {
+  var d = new Date();
+  d.setDate(d.getDate() - d.getDay());
+  return d.getFullYear() + '-' +
+    String(d.getMonth()+1).padStart(2,'0') + '-' +
+    String(d.getDate()).padStart(2,'0');
 }
-function cwStartQuietTimer(){if(cwQuietTimer)clearInterval(cwQuietTimer);cwQuietTimer=setInterval(function(){cwAwardQuietPoints();},60000);}
 
-function buildQuietScreen(){
-  if(!nmOn)return null;var sched=getSchedule();if(!sched)return null;
-  var ws=cwWeekStart(),grouped={};
-  CW_QUIET_POINTS.forEach(function(r){if(r.week_start!==ws)return;var name=CW_PERIOD_NAMES[r.period]||('PERIOD '+r.period);if(!grouped[name])grouped[name]={name:name,points:0,minutes:0};grouped[name].points+=r.points_earned||0;grouped[name].minutes+=r.minutes_quiet||0;});
-  Object.keys(CW_PERIOD_NAMES).forEach(function(p){var name=CW_PERIOD_NAMES[p];if(!grouped[name])grouped[name]={name:name,points:0,minutes:0};});
-  var ranked=Object.values(grouped).sort(function(a,b){return b.points-a.points;});if(!ranked.length)return null;
-  var nm2=nowMins(),inClass=false;
-  sched.periods.forEach(function(p){if(p.break)return;var s=toMins(p.start),e=toMins(p.end);if(nm2>=s&&nm2<e)inClass=true;});
-  var statusLine=inClass&&nmOn&&cwQuietLevel<nmRed?'EARNING POINTS  STAY QUIET':inClass&&nmOn&&cwQuietLevel>=nmRed?'TOO NOISY  PAUSED':'WEEKLY STANDINGS';
-  var medals=['1.','2.','3.','4.','5.','6.','7.'];
-  var lines=['QUIET COMPETITION','',statusLine,''];
-  ranked.slice(0,3).forEach(function(entry,i){
-    var prefix=medals[i]||((i+1)+'.');var pts=String(entry.points)+' PTS';
-    var name=entry.name.toUpperCase().substring(0,COLS-prefix.length-1-pts.length);
-    var lineStr=prefix+' '+name;var pad=COLS-lineStr.length-pts.length;
-    if(pad>0)lineStr+=' '.repeat(pad);
-    lines.push((lineStr+pts).substring(0,COLS));
+async function loadPeriodNames() {
+  var rows = await sbFetch('cw2_period_names', 'room=eq.' + ROOM + '&select=period,display_name');
+  CW_PERIOD_NAMES = {};
+  (rows || []).forEach(function(r) { CW_PERIOD_NAMES[r.period] = r.display_name; });
+}
+
+async function loadQuietPoints() {
+  var ws = cwWeekStart();
+  var rows = await sbFetch('cw2_quiet_points',
+    'room=eq.' + ROOM + '&week_start=eq.' + ws + '&select=*');
+  CW_QUIET_POINTS = rows || [];
+}
+
+async function cwAwardQuietPoints() {
+  var sched = getSchedule();
+  if (!sched) return;
+  var nm = nowMins();
+  var currentPeriod = null;
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm >= s && nm < e) {
+      var match = (p.label || '').match(/[0-9]+/);
+      if (match) currentPeriod = match[0];
+    }
   });
-  while(lines.length<7)lines.push('');
-  lines.push('ROOM 27  ·  RHS');
-  return{lines:lines.slice(0,8),speed:14,id:'quiet',align:'left',sort_order:0.7};
-}
+  if (!currentPeriod) return;
+  if (!nmOn || cwQuietLevel >= nmRed) return;
 
+  var ws = cwWeekStart();
+  var existing = CW_QUIET_POINTS.find(function(r) {
+    return r.period === currentPeriod && r.week_start === ws;
+  });
 
-// ── LIVE HISTORY DROP (Wikipedia On This Day) ─────────────────
-var CW_HISTORY_LIVE = null;
+  var newPoints  = (existing ? existing.points_earned : 0) + 10;
+  var newMinutes = (existing ? existing.minutes_quiet  : 0) + 1;
 
-async function loadLiveHistoryDrop() {
-  var now=new Date(),month=now.getMonth()+1,day=now.getDate();
-  try {
-    var url='https://en.wikipedia.org/api/rest_v1/feed/onthisday/events/'+month+'/'+day;
-    var res=await fetch(url,{headers:{'Accept':'application/json'}});
-    if(!res.ok)throw new Error('wiki '+res.status);
-    var data=await res.json();
-    var events=data.events||[];
-    if(!events.length)throw new Error('no events');
-    var filtered=events.filter(function(e){
-      var year=parseInt(e.year)||0;if(year<1900)return false;
-      var text=(e.text||'').toLowerCase();
-      var skip=['treaty','parliament','constitution','legislature','governor','senator','appointed','signed into law'];
-      return!skip.some(function(s){return text.includes(s);});
+  if (existing) {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points?id=eq.' + existing.id, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ points_earned: newPoints, minutes_quiet: newMinutes, updated_at: new Date().toISOString() })
     });
-    if(!filtered.length)filtered=events.filter(function(e){return parseInt(e.year)>=1950;});
-    if(!filtered.length)filtered=events;
-    var pool=filtered.slice(0,20);
-    var pick=pool[Math.floor(Math.random()*pool.length)];
-    CW_HISTORY_LIVE=formatHistoryDrop(pick.year,pick.text);
-    return CW_HISTORY_LIVE;
-  } catch(e) {
-    try {
-      var res2=await fetch('http://history.muffinlabs.com/date');
-      if(!res2.ok)throw new Error();
-      var data2=await res2.json();
-      var events2=(data2.data&&data2.data.Events)||[];
-      if(!events2.length)throw new Error();
-      var pick2=events2[Math.floor(Math.random()*Math.min(events2.length,15))];
-      CW_HISTORY_LIVE=formatHistoryDrop(pick2.year,pick2.text);
-      return CW_HISTORY_LIVE;
-    } catch(e2){CW_HISTORY_LIVE=null;return null;}
+    if (res.ok) {
+      var updated = await res.json();
+      var idx = CW_QUIET_POINTS.findIndex(function(r) { return r.id === existing.id; });
+      if (idx >= 0 && updated[0]) CW_QUIET_POINTS[idx] = updated[0];
+    }
+  } else {
+    var res2 = await fetch(SUPABASE_URL + '/rest/v1/cw2_quiet_points', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', 'Prefer': 'return=representation'
+      },
+      body: JSON.stringify({ room: ROOM, period: currentPeriod, week_start: ws, points_earned: newPoints, minutes_quiet: newMinutes })
+    });
+    if (res2.ok) {
+      var inserted = await res2.json();
+      if (inserted && inserted[0]) CW_QUIET_POINTS.push(inserted[0]);
+    }
   }
+  CW_QUIET_CURRENT = { period: currentPeriod, points: newPoints, minutes: newMinutes };
 }
 
-function formatHistoryDrop(year,text){
-  text=(text||'').replace(/\[\d+\]/g,'').replace(/\s+/g,' ').trim();
-  var COLS=28,header=('ON THIS DAY  '+year).substring(0,COLS);
-  var words=text.toUpperCase().split(' '),textLines=[],current='';
-  words.forEach(function(word){
-    if((current+(current?' ':'')+word).length<=COLS){current=current?current+' '+word:word;}
-    else{if(current)textLines.push(current);current=word.substring(0,COLS);}
-  });
-  if(current)textLines.push(current);
-  var lines=[header,''];
-  textLines.slice(0,6).forEach(function(l){lines.push(l);});
-  while(lines.length<8)lines.push('');
-  return{lines:lines.slice(0,8),speed:16,id:'history-live',align:'center',_isLive:true};
+function cwStartQuietTimer() {
+  if (cwQuietTimer) clearInterval(cwQuietTimer);
+  cwQuietTimer = setInterval(function() { cwAwardQuietPoints(); }, 60000);
 }
 
-function buildHistoryDropScreen(){return CW_HISTORY_LIVE||null;}
+function buildQuietScreen() {
+  if (!nmOn) return null;
+  var sched = getSchedule();
+  if (!sched) return null;
 
-// ── HONOR ROLL ────────────────────────────────────────────────
-async function loadHonorRoll(){
-  if(SETTINGS&&SETTINGS.show_honor_roll===false){document.getElementById('honor-ticker-wrap').style.display='none';document.getElementById('honor-ticker-inner').innerHTML='';return;}
-  var rows=await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
-  if(!rows||!rows.length)return;
-  var inner=document.getElementById('honor-ticker-inner');
-  var html=rows.map(function(r){return'<span class="ticker-name">'+r.name+'</span><span class="ticker-sep">·</span>';}).join('');
-  inner.innerHTML=html+html;
-  document.getElementById('honor-ticker-wrap').style.display='flex';
+  var ws = cwWeekStart();
+  var grouped = {};
+
+  CW_QUIET_POINTS.forEach(function(r) {
+    if (r.week_start !== ws) return;
+    var name = CW_PERIOD_NAMES[r.period] || ('PERIOD ' + r.period);
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+    grouped[name].points  += r.points_earned || 0;
+    grouped[name].minutes += r.minutes_quiet  || 0;
+  });
+
+  Object.keys(CW_PERIOD_NAMES).forEach(function(p) {
+    var name = CW_PERIOD_NAMES[p];
+    if (!grouped[name]) grouped[name] = { name: name, points: 0, minutes: 0 };
+  });
+
+  var ranked = Object.values(grouped).sort(function(a, b) { return b.points - a.points; });
+  if (!ranked.length) return null;
+
+  var nm2 = nowMins();
+  var inClass = false;
+  sched.periods.forEach(function(p) {
+    if (p.break) return;
+    var s = toMins(p.start), e = toMins(p.end);
+    if (nm2 >= s && nm2 < e) inClass = true;
+  });
+
+  var statusLine = '';
+  if (inClass && nmOn && cwQuietLevel < nmRed) {
+    statusLine = 'EARNING POINTS  STAY QUIET';
+  } else if (inClass && nmOn && cwQuietLevel >= nmRed) {
+    statusLine = 'TOO NOISY  POINTS PAUSED';
+  } else {
+    statusLine = 'WEEKLY STANDINGS';
+  }
+
+  var lines = ['QUIET COMPETITION', statusLine, ''];
+  var medals = ['1.','2.','3.','4.','5.','6.','7.'];
+
+  ranked.slice(0, ROWS - 3).forEach(function(entry, i) {
+    var prefix = medals[i] || ((i+1) + '.');
+    var pts    = String(entry.points) + ' PTS';
+    var name   = entry.name.toUpperCase();
+    var maxName = COLS - prefix.length - 1 - pts.length;
+    if (name.length > maxName) name = name.substring(0, maxName);
+    var lineStr = prefix + ' ' + name;
+    var pad = COLS - lineStr.length - pts.length;
+    if (pad > 0) lineStr += ' '.repeat(pad);
+    lines.push((lineStr + pts).substring(0, COLS));
+  });
+
+  while (lines.length < ROWS) lines.push('');
+  return { lines: lines.slice(0, ROWS), speed: 14, id: 'quiet', align: 'left', sort_order: 0.7 };
 }
 
-// ── BUILD FINAL LIST (unified order) ─────────────────────────
-// Replaces old injectDynamicScreens — now one list, one pass
-function injectDynamicScreens() {
-  var cats = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
-
-  var DC_DEFAULT = ['show_objectives','show_messages','show_calendar','show_weather',
-    'show_bell','show_birthday','show_quiet','cowboy_code','fun_facts',
-    'word_of_day','wise_words','business','history_drops','on_this_day'];
-  var order = (Array.isArray(cats.display_order) && cats.display_order.length)
-    ? cats.display_order : DC_DEFAULT;
-
-  // Build all dynamic screens
-  var dynamicScreens = {};
-  if(cats['show_calendar'] !== false){var s=buildCalendarScreen();if(s)dynamicScreens['show_calendar']=[s];}
-  if(cats['show_weather'] !== false){var s=buildWeatherScreen();if(s)dynamicScreens['show_weather']=[s];}
-  if(cats['show_bell'] !== false){var s=buildBellScreen();if(s)dynamicScreens['show_bell']=[s];}
-  if(cats['show_birthday'] !== false){var s=buildBirthdayScreen();if(s)dynamicScreens['show_birthday']=[s];}
-  if(cats['show_quiet'] !== false){var s=buildQuietScreen();if(s)dynamicScreens['show_quiet']=[s];}
-  if(cats['show_objectives'] !== false){var s=buildObjectivesScreen();if(s)dynamicScreens['show_objectives']=[s];}
-  if(cats['show_messages'] !== false){var msgs=buildMessageScreens();if(msgs.length)dynamicScreens['show_messages']=msgs;}
-  if(cats['on_this_day'] !== false){var s=buildHistoryDropScreen();if(s)dynamicScreens['on_this_day']=[s];}
-  var countScreen = buildCountdownScreen();
-
-  // Build local boards map (keyed by board-uuid)
-  var localBoardsMap = {};
-  allLocalScreens.forEach(function(r) {
-    localBoardsMap['board-'+r.id] = r;
-  });
-
-  // Build global category picks map
-  var globalPicksMap = {};
-  allGlobalPicks.forEach(function(pick) {
-    var cat = pick.category || 'cowboy_code';
-    globalPicksMap[cat] = pick;
-  });
-
-  // Walk order array and build final message list
-  var finalMessages = [];
-
-  order.forEach(function(key) {
-    // Skip if explicitly off
-    if(cats[key] === false) return;
-
-    // Dynamic screen
-    if(dynamicScreens[key]) {
-      dynamicScreens[key].forEach(function(s){finalMessages.push(s);});
-      return;
-    }
-
-    // Permanent local board
-    if(key.startsWith('board-')) {
-      var r = localBoardsMap[key];
-      if(!r || !r.enabled) return;
-      var lines = Array.isArray(r.lines) ? r.lines : JSON.parse(r.lines||'[]');
-      finalMessages.push({lines:lines, speed:r.speed||10, id:r.id, align:r.align||'center'});
-      return;
-    }
-
-    // Global category pick
-    var pick = globalPicksMap[key];
-    if(pick) {
-      var glines = Array.isArray(pick.lines) ? pick.lines : JSON.parse(pick.lines||'[]');
-      var galign = (key==='wise_words') ? 'center' : (pick.align||'left');
-      finalMessages.push({lines:glines, speed:pick.speed||12, id:pick.id, align:galign, _isGlobal:true});
-    }
-  });
-
-  // Countdown always appended at end if available
-  if(countScreen) finalMessages.push(countScreen);
-
-  messages = finalMessages;
+// ── HONOR ROLL ───────────────────────────────────────
+async function loadHonorRoll() {
+  if (SETTINGS && SETTINGS.show_honor_roll === false) {
+    document.getElementById('honor-ticker-wrap').style.display = 'none';
+    document.getElementById('honor-ticker-inner').innerHTML = '';
+    return;
+  }
+  var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
+  if (!rows || !rows.length) return;
+  var inner = document.getElementById('honor-ticker-inner');
+  var html  = rows.map(function(r) {
+    return '<span class="ticker-name">' + r.name + '</span><span class="ticker-sep">·</span>';
+  }).join('');
+  inner.innerHTML = html + html;
+  document.getElementById('honor-ticker-wrap').style.display = 'flex';
 }
 
-// ── START BOARD ───────────────────────────────────────────────
+// ── START BOARD ──────────────────────────────────────
 async function startBoard() {
-  setSyncStatus('','LOADING...');
+  setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
   await loadCwEvents();
-  await loadWeather();
-  var screensLoaded = await loadScreens();
-  if(!screensLoaded){
-    messages=[{lines:['COWBOY WIRE 2.0','ROOM '+ROOM,'','RIVERDALE HIGH SCHOOL','','CONNECTING...',''],speed:10,align:'center'}];
+
+  var screens = await loadScreens();
+  if (screens && screens.length) {
+    messages = screens;
   } else {
-    messages=[];
-    injectDynamicScreens();
+    messages = [{
+      lines: ['COWBOY WIRE 2.0', 'ROOM ' + ROOM, '', 'RIVERDALE HIGH SCHOOL', '', 'CONNECTING...', ''],
+      speed: 10, align: 'center'
+    }];
   }
-  prevLines = Array.from({length:ROWS},function(){return '\x00'.repeat(COLS);});
-  buildDots();showMessage(0);setSyncStatus('live','LIVE · ROOM '+ROOM);
+
+  injectDynamicScreens();
+  prevLines = Array.from({ length: ROWS }, function() { return '\x00'.repeat(COLS); });
+  buildDots();
+  showMessage(0);
+  setSyncStatus('live', 'LIVE · ROOM ' + ROOM);
 
   clearInterval(syncTimer);
   syncTimer = setInterval(async function() {
-    await loadSettings(); // KEY FIX: refresh settings on every sync
-    var screensOk = await loadScreens();
+    var fresh = await loadScreens();
     await loadCwEvents();
     await loadWeather();
-    if(screensOk){
-      var savedLine=(messages[currentIdx]&&messages[currentIdx].lines)?messages[currentIdx].lines[0]:'';
-      messages=[];injectDynamicScreens();
-      var ni=messages.findIndex(function(m){return m.lines&&m.lines[0]===savedLine;});
-      if(ni>=0)currentIdx=ni;
+    if (fresh) {
+      var savedLine = (messages[currentIdx] && messages[currentIdx].lines) ? messages[currentIdx].lines[0] : '';
+      messages = fresh;
+      injectDynamicScreens();
+      var ni = messages.findIndex(function(m) { return m.lines && m.lines[0] === savedLine; });
+      if (ni >= 0) currentIdx = ni;
       buildDots();
-      var t=new Date(),h=t.getHours()%12||12;
-      setSyncStatus('live','SYNCED '+h+':'+t.getMinutes().toString().padStart(2,'0'));
-    } else {setSyncStatus('error','SYNC FAILED');}
+      var t = new Date();
+      var h = t.getHours() % 12 || 12;
+      setSyncStatus('live', 'SYNCED ' + h + ':' + t.getMinutes().toString().padStart(2,'0'));
+    } else {
+      setSyncStatus('error', 'SYNC FAILED');
+    }
   }, SYNC_SEC * 1000);
 
+  // Refresh dynamic data every 5 minutes
   setInterval(async function() {
-    await loadSettings(); // KEY FIX: refresh settings on 5-min refresh too
-    await loadCwEvents();await loadWeather();await loadObjectives();
-    await loadBirthdays();await loadMessages();await loadQuietPoints();
-    await loadLiveHistoryDrop();
-    injectDynamicScreens();buildDots();
-  }, 5*60*1000);
+    await loadCwEvents();
+    await loadWeather();
+    await loadObjectives();
+    await loadBirthdays();
+    await loadMessages();
+    await loadQuietPoints();
+    injectDynamicScreens();
+    buildDots();
+  }, 5 * 60 * 1000);
 }
-// ── PICKER STATE POLL ────────────────────────────────────
+
+function injectDynamicScreens() {
+  // Clear all previously injected dynamic screens
+  messages = messages.filter(function(m) {
+    return m.id !== 'calendar' && m.id !== 'countdown' && m.id !== 'weather' &&
+           m.id !== 'bell' && m.id !== 'objectives' && m.id !== 'birthday' &&
+           m.id !== 'quiet' && !m.id.startsWith('message-');
+  });
+
+  // Calendar — position 0
+  var calScreen = buildCalendarScreen();
+  if (calScreen) messages.unshift(calScreen);
+
+  // Countdown — position 2
+  var countScreen = buildCountdownScreen();
+  if (countScreen) messages.splice(Math.min(2, messages.length), 0, countScreen);
+
+  // Weather — position 3
+  var wxScreen = buildWeatherScreen();
+  if (wxScreen) messages.splice(Math.min(3, messages.length), 0, wxScreen);
+
+  // Bell schedule — position 4, school days only
+  var bellScreen = buildBellScreen();
+  if (bellScreen) messages.splice(Math.min(4, messages.length), 0, bellScreen);
+
+  // Birthday — position 5
+  var bdayScreen = buildBirthdayScreen();
+  if (bdayScreen) messages.splice(Math.min(5, messages.length), 0, bdayScreen);
+
+  // Quiet Competition — position 6, only when noise meter on
+  var quietScreen = buildQuietScreen();
+  if (quietScreen) messages.splice(Math.min(6, messages.length), 0, quietScreen);
+
+  // Objectives — position 1 (current period only)
+  var objScreen = buildObjectivesScreen();
+  if (objScreen) messages.splice(1, 0, objScreen);
+
+  // Messages — inject right after calendar
+  var msgScreens = buildMessageScreens();
+  msgScreens.reverse().forEach(function(ms) { messages.splice(1, 0, ms); });
+}
+
+// ── PICKER STATE POLL ────────────────────────────────
 var PICK_SHOW_SEC = 20, lastPickShown = null, pickHideTimer = null;
 
 async function checkPickerState() {
@@ -1183,47 +1665,128 @@ function showPickOverlay(name, secs) {
 }
 
 setInterval(checkPickerState, 5000);
- 
-// ── NOISE METER ───────────────────────────────────────────────
-var nmOn=false,nmStream=null,nmAnalyser=null,nmAnimFrame=null,nmAudioCtx=null;
-var nmYellow=40,nmRed=68,nmPresetKey='normal';
-var NM_PRESETS={quiet:{yellow:30,red:55},normal:{yellow:40,red:68},loud:{yellow:55,red:80}};
-try{var saved=JSON.parse(localStorage.getItem('cw2-noise-'+ROOM)||'{}');if(saved.on!==undefined)nmOn=!!saved.on;if(saved.yellow)nmYellow=saved.yellow;if(saved.red)nmRed=saved.red;if(saved.preset)nmPresetKey=saved.preset;}catch(e){}
-function nmSave(){try{localStorage.setItem('cw2-noise-'+ROOM,JSON.stringify({on:nmOn,yellow:nmYellow,red:nmRed,preset:nmPresetKey}));}catch(e){}}
-function nmPreset(key){nmPresetKey=key;var p=NM_PRESETS[key];nmYellow=p.yellow;nmRed=p.red;document.getElementById('nm-yellow-slider').value=nmYellow;document.getElementById('nm-red-slider').value=nmRed;document.getElementById('nm-yellow-val').textContent=nmYellow;document.getElementById('nm-red-val').textContent=nmRed;['quiet','normal','loud'].forEach(function(k){document.getElementById('np-'+k).className='np-preset'+(k===key?' active':'');});nmSave();}
-function nmSliderChange(){nmYellow=parseInt(document.getElementById('nm-yellow-slider').value);nmRed=parseInt(document.getElementById('nm-red-slider').value);document.getElementById('nm-yellow-val').textContent=nmYellow;document.getElementById('nm-red-val').textContent=nmRed;['quiet','normal','loud'].forEach(function(k){document.getElementById('np-'+k).className='np-preset';});nmPresetKey='custom';nmSave();}
-function nmUpdateUI(){
-  var meter=document.getElementById('noise-meter'),btn=document.getElementById('nm-toggle-btn'),dialBtn=document.getElementById('noiseToggleBtn');
-  if(nmOn){meter.classList.add('active');btn.className='np-toggle on';btn.textContent='🎙 Meter ON — Click to disable';if(dialBtn){dialBtn.className='dial-btn on';dialBtn.textContent='📊 ON';}}
-  else{meter.classList.remove('active');btn.className='np-toggle';btn.textContent='📊 Enable Noise Meter';if(dialBtn){dialBtn.className='dial-btn';dialBtn.textContent='📊 OFF';}}
-  document.getElementById('nm-yellow-slider').value=nmYellow;document.getElementById('nm-red-slider').value=nmRed;
-  document.getElementById('nm-yellow-val').textContent=nmYellow;document.getElementById('nm-red-val').textContent=nmRed;
-  ['quiet','normal','loud'].forEach(function(k){document.getElementById('np-'+k).className='np-preset'+(k===nmPresetKey?' active':'');});
-}
-async function nmStart(){
-  if(nmStream)return;
-  try{nmStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});nmAudioCtx=new(window.AudioContext||window.webkitAudioContext)();var source=nmAudioCtx.createMediaStreamSource(nmStream);nmAnalyser=nmAudioCtx.createAnalyser();nmAnalyser.fftSize=256;nmAnalyser.smoothingTimeConstant=0.75;source.connect(nmAnalyser);nmTick();}
-  catch(e){nmOn=false;nmSave();nmUpdateUI();}
-}
-function nmStop(){if(nmAnimFrame){cancelAnimationFrame(nmAnimFrame);nmAnimFrame=null;}if(nmStream){nmStream.getTracks().forEach(function(t){t.stop();});nmStream=null;}if(nmAudioCtx){nmAudioCtx.close();nmAudioCtx=null;}nmAnalyser=null;for(var i=0;i<12;i++){var b=document.getElementById('nm'+i);if(b)b.className='nm-bar';}}
-function nmTick(){
-  if(!nmAnalyser)return;
-  var data=new Uint8Array(nmAnalyser.frequencyBinCount);nmAnalyser.getByteFrequencyData(data);
-  var slice=Math.floor(data.length*0.67),sum=0;
-  for(var i=0;i<slice;i++)sum+=data[i]*data[i];
-  var rms=Math.sqrt(sum/slice),level=Math.min(100,Math.round((rms/255)*100*2.2));
-  for(var j=0;j<12;j++){var b=document.getElementById('nm'+j);if(!b)continue;var on=level>=(j+1)*8.33;if(on){if(level>=nmRed)b.className='nm-bar on-red';else if(level>=nmYellow)b.className='nm-bar on-yellow';else b.className='nm-bar on-green';}else{b.className='nm-bar';}}
-  cwQuietLevel=level;nmAnimFrame=requestAnimationFrame(nmTick);
-}
-async function toggleNoiseMeter(){nmOn=!nmOn;nmSave();nmUpdateUI();if(nmOn)await nmStart();else nmStop();}
-var noisePanelOpen=false;
-function toggleNoisePanel(){noisePanelOpen=!noisePanelOpen;document.getElementById('noise-panel').classList.toggle('open',noisePanelOpen);}
-document.addEventListener('click',function(e){if(noisePanelOpen&&!e.target.closest('#noise-panel')&&!e.target.closest('#noise-meter')){noisePanelOpen=false;document.getElementById('noise-panel').classList.remove('open');}});
-(function(){nmUpdateUI();if(nmOn)nmStart();})();
 
-// ── FLIP SOUND ────────────────────────────────────────────────
-var SOUND_PROFILES=['OFF','CLASSIC','JADE','DIGITAL'],soundIdx=1,audioCtx=null;
-try{var s=localStorage.getItem('cw2-sound');if(s&&SOUND_PROFILES.includes(s))soundIdx=SOUND_PROFILES.indexOf(s);}catch(e){}
+// ── NOISE METER ──────────────────────────────────────
+var nmOn = false, nmStream = null, nmAnalyser = null, nmAnimFrame = null, nmAudioCtx = null;
+var nmYellow = 40, nmRed = 68, nmPresetKey = 'normal';
+var NM_PRESETS = { quiet:{yellow:30,red:55}, normal:{yellow:40,red:68}, loud:{yellow:55,red:80} };
+
+try {
+  var saved = JSON.parse(localStorage.getItem('cw2-noise-' + ROOM) || '{}');
+  if (saved.on !== undefined) nmOn = !!saved.on;
+  if (saved.yellow) nmYellow = saved.yellow;
+  if (saved.red)    nmRed    = saved.red;
+  if (saved.preset) nmPresetKey = saved.preset;
+} catch(e) {}
+
+function nmSave() {
+  try { localStorage.setItem('cw2-noise-' + ROOM, JSON.stringify({on:nmOn,yellow:nmYellow,red:nmRed,preset:nmPresetKey})); } catch(e) {}
+}
+function nmPreset(key) {
+  nmPresetKey = key;
+  var p = NM_PRESETS[key];
+  nmYellow = p.yellow; nmRed = p.red;
+  document.getElementById('nm-yellow-slider').value = nmYellow;
+  document.getElementById('nm-red-slider').value    = nmRed;
+  document.getElementById('nm-yellow-val').textContent = nmYellow;
+  document.getElementById('nm-red-val').textContent    = nmRed;
+  ['quiet','normal','loud'].forEach(function(k) {
+    document.getElementById('np-'+k).className = 'np-preset' + (k===key?' active':'');
+  });
+  nmSave();
+}
+function nmSliderChange() {
+  nmYellow = parseInt(document.getElementById('nm-yellow-slider').value);
+  nmRed    = parseInt(document.getElementById('nm-red-slider').value);
+  document.getElementById('nm-yellow-val').textContent = nmYellow;
+  document.getElementById('nm-red-val').textContent    = nmRed;
+  ['quiet','normal','loud'].forEach(function(k) { document.getElementById('np-'+k).className='np-preset'; });
+  nmPresetKey = 'custom'; nmSave();
+}
+function nmUpdateUI() {
+  var meter   = document.getElementById('noise-meter');
+  var btn     = document.getElementById('nm-toggle-btn');
+  var dialBtn = document.getElementById('noiseToggleBtn');
+  if (nmOn) {
+    meter.classList.add('active');
+    btn.className = 'np-toggle on';
+    btn.textContent = '🎙 Meter ON — Click to disable';
+    if (dialBtn) { dialBtn.className='dial-btn on'; dialBtn.textContent='📊 ON'; }
+  } else {
+    meter.classList.remove('active');
+    btn.className = 'np-toggle';
+    btn.textContent = '📊 Enable Noise Meter';
+    if (dialBtn) { dialBtn.className='dial-btn'; dialBtn.textContent='📊 OFF'; }
+  }
+  document.getElementById('nm-yellow-slider').value = nmYellow;
+  document.getElementById('nm-red-slider').value    = nmRed;
+  document.getElementById('nm-yellow-val').textContent = nmYellow;
+  document.getElementById('nm-red-val').textContent    = nmRed;
+  ['quiet','normal','loud'].forEach(function(k) {
+    document.getElementById('np-'+k).className = 'np-preset'+(k===nmPresetKey?' active':'');
+  });
+}
+async function nmStart() {
+  if (nmStream) return;
+  try {
+    nmStream   = await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    nmAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    var source = nmAudioCtx.createMediaStreamSource(nmStream);
+    nmAnalyser = nmAudioCtx.createAnalyser();
+    nmAnalyser.fftSize = 256; nmAnalyser.smoothingTimeConstant = 0.75;
+    source.connect(nmAnalyser); nmTick();
+  } catch(e) { nmOn = false; nmSave(); nmUpdateUI(); }
+}
+function nmStop() {
+  if (nmAnimFrame) { cancelAnimationFrame(nmAnimFrame); nmAnimFrame = null; }
+  if (nmStream)    { nmStream.getTracks().forEach(function(t){t.stop();}); nmStream = null; }
+  if (nmAudioCtx)  { nmAudioCtx.close(); nmAudioCtx = null; }
+  nmAnalyser = null;
+  for (var i = 0; i < 12; i++) { var b=document.getElementById('nm'+i); if(b) b.className='nm-bar'; }
+}
+function nmTick() {
+  if (!nmAnalyser) return;
+  var data = new Uint8Array(nmAnalyser.frequencyBinCount);
+  nmAnalyser.getByteFrequencyData(data);
+  var slice = Math.floor(data.length*0.67);
+  var sum = 0;
+  for (var i=0;i<slice;i++) sum += data[i]*data[i];
+  var rms   = Math.sqrt(sum/slice);
+  var level = Math.min(100, Math.round((rms/255)*100*2.2));
+  for (var j=0;j<12;j++) {
+    var b = document.getElementById('nm'+j);
+    if (!b) continue;
+    var on = level >= (j+1)*8.33;
+    if (on) {
+      if      (level >= nmRed)    b.className = 'nm-bar on-red';
+      else if (level >= nmYellow) b.className = 'nm-bar on-yellow';
+      else                        b.className = 'nm-bar on-green';
+    } else { b.className = 'nm-bar'; }
+  }
+  cwQuietLevel = level;
+  nmAnimFrame = requestAnimationFrame(nmTick);
+}
+async function toggleNoiseMeter() {
+  nmOn = !nmOn; nmSave(); nmUpdateUI();
+  if (nmOn) await nmStart(); else nmStop();
+}
+var noisePanelOpen = false;
+function toggleNoisePanel() {
+  noisePanelOpen = !noisePanelOpen;
+  document.getElementById('noise-panel').classList.toggle('open', noisePanelOpen);
+}
+document.addEventListener('click', function(e) {
+  if (noisePanelOpen && !e.target.closest('#noise-panel') && !e.target.closest('#noise-meter')) {
+    noisePanelOpen = false;
+    document.getElementById('noise-panel').classList.remove('open');
+  }
+});
+(function(){ nmUpdateUI(); if(nmOn) nmStart(); })();
+
+// ── FLIP SOUND ───────────────────────────────────────
+var SOUND_PROFILES = ['OFF','CLASSIC','JADE','DIGITAL'];
+var soundIdx = 1, audioCtx = null;
+try { var s=localStorage.getItem('cw2-sound');if(s&&SOUND_PROFILES.includes(s))soundIdx=SOUND_PROFILES.indexOf(s); }catch(e){}
 function getAudioCtx(){if(!audioCtx){try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;}}return audioCtx.state==='suspended'?null:audioCtx;}
 function enableSound(el){if(!audioCtx)try{audioCtx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();if(soundIdx===0){soundIdx=1;updateSoundBtn();}if(el){el.style.opacity='0';setTimeout(function(){el.remove();},600);}playFlipSound(5);}
 function cycleSoundProfile(){if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();soundIdx=(soundIdx+1)%SOUND_PROFILES.length;try{localStorage.setItem('cw2-sound',SOUND_PROFILES[soundIdx]);}catch(e){}updateSoundBtn();if(SOUND_PROFILES[soundIdx]!=='OFF')playFlipSound(6);}
@@ -1234,149 +1797,464 @@ function playClassicSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.cu
 function playJadeSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.currentTime,freq=1800,decay=0.015,vol=0.26,spread=Math.min(n*0.008,1.8),count=Math.min(Math.max(Math.floor(n*0.6),4),60);for(var i=0;i<count;i++){var t=now+(i/count)*spread,v=vol*(0.75+Math.random()*0.25);var osc=ctx.createOscillator(),gain=ctx.createGain();osc.type='square';osc.frequency.setValueAtTime(freq,t);osc.frequency.exponentialRampToValueAtTime(freq*0.45,t+decay);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(v,t+0.0003);gain.gain.exponentialRampToValueAtTime(0.001,t+decay*1.5);var f=ctx.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=2.8;osc.connect(f);f.connect(gain);gain.connect(ctx.destination);osc.start(t);osc.stop(t+decay*2);}}
 function playDigitalSound(n){var ctx=getAudioCtx();if(!ctx)return;var now=ctx.currentTime,beeps=Math.min(Math.max(Math.floor(n*0.4),3),16);var freqs=[1100,990,880,770,990,1100,880,770];for(var i=0;i<beeps;i++){var osc=ctx.createOscillator(),g=ctx.createGain();osc.type='square';osc.frequency.value=freqs[i%freqs.length];g.gain.setValueAtTime(0,now+(i/beeps)*2.8);g.gain.linearRampToValueAtTime(0.1,now+(i/beeps)*2.8+0.004);g.gain.linearRampToValueAtTime(0,now+(i/beeps)*2.8+0.034);osc.connect(g);g.connect(ctx.destination);osc.start(now+(i/beeps)*2.8);osc.stop(now+(i/beeps)*2.8+0.05);}}
 
-// ── MODE DIAL ─────────────────────────────────────────────────
-var DISPLAY_MODES=[{key:'retro-dark',label:'Retro · Dark',angle:-135},{key:'retro-light',label:'Retro · Light',angle:-45},{key:'modern-dark',label:'Modern · Dark',angle:45},{key:'modern-light',label:'Modern · Light',angle:135},{key:'walle',label:'WALL-E',angle:160},{key:'eve',label:'EVE',angle:180}];
-var dialModeIdx=0,dialOpen=false;
-function buildDialPositions(){
-  var wrap=document.getElementById('dialPositions');if(!wrap)return;wrap.innerHTML='';
-  DISPLAY_MODES.forEach(function(m,i){
-    if(i>0){var div=document.createElement('div');div.className='dial-divider';wrap.appendChild(div);}
-    var pos=document.createElement('div');pos.className='dial-pos';
-    pos.onclick=(function(idx){return function(e){e.stopPropagation();setDialMode(idx);};})(i);
-    var dot=document.createElement('div');dot.className='dial-pos-dot'+(i===dialModeIdx?' active':'');dot.id='dpos-'+i;
-    var lbl=document.createElement('div');lbl.className='dial-pos-label'+(i===dialModeIdx?' active':'');lbl.id='dlbl-'+i;lbl.textContent=m.label.split(' · ')[1]||m.label;
-    pos.appendChild(dot);pos.appendChild(lbl);wrap.appendChild(pos);
+// ── MODE DIAL ────────────────────────────────────────
+var DISPLAY_MODES = [
+  { key:'retro-dark',   label:'Retro · Dark',   angle:-135 },
+  { key:'retro-light',  label:'Retro · Light',  angle: -45 },
+  { key:'modern-dark',  label:'Modern · Dark',  angle:  45 },
+  { key:'modern-light', label:'Modern · Light', angle: 135 },
+  { key:'walle',        label:'WALL-E',          angle: 160 },
+  { key:'eve',          label:'EVE',             angle: 180 },
+];
+var dialModeIdx = 0, dialOpen = false;
+
+function buildDialPositions() {
+  var wrap = document.getElementById('dialPositions');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  DISPLAY_MODES.forEach(function(m, i) {
+    if (i > 0) { var div = document.createElement('div'); div.className='dial-divider'; wrap.appendChild(div); }
+    var pos = document.createElement('div');
+    pos.className = 'dial-pos';
+    pos.onclick = (function(idx) { return function(e) { e.stopPropagation(); setDialMode(idx); }; })(i);
+    var dot = document.createElement('div');
+    dot.className = 'dial-pos-dot' + (i===dialModeIdx?' active':'');
+    dot.id = 'dpos-'+i;
+    var lbl = document.createElement('div');
+    lbl.className = 'dial-pos-label' + (i===dialModeIdx?' active':'');
+    lbl.id = 'dlbl-'+i;
+    lbl.textContent = m.label.split(' · ')[1] || m.label;
+    pos.appendChild(dot); pos.appendChild(lbl); wrap.appendChild(pos);
   });
 }
-function applyDisplayMode(idx,animate){
-  var mode=DISPLAY_MODES[idx];document.documentElement.setAttribute('data-theme',mode.key);localStorage.setItem('cw2-theme-'+ROOM,mode.key);
-  var needle=document.getElementById('dialNeedle'),name=document.getElementById('dialModeName');
-  if(needle){if(animate===false){needle.style.transition='none';needle.style.transform='translateX(-50%) rotate('+mode.angle+'deg)';setTimeout(function(){needle.style.transition='';},50);}else{needle.style.transform='translateX(-50%) rotate('+mode.angle+'deg)';}}
-  if(name)name.textContent=mode.label;
-  DISPLAY_MODES.forEach(function(_,i){var dot=document.getElementById('dpos-'+i),lbl=document.getElementById('dlbl-'+i);if(dot)dot.className='dial-pos-dot'+(i===idx?' active':'');if(lbl)lbl.className='dial-pos-label'+(i===idx?' active':'');});
+
+function applyDisplayMode(idx, animate) {
+  var mode = DISPLAY_MODES[idx];
+  document.documentElement.setAttribute('data-theme', mode.key);
+  localStorage.setItem('cw2-theme-'+ROOM, mode.key);
+  var needle = document.getElementById('dialNeedle');
+  var name   = document.getElementById('dialModeName');
+  if (needle) {
+    if (animate === false) {
+      needle.style.transition = 'none';
+      needle.style.transform  = 'translateX(-50%) rotate(' + mode.angle + 'deg)';
+      setTimeout(function() { needle.style.transition = ''; }, 50);
+    } else {
+      needle.style.transform = 'translateX(-50%) rotate(' + mode.angle + 'deg)';
+    }
+  }
+  if (name) name.textContent = mode.label;
+  DISPLAY_MODES.forEach(function(_, i) {
+    var dot = document.getElementById('dpos-'+i);
+    var lbl = document.getElementById('dlbl-'+i);
+    if (dot) dot.className = 'dial-pos-dot'+(i===idx?' active':'');
+    if (lbl) lbl.className = 'dial-pos-label'+(i===idx?' active':'');
+  });
 }
-function setDialMode(idx){dialModeIdx=idx;applyDisplayMode(idx,true);prevLines=Array.from({length:ROWS},function(){return'\x00'.repeat(COLS);});if(messages.length)showMessage(currentIdx);}
-function dialNext(){setDialMode((dialModeIdx+1)%DISPLAY_MODES.length);}
-function toggleDial(){dialOpen=!dialOpen;document.getElementById('dial-panel').classList.toggle('open',dialOpen);}
-document.addEventListener('click',function(e){if(dialOpen&&!e.target.closest('#dial-panel')&&!e.target.closest('#dial-trigger')&&!e.target.closest('#dial-hint')){dialOpen=false;document.getElementById('dial-panel').classList.remove('open');}});
 
-// ── TIMER ─────────────────────────────────────────────────────
-var TD={'0':[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],'1':[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],'2':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],'3':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],'4':[[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],'5':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],'6':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],'7':[[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],'8':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],'9':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],':':[[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,0,0]]};
-var TW={'T':[[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],'I':[[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],'M':[[1,0,0,0,1],[1,1,0,1,1],[1,1,1,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],'E':[[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[1,1,1,1]],"'":'[[1],[1],[0],[0],[0],[0],[0],[0]]','S':[[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,1]],' ':[[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]};
-var TW_U=[[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[0,1,1,1,1,1,1,1,0],[0,0,1,1,1,1,1,0,0]];
-var TW_P=[[1,1,1,1,1,1,1,0,0],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,1,1,1,1,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0]];
-var tMode='countdown',tSound='westminster',tRunning=false,tSecs=0,tInterval=null,swSecs=0,ttiles=[],tPrevDisp='',tActive=false;
-try{var _ts=localStorage.getItem('cw2-timer-sound');if(_ts&&['westminster','ce','off'].includes(_ts))tSound=_ts;}catch(e){}
+function setDialMode(idx) {
+  dialModeIdx = idx;
+  applyDisplayMode(idx, true);
+  prevLines = Array.from({ length: ROWS }, function() { return '\x00'.repeat(COLS); });
+  if (messages.length) showMessage(currentIdx);
+}
+function dialNext() { setDialMode((dialModeIdx+1) % DISPLAY_MODES.length); }
+function toggleDial() {
+  dialOpen = !dialOpen;
+  document.getElementById('dial-panel').classList.toggle('open', dialOpen);
+}
+document.addEventListener('click', function(e) {
+  if (dialOpen && !e.target.closest('#dial-panel') && !e.target.closest('#dial-trigger') && !e.target.closest('#dial-hint')) {
+    dialOpen = false;
+    document.getElementById('dial-panel').classList.remove('open');
+  }
+});
 
-function bellNote(c,freq,t,dur,vol){vol=vol||0.42;var osc=c.createOscillator(),gain=c.createGain();osc.type='sine';osc.frequency.setValueAtTime(freq,t);gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(vol,t+0.012);gain.gain.exponentialRampToValueAtTime(0.001,t+dur+0.35);osc.connect(gain);gain.connect(c.destination);osc.start(t);osc.stop(t+dur+0.4);var osc2=c.createOscillator(),g2=c.createGain();osc2.type='sine';osc2.frequency.setValueAtTime(freq*2,t);g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(vol*0.22,t+0.012);g2.gain.exponentialRampToValueAtTime(0.001,t+dur*0.45);osc2.connect(g2);g2.connect(c.destination);osc2.start(t);osc2.stop(t+dur*0.5);}
+
+// ── TIMER DIGIT MAPS (8 rows) ────────────────────────────────
+var TD = {
+  '0':[[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '1':[[0,1,0],[1,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  '2':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[1,0,0],[1,0,0],[1,0,0],[1,1,1]],
+  '3':[[1,1,1],[0,0,1],[0,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+  '4':[[1,0,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[0,0,1]],
+  '5':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+  '6':[[1,1,1],[1,0,0],[1,0,0],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '7':[[1,1,1],[0,0,1],[0,0,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],
+  '8':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[1,0,1],[1,0,1],[1,0,1],[1,1,1]],
+  '9':[[1,1,1],[1,0,1],[1,0,1],[1,1,1],[0,0,1],[0,0,1],[0,0,1],[1,1,1]],
+  ':':[[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,1,0],[0,1,0],[0,0,0],[0,0,0]]
+};
+
+// TIME'S bitmaps — 8 rows, fills the full 28-col board
+var TW = {
+  'T': [[1,1,1,1,1],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0],[0,0,1,0,0]],
+  'I': [[1,1,1],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0],[1,1,1]],
+  'M': [[1,0,0,0,1],[1,1,0,1,1],[1,1,1,1,1],[1,0,1,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1],[1,0,0,0,1]],
+  'E': [[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[1,0,0,0],[1,0,0,0],[1,0,0,0],[1,1,1,1]],
+  "'": [[1],[1],[0],[0],[0],[0],[0],[0]],
+  'S': [[1,1,1,1],[1,0,0,0],[1,0,0,0],[1,1,1,0],[0,0,0,1],[0,0,0,1],[0,0,0,1],[1,1,1,1]],
+  ' ': [[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0],[0,0]]
+};
+
+// UP wide bitmaps — 9 cols each, bold double-stroke, centered in 28 cols
+var TW_U = [
+  [1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],
+  [1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[0,1,1,1,1,1,1,1,0],[0,0,1,1,1,1,1,0,0]
+];
+var TW_P = [
+  [1,1,1,1,1,1,1,0,0],[1,1,1,0,0,0,1,1,1],[1,1,1,0,0,0,1,1,1],[1,1,1,1,1,1,1,0,0],
+  [1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0],[1,1,1,0,0,0,0,0,0]
+];
+
+// ── TIMER STATE ───────────────────────────────────────────────
+var tMode = 'countdown', tSound = 'westminster';
+var tRunning = false, tSecs = 0, tInterval = null, swSecs = 0;
+var ttiles = [], tPrevDisp = '', tActive = false;
+try { var _ts = localStorage.getItem('cw2-timer-sound'); if (_ts && ['westminster','ce','off'].includes(_ts)) tSound = _ts; } catch(e) {}
+
+// ── BELL SOUNDS ───────────────────────────────────────────────
+function bellNote(c, freq, t, dur, vol) {
+  vol = vol || 0.42;
+  var osc = c.createOscillator(), gain = c.createGain();
+  osc.type = 'sine'; osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0, t);
+  gain.gain.linearRampToValueAtTime(vol, t + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + dur + 0.35);
+  osc.connect(gain); gain.connect(c.destination); osc.start(t); osc.stop(t + dur + 0.4);
+  var osc2 = c.createOscillator(), g2 = c.createGain();
+  osc2.type = 'sine'; osc2.frequency.setValueAtTime(freq * 2, t);
+  g2.gain.setValueAtTime(0, t);
+  g2.gain.linearRampToValueAtTime(vol * 0.22, t + 0.012);
+  g2.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.45);
+  osc2.connect(g2); g2.connect(c.destination); osc2.start(t); osc2.stop(t + dur * 0.5);
+}
 var _E=659.25,_C=523.25,_D=587.33,_G=392.00,_ND=0.42,_LG=0.75,_GP=0.07;
-var BELL_SEQS={westminster:[{f:_E,d:_ND},{f:_D,d:_ND},{f:_C,d:_ND},{f:_G,d:_LG},{f:_G,d:_ND},{f:_D,d:_ND},{f:_E,d:_ND},{f:_C,d:_LG}],ce:[{f:587.33,d:0.42},{f:659.25,d:0.42},{f:523.25,d:0.42},{f:261.63,d:0.52},{f:392.00,d:0.85}]};
-function playTimerBell(key){if(key==='off')return;var c=audioCtx;if(!c){try{c=new(window.AudioContext||window.webkitAudioContext)();audioCtx=c;}catch(e){return;}}if(c.state==='suspended')c.resume();var seq=BELL_SEQS[key]||BELL_SEQS.westminster,t=c.currentTime+0.08;seq.forEach(function(note,i){if(i>0)t+=_GP;if(key==='westminster'&&i===4)t+=0.35;bellNote(c,note.f,t,note.d);t+=note.d;});}
+var BELL_SEQS = {
+  westminster:[{f:_E,d:_ND},{f:_D,d:_ND},{f:_C,d:_ND},{f:_G,d:_LG},{f:_G,d:_ND},{f:_D,d:_ND},{f:_E,d:_ND},{f:_C,d:_LG}],
+  ce:[{f:587.33,d:0.42},{f:659.25,d:0.42},{f:523.25,d:0.42},{f:261.63,d:0.52},{f:392.00,d:0.85}]
+};
+function playTimerBell(key) {
+  if (key === 'off') return;
+  var c = audioCtx;
+  if (!c) { try { c = new (window.AudioContext || window.webkitAudioContext)(); audioCtx = c; } catch(e) { return; } }
+  if (c.state === 'suspended') c.resume();
+  var seq = BELL_SEQS[key] || BELL_SEQS.westminster;
+  var t = c.currentTime + 0.08;
+  seq.forEach(function(note, i) {
+    if (i > 0) t += _GP;
+    if (key === 'westminster' && i === 4) t += 0.35;
+    bellNote(c, note.f, t, note.d);
+    t += note.d;
+  });
+}
 
-function buildTimerBoard(){var board=document.getElementById('timer-board');board.innerHTML='';ttiles=[];tPrevDisp='';for(var r=0;r<ROWS;r++){var row=document.createElement('div');row.className='tt-row';var rt=[];for(var c=0;c<COLS;c++){var t=document.createElement('div');t.className='tt';t.dataset.state='';row.appendChild(t);rt.push(t);}board.appendChild(row);ttiles.push(rt);}}
-function setTT(r,c,cls,anim){if(r<0||r>=ROWS||c<0||c>=COLS)return;var t=ttiles[r][c],prev=t.dataset.state||'';if(prev===cls)return;t.className='tt'+(cls?' '+cls:'');t.dataset.state=cls;if(anim){t.classList.add('flip');setTimeout(function(){t.classList.remove('flip');},320);}}
-function clearTimerBoard(anim){for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)setTT(r,c,'',anim);}
-function renderTimer(secs,warn,anim){
-  var m=Math.floor(secs/60),s=secs%60,mStr=String(m).padStart(2,'0'),sStr=String(s).padStart(2,'0');
-  var cacheKey=mStr+':'+sStr+(warn?'w':'g');if(cacheKey===tPrevDisp&&!anim)return;tPrevDisp=cacheKey;
-  var cls=warn?'warn':'on',chars,positions;
-  if(m===0){chars=[sStr[0],sStr[1]];positions=[11,15];}
-  else if(mStr[0]==='0'){chars=[mStr[1],':',sStr[0],sStr[1]];positions=[5,9,13,17];}
-  else{chars=[mStr[0],mStr[1],':',sStr[0],sStr[1]];positions=[1,5,9,13,17];}
-  var target=Array.from({length:ROWS},function(){return new Array(COLS).fill('');});
-  chars.forEach(function(ch,i){var pat=TD[ch];if(!pat)return;var w=pat[0].length,col=positions[i];for(var r=0;r<ROWS;r++)for(var c=0;c<w;c++)if(col+c<COLS)target[r][col+c]=pat[r][c]?cls:'';});
-  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)setTT(r,c,target[r][c],anim&&target[r][c]!==(ttiles[r][c].dataset.state||''));
+// ── TIMER BOARD ───────────────────────────────────────────────
+function buildTimerBoard() {
+  var board = document.getElementById('timer-board');
+  board.innerHTML = ''; ttiles = []; tPrevDisp = '';
+  for (var r = 0; r < ROWS; r++) {
+    var row = document.createElement('div');
+    row.className = 'tt-row';
+    var rt = [];
+    for (var c = 0; c < COLS; c++) {
+      var t = document.createElement('div');
+      t.className = 'tt'; t.dataset.state = '';
+      row.appendChild(t); rt.push(t);
+    }
+    board.appendChild(row); ttiles.push(rt);
+  }
 }
-function renderTimesWord(cls,anim){
-  var letters=["T","I","M","E","'","S"],totalW=0;
-  letters.forEach(function(ch){totalW+=(TW[ch]?TW[ch][0].length:2)+1;});totalW=Math.max(0,totalW-1);
-  var startCol=Math.max(0,Math.floor((COLS-totalW)/2)),target=Array.from({length:ROWS},function(){return new Array(COLS).fill('');});
-  var col=startCol;
-  letters.forEach(function(ch){var pat=TW[ch];if(!pat){col+=2;return;}var w=pat[0].length;for(var r=0;r<ROWS;r++)for(var c=0;c<w;c++)if(col+c<COLS)target[r][col+c]=pat[r][c]?cls:'';col+=w+1;});
-  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)setTT(r,c,target[r][c],anim);
+
+function setTT(r, c, cls, anim) {
+  if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return;
+  var t = ttiles[r][c];
+  var prev = t.dataset.state || '';
+  if (prev === cls) return;
+  t.className = 'tt' + (cls ? ' ' + cls : '');
+  t.dataset.state = cls;
+  if (anim) { t.classList.add('flip'); setTimeout(function() { t.classList.remove('flip'); }, 320); }
 }
-function renderUpWord(cls,anim){
-  var gap=3,uW=TW_U[0].length,pW=TW_P[0].length,total=uW+gap+pW;
-  var startCol=Math.floor((COLS-total)/2),target=Array.from({length:ROWS},function(){return new Array(COLS).fill('');});
-  for(var r=0;r<ROWS;r++){for(var c=0;c<uW;c++)if(startCol+c<COLS)target[r][startCol+c]=TW_U[r][c]?cls:'';var pStart=startCol+uW+gap;for(var c=0;c<pW;c++)if(pStart+c<COLS)target[r][pStart+c]=TW_P[r][c]?cls:'';}
-  for(var r=0;r<ROWS;r++)for(var c=0;c<COLS;c++)setTT(r,c,target[r][c],anim);
+
+function clearTimerBoard(anim) {
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, '', anim);
 }
-function renderTimesUp(){
-  var count=0,maxFlips=5;
-  function showTimes(){clearTimerBoard(true);setTimeout(function(){renderTimesWord('tan',true);setTimeout(showUp,1500);},250);}
-  function showUp(){clearTimerBoard(true);setTimeout(function(){renderUpWord('tan',true);count++;if(count<maxFlips)setTimeout(showTimes,1500);},250);}
+
+function renderTimer(secs, warn, anim) {
+  var m = Math.floor(secs / 60), s = secs % 60;
+  var mStr = String(m).padStart(2, '0');
+  var sStr = String(s).padStart(2, '0');
+  var cacheKey = mStr + ':' + sStr + (warn ? 'w' : 'g');
+  if (cacheKey === tPrevDisp && !anim) return;
+  tPrevDisp = cacheKey;
+  var cls = warn ? 'warn' : 'on';
+  var chars, positions;
+  if (m === 0) {
+    chars = [sStr[0], sStr[1]];
+    positions = [11, 15];
+  } else if (mStr[0] === '0') {
+    chars = [mStr[1], ':', sStr[0], sStr[1]];
+    positions = [5, 9, 13, 17];
+  } else {
+    chars = [mStr[0], mStr[1], ':', sStr[0], sStr[1]];
+    positions = [1, 5, 9, 13, 17];
+  }
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+  chars.forEach(function(ch, i) {
+    var pat = TD[ch]; if (!pat) return;
+    var w = pat[0].length, col = positions[i];
+    for (var r = 0; r < ROWS; r++)
+      for (var c = 0; c < w; c++)
+        if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
+  });
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, target[r][c], anim && target[r][c] !== (ttiles[r][c].dataset.state || ''));
+}
+
+// ── RENDER WORD (TIME'S) ──────────────────────────────────────
+function renderTimesWord(cls, anim) {
+  var letters = ["T","I","M","E","'","S"];
+  var totalW = 0;
+  letters.forEach(function(ch) { totalW += (TW[ch] ? TW[ch][0].length : 2) + 1; });
+  totalW = Math.max(0, totalW - 1);
+  var startCol = Math.max(0, Math.floor((COLS - totalW) / 2));
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+  var col = startCol;
+  letters.forEach(function(ch) {
+    var pat = TW[ch]; if (!pat) { col += 2; return; }
+    var w = pat[0].length;
+    for (var r = 0; r < ROWS; r++)
+      for (var c = 0; c < w; c++)
+        if (col + c < COLS) target[r][col + c] = pat[r][c] ? cls : '';
+    col += w + 1;
+  });
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, target[r][c], anim);
+}
+
+// ── RENDER UP (wide bold letters) ────────────────────────────
+function renderUpWord(cls, anim) {
+  var gap = 3;
+  var uW = TW_U[0].length, pW = TW_P[0].length;
+  var total = uW + gap + pW;
+  var startCol = Math.floor((COLS - total) / 2);
+  var target = Array.from({ length: ROWS }, function() { return new Array(COLS).fill(''); });
+  for (var r = 0; r < ROWS; r++) {
+    for (var c = 0; c < uW; c++)
+      if (startCol + c < COLS) target[r][startCol + c] = TW_U[r][c] ? cls : '';
+    var pStart = startCol + uW + gap;
+    for (var c = 0; c < pW; c++)
+      if (pStart + c < COLS) target[r][pStart + c] = TW_P[r][c] ? cls : '';
+  }
+  for (var r = 0; r < ROWS; r++)
+    for (var c = 0; c < COLS; c++)
+      setTT(r, c, target[r][c], anim);
+}
+
+// ── TIMES UP FLIP SEQUENCE ────────────────────────────────────
+// Flips TIME'S → UP × 5, holds on UP until teacher ends
+function renderTimesUp() {
+  var count = 0, maxFlips = 5, showing = 'times';
+
+  function showTimes() {
+    clearTimerBoard(true);
+    setTimeout(function() {
+      renderTimesWord('tan', true);
+      showing = 'up';
+      setTimeout(showUp, 1500);
+    }, 250);
+  }
+
+  function showUp() {
+    clearTimerBoard(true);
+    setTimeout(function() {
+      renderUpWord('tan', true);
+      showing = 'times';
+      count++;
+      if (count < maxFlips) setTimeout(showTimes, 1500);
+      // After 5 flips, hold on UP until teacher hits End Timer
+    }, 250);
+  }
+
   showTimes();
 }
-function openTimerOverlay(){if(tActive)return;document.getElementById('timer-overlay').classList.add('open');}
-function closeTimerOverlay(){document.getElementById('timer-overlay').classList.remove('open');}
-function tcMode(m){tMode=m;document.getElementById('tc-cd').className='tc-tab'+(m==='countdown'?' active':'');document.getElementById('tc-sw').className='tc-tab'+(m==='stopwatch'?' active':'');var ti=document.getElementById('tc-time');ti.style.opacity=m==='stopwatch'?'0.3':'1';ti.style.pointerEvents=m==='stopwatch'?'none':'all';}
-function tcSound(s){tSound=s;try{localStorage.setItem('cw2-timer-sound',s);}catch(e){}['westminster','ce','off'].forEach(function(k){var el=document.getElementById('tc-snd-'+k);if(el)el.className='tc-snd'+(k===s?' active':'');});}
-function _startCountdownInterval(){
-  tInterval=setInterval(function(){
-    tSecs--;var warn=tSecs<=60;renderTimer(tSecs,warn,true);
-    document.getElementById('tb-label').textContent=warn?'LESS THAN 1 MINUTE':'COUNTDOWN';
-    if(tSecs<=0){clearInterval(tInterval);tRunning=false;document.getElementById('tb-pause').style.display='none';document.getElementById('tb-label').textContent="TIME'S UP";renderTimesUp();playTimerBell(tSound);}
-  },1000);
-}
-function timerStart(){
-  closeTimerOverlay();buildTimerBoard();
-  if(tMode==='countdown'){var m=parseInt(document.getElementById('tc-min').value)||0,s=parseInt(document.getElementById('tc-sec').value)||0;tSecs=m*60+s;if(tSecs<=0)return;}else{swSecs=0;tSecs=0;}
-  tActive=true;tRunning=true;tPrevDisp='';
-  document.getElementById('timer-hint').classList.add('active');document.getElementById('timer-hint').textContent='⏱ RUNNING';
-  var hw=document.getElementById('honor-ticker-wrap');hw.style.opacity='0';setTimeout(function(){hw.style.display='none';},500);
-  var board=document.getElementById('timer-board');board.classList.add('visible');setTimeout(function(){board.classList.add('show');},20);
-  var bar=document.getElementById('timer-bar');bar.classList.add('visible');setTimeout(function(){bar.classList.add('show');},20);
-  document.getElementById('tb-label').textContent=tMode==='countdown'?'COUNTDOWN':'STOPWATCH';document.getElementById('tb-pause').textContent='PAUSE';document.getElementById('tb-pause').style.display='';
-  if(tMode==='countdown'){renderTimer(tSecs,false,true);_startCountdownInterval();}
-  else{renderTimer(0,false,true);tInterval=setInterval(function(){swSecs++;renderTimer(swSecs,false,true);},1000);}
-}
-function timerPause(){
-  if(!tActive)return;
-  if(tRunning){clearInterval(tInterval);tRunning=false;document.getElementById('tb-pause').textContent='RESUME';document.getElementById('tb-label').textContent='PAUSED';}
-  else{tRunning=true;document.getElementById('tb-pause').textContent='PAUSE';document.getElementById('tb-label').textContent=tMode==='countdown'?'COUNTDOWN':'STOPWATCH';if(tMode==='countdown')_startCountdownInterval();else tInterval=setInterval(function(){swSecs++;renderTimer(swSecs,false,true);},1000);}
-}
-function timerReset(){
-  clearInterval(tInterval);tRunning=false;tPrevDisp='';swSecs=0;
-  var m=parseInt(document.getElementById('tc-min').value)||0,s=parseInt(document.getElementById('tc-sec').value)||0;
-  tSecs=tMode==='countdown'?m*60+s:0;document.getElementById('tb-pause').textContent='PAUSE';document.getElementById('tb-pause').style.display='';
-  document.getElementById('tb-label').textContent=tMode==='countdown'?'COUNTDOWN':'STOPWATCH';
-  renderTimer(tSecs,false,true);tRunning=true;
-  if(tMode==='countdown')_startCountdownInterval();else tInterval=setInterval(function(){swSecs++;renderTimer(swSecs,false,true);},1000);
-}
-function timerEnd(){
-  clearInterval(tInterval);tActive=false;tRunning=false;tPrevDisp='';swSecs=0;
-  var hint=document.getElementById('timer-hint');hint.classList.remove('active');hint.textContent='⏱ TIMER';
-  var board=document.getElementById('timer-board');board.classList.remove('show');setTimeout(function(){board.classList.remove('visible');},400);
-  var bar=document.getElementById('timer-bar');bar.classList.remove('show');setTimeout(function(){bar.classList.remove('visible');},400);
-  document.getElementById('tb-pause').style.display='';document.getElementById('tb-pause').textContent='PAUSE';
-  var hw=document.getElementById('honor-ticker-wrap');
-  if(document.getElementById('honor-ticker-inner').innerHTML.trim()){hw.style.display='flex';setTimeout(function(){hw.style.opacity='1';},50);}
-}
-document.addEventListener('click',function(e){var overlay=document.getElementById('timer-overlay');if(overlay&&overlay.classList.contains('open')&&!e.target.closest('#timer-card')&&!e.target.closest('#timer-trigger')&&!e.target.closest('#timer-hint'))closeTimerOverlay();});
-document.addEventListener('keydown',function(e){
-  if(tActive){if(e.key==='Escape')timerEnd();return;}
-  if(e.key==='ArrowRight'||e.key==='Enter'||e.key===' '){e.preventDefault();nextMsg();}
-  if(e.key==='ArrowLeft'){e.preventDefault();prevMsg();}
-  if(e.key==='f'||e.key==='F')document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();
-  if(e.key==='Escape')document.exitFullscreen&&document.exitFullscreen();
-  if(e.key==='m'||e.key==='M')dialNext();
-});
-window.addEventListener('click',function(){if(typeof enableSound==='function'){var sp=document.getElementById('sound-prompt');if(sp)enableSound(sp);}},{once:true});
 
-(async function(){
-  buildBoard();buildTimerBoard();
-  var _savedTSound=localStorage.getItem('cw2-timer-sound');
-  if(_savedTSound&&['westminster','ce','off'].includes(_savedTSound)){tSound=_savedTSound;tcSound(_savedTSound);}
-  buildDialPositions();updateClock();
-  setInterval(updateClock,10000);setInterval(updatePeriodTimer,1000);updatePeriodTimer();updateSoundBtn();
-  setTimeout(function(){var sp=document.getElementById('sound-prompt');if(sp){sp.style.opacity='0';setTimeout(function(){sp.remove();},600);}},8000);
+// ── TIMER UI ──────────────────────────────────────────────────
+function openTimerOverlay() {
+  if (tActive) return;
+  document.getElementById('timer-overlay').classList.add('open');
+}
+function closeTimerOverlay() {
+  document.getElementById('timer-overlay').classList.remove('open');
+}
+function tcMode(m) {
+  tMode = m;
+  document.getElementById('tc-cd').className = 'tc-tab' + (m === 'countdown' ? ' active' : '');
+  document.getElementById('tc-sw').className = 'tc-tab' + (m === 'stopwatch' ? ' active' : '');
+  var ti = document.getElementById('tc-time');
+  ti.style.opacity = m === 'stopwatch' ? '0.3' : '1';
+  ti.style.pointerEvents = m === 'stopwatch' ? 'none' : 'all';
+}
+function tcSound(s) {
+  tSound = s;
+  try { localStorage.setItem('cw2-timer-sound', s); } catch(e) {}
+  ['westminster','ce','off'].forEach(function(k) {
+    var el = document.getElementById('tc-snd-' + k);
+    if (el) el.className = 'tc-snd' + (k === s ? ' active' : '');
+  });
+}
+
+function _startCountdownInterval() {
+  tInterval = setInterval(function() {
+    tSecs--;
+    var warn = tSecs <= 60;
+    renderTimer(tSecs, warn, true);
+    document.getElementById('tb-label').textContent = warn ? 'LESS THAN 1 MINUTE' : 'COUNTDOWN';
+    if (tSecs <= 0) {
+      clearInterval(tInterval); tRunning = false;
+      document.getElementById('tb-pause').style.display = 'none';
+      document.getElementById('tb-label').textContent = "TIME'S UP";
+      renderTimesUp();
+      playTimerBell(tSound);
+    }
+  }, 1000);
+}
+
+function timerStart() {
+  closeTimerOverlay();
+  buildTimerBoard();
+  if (tMode === 'countdown') {
+    var m = parseInt(document.getElementById('tc-min').value) || 0;
+    var s = parseInt(document.getElementById('tc-sec').value) || 0;
+    tSecs = m * 60 + s;
+    if (tSecs <= 0) return;
+  } else { swSecs = 0; tSecs = 0; }
+  tActive = true; tRunning = true; tPrevDisp = '';
+  document.getElementById('timer-hint').classList.add('active');
+  document.getElementById('timer-hint').textContent = '⏱ RUNNING';
+  var hw = document.getElementById('honor-ticker-wrap');
+  hw.style.opacity = '0';
+  setTimeout(function() { hw.style.display = 'none'; }, 500);
+  var board = document.getElementById('timer-board');
+  board.classList.add('visible');
+  setTimeout(function() { board.classList.add('show'); }, 20);
+  var bar = document.getElementById('timer-bar');
+  bar.classList.add('visible');
+  setTimeout(function() { bar.classList.add('show'); }, 20);
+  document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  document.getElementById('tb-pause').style.display = '';
+  if (tMode === 'countdown') {
+    renderTimer(tSecs, false, true);
+    _startCountdownInterval();
+  } else {
+    renderTimer(0, false, true);
+    tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000);
+  }
+}
+
+function timerPause() {
+  if (!tActive) return;
+  if (tRunning) {
+    clearInterval(tInterval); tRunning = false;
+    document.getElementById('tb-pause').textContent = 'RESUME';
+    document.getElementById('tb-label').textContent = 'PAUSED';
+  } else {
+    tRunning = true;
+    document.getElementById('tb-pause').textContent = 'PAUSE';
+    document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+    if (tMode === 'countdown') { _startCountdownInterval(); }
+    else { tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000); }
+  }
+}
+
+function timerReset() {
+  clearInterval(tInterval); tRunning = false; tPrevDisp = ''; swSecs = 0;
+  var m = parseInt(document.getElementById('tc-min').value) || 0;
+  var s = parseInt(document.getElementById('tc-sec').value) || 0;
+  tSecs = tMode === 'countdown' ? m * 60 + s : 0;
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  document.getElementById('tb-pause').style.display = '';
+  document.getElementById('tb-label').textContent = tMode === 'countdown' ? 'COUNTDOWN' : 'STOPWATCH';
+  renderTimer(tSecs, false, true); tRunning = true;
+  if (tMode === 'countdown') { _startCountdownInterval(); }
+  else { tInterval = setInterval(function() { swSecs++; renderTimer(swSecs, false, true); }, 1000); }
+}
+
+function timerEnd() {
+  clearInterval(tInterval);
+  tActive = false; tRunning = false; tPrevDisp = ''; swSecs = 0;
+  var hint = document.getElementById('timer-hint');
+  hint.classList.remove('active'); hint.textContent = '⏱ TIMER';
+  var board = document.getElementById('timer-board');
+  board.classList.remove('show');
+  setTimeout(function() { board.classList.remove('visible'); }, 400);
+  var bar = document.getElementById('timer-bar');
+  bar.classList.remove('show');
+  setTimeout(function() { bar.classList.remove('visible'); }, 400);
+  document.getElementById('tb-pause').style.display = '';
+  document.getElementById('tb-pause').textContent = 'PAUSE';
+  var hw = document.getElementById('honor-ticker-wrap');
+  if (document.getElementById('honor-ticker-inner').innerHTML.trim()) {
+    hw.style.display = 'flex';
+    setTimeout(function() { hw.style.opacity = '1'; }, 50);
+  }
+}
+
+document.addEventListener('click', function(e) {
+  var overlay = document.getElementById('timer-overlay');
+  if (overlay && overlay.classList.contains('open') &&
+      !e.target.closest('#timer-card') &&
+      !e.target.closest('#timer-trigger') &&
+      !e.target.closest('#timer-hint')) {
+    closeTimerOverlay();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (tActive) { if (e.key === 'Escape') timerEnd(); return; }
+  if (e.key==='ArrowRight'||e.key==='Enter'||e.key===' ') { e.preventDefault(); nextMsg(); }
+  if (e.key==='ArrowLeft')  { e.preventDefault(); prevMsg(); }
+  if (e.key==='f'||e.key==='F') document.documentElement.requestFullscreen && document.documentElement.requestFullscreen();
+  if (e.key==='Escape')         document.exitFullscreen && document.exitFullscreen();
+  if (e.key==='m'||e.key==='M') dialNext();
+});
+window.addEventListener('click', function() {
+  if (typeof enableSound === 'function') {
+    var sp = document.getElementById('sound-prompt');
+    if (sp) enableSound(sp);
+  }
+}, { once: true });
+
+(async function() {
+  buildBoard();
+  buildTimerBoard();
+  var _savedTSound = localStorage.getItem('cw2-timer-sound');
+  if (_savedTSound && ['westminster','ce','off'].includes(_savedTSound)) { tSound = _savedTSound; tcSound(_savedTSound); }
+  buildDialPositions();
+  updateClock();
+  setInterval(updateClock, 10000);
+  setInterval(updatePeriodTimer, 1000);
+  updatePeriodTimer();
+  updateSoundBtn();
+  setTimeout(function() {
+    var sp = document.getElementById('sound-prompt');
+    if (sp) { sp.style.opacity = '0'; setTimeout(function(){sp.remove();}, 600); }
+  }, 8000);
   await startBoard();
-  await loadObjectives();await loadBirthdays();await loadMessages();
-  await loadPeriodNames();await loadQuietPoints();
-  await loadLiveHistoryDrop();
+  await loadObjectives();
+  await loadBirthdays();
+  await loadMessages();
+  await loadPeriodNames();
+  await loadQuietPoints();
   cwStartQuietTimer();
-  setTimeout(function(){loadHonorRoll();},2000);
-  setInterval(function(){loadHonorRoll();},30*60*1000);
+  checkPickerState();
+  setTimeout(function() { loadHonorRoll(); }, 2000);
+  setInterval(function() { loadHonorRoll(); }, 30*60*1000);
 })();
 </script>
 </body>
