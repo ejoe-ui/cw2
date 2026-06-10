@@ -142,6 +142,17 @@
   #dial-hint:hover{color:#444;}
   body:hover #dial-hint{color:#2e2e2e;}
   #sound-prompt{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,86,64,0.85);color:#fff;font-family:var(--font-retro);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;padding:7px 18px;border-radius:4px;cursor:pointer;z-index:200;transition:opacity 0.5s;}
+  /* ── PICK OVERLAY ───────────────────────────────────────── */
+#pick-overlay { position: fixed; inset: 0; top: calc(10vh + 3px);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2vh; background: var(--board-bg); opacity: 0; pointer-events: none;
+  transition: opacity 0.4s; z-index: 90; }
+#pick-overlay.visible { opacity: 1; }
+#pick-label { font-family: var(--font-ui); font-size: clamp(14px,1.8vw,30px);
+  letter-spacing: .35em; color: var(--green); text-transform: uppercase; }
+#pick-name { font-family: var(--font-tile); font-size: clamp(48px,10vw,170px);
+  font-weight: 900; color: var(--tile-text); transform: scaleX(var(--scaleX,1));
+  text-align: center; line-height: 1.1; padding: 0 2vw; }
   #version-badge{position:fixed;top:calc(10vh + 6px);right:8px;font-family:var(--font-retro);font-size:7px;letter-spacing:0.15em;text-transform:uppercase;color:#222;z-index:5;}
   #timer-hint{position:fixed;bottom:12px;left:16px;font-family:var(--font-retro);font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:#2a2a2a;z-index:59;cursor:pointer;transition:color 0.2s,opacity 0.3s;opacity:0;}
   body:hover #timer-hint{opacity:1;color:#2e2e2e;}
@@ -246,6 +257,10 @@
   <div id="honor-ticker-label">🎓 Honor Roll</div>
   <div id="honor-ticker-track"><div id="honor-ticker-inner"></div></div>
 </div>
+<div id="pick-overlay">
+  <div id="pick-label">THE PICK IS IN</div>
+  <div id="pick-name"></div>
+</div> 
 <div id="bottom-accent"></div>
 <div id="indicator-bar"></div>
 <div id="version-badge">CW 2.0</div>
@@ -1144,7 +1159,31 @@ async function startBoard() {
     injectDynamicScreens();buildDots();
   }, 5*60*1000);
 }
+// ── PICKER STATE POLL ────────────────────────────────────
+var PICK_SHOW_SEC = 20, lastPickShown = null, pickHideTimer = null;
 
+async function checkPickerState() {
+  var rows = await sbFetch('cw2_picker_state', 'room=eq.' + ROOM + '&select=student_name,picked_at');
+  if (!rows || !rows[0]) return;
+  var d = rows[0];
+  var age = (Date.now() - new Date(d.picked_at).getTime()) / 1000;
+  if (age < PICK_SHOW_SEC && d.picked_at !== lastPickShown) {
+    lastPickShown = d.picked_at;
+    showPickOverlay(d.student_name, PICK_SHOW_SEC - age);
+  }
+}
+
+function showPickOverlay(name, secs) {
+  document.getElementById('pick-name').textContent = (name || '').toUpperCase();
+  var ov = document.getElementById('pick-overlay');
+  ov.classList.add('visible');
+  playFlipSound(20);
+  clearTimeout(pickHideTimer);
+  pickHideTimer = setTimeout(function() { ov.classList.remove('visible'); }, Math.max(2, secs) * 1000);
+}
+
+setInterval(checkPickerState, 5000);
+ 
 // ── NOISE METER ───────────────────────────────────────────────
 var nmOn=false,nmStream=null,nmAnalyser=null,nmAnimFrame=null,nmAudioCtx=null;
 var nmYellow=40,nmRed=68,nmPresetKey='normal';
