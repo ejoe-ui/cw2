@@ -618,6 +618,7 @@ function spin(){
       // Final pick
       var winner = available[Math.floor(Math.random() * available.length)];
       currentPick = winner.name;
+      sendPickToDisplay(winner.name);
       nameEl.textContent = winner.name.toUpperCase();
       nameEl.className = 'spin-name result';
       subEl.textContent = winner.grade ? 'Grade ' + winner.grade : '';
@@ -678,7 +679,19 @@ function awardCorrect(logId){
   renderLog();
   toast(entry.name.split(' ')[0] + ' +1 correct ✓');
 }
-
+// ── SEND PICK TO DISPLAY ──────────────────────────────────
+async function sendPickToDisplay(name){
+  if(!ROOM) return;
+  try {
+    await fetch(SUPABASE_URL+'/rest/v1/cw2_picker_state?on_conflict=room',{
+      method:'POST',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,
+        'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({room:ROOM,student_name:name,picked_at:new Date().toISOString()})
+    });
+  } catch(e){ console.error('Pick sync failed:',e); }
+}
+  
 // ── UI HELPERS ─────────────────────────────────────────────────
 function resetSpinUI(){
   var nameEl = document.getElementById('spinName');
