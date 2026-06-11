@@ -1346,6 +1346,7 @@ function buildBirthdayScreen() {
       lines.push(b.name.toUpperCase());
       lines.push(months[b.month] + ' ' + b.day + '  ' + when);
     });
+  }
 
   while (lines.length < ROWS) lines.push('');
   lines = lines.slice(0, ROWS);
