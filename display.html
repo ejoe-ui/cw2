@@ -1340,12 +1340,12 @@ function buildBirthdayScreen() {
   } else {
     lines.push('BIRTHDAYS COMING UP');
     upcoming.slice(0, 6).forEach(function(b) {
+      if (lines.length + 2 > ROWS) return;
       var d = daysUntil(b.month, b.day);
       var when = d === 1 ? 'TOMORROW' : 'IN ' + d + ' DAYS';
       lines.push(b.name.toUpperCase());
-      if (lines.length < ROWS) lines.push(months[b.month] + ' ' + b.day + '  ' + when);
+      lines.push(months[b.month] + ' ' + b.day + '  ' + when);
     });
-  }
 
   while (lines.length < ROWS) lines.push('');
   lines = lines.slice(0, ROWS);
