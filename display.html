@@ -714,6 +714,15 @@ function getSchedule() {
   var ds  = dateStr(now);
   var dow = now.getDay();
   if (dow === 0 || dow === 6 || NO_SCHOOL.includes(ds)) return null;
+
+  // Schedule override — MY room first, then global (highest authority)
+  var ovr = window._cwOverrides || {};
+  var hit = ovr[ROOM + '|' + ds] || ovr['global|' + ds];
+  if (hit) {
+    if (hit.custom_periods) return { periods: hit.custom_periods };
+    if (hit.schedule_type && SCHEDULES[hit.schedule_type]) return SCHEDULES[hit.schedule_type];
+  }
+
   if (DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
   var events = window._cwCalEvents || [];
   var todayTitles = events
@@ -1001,6 +1010,15 @@ async function loadCwEvents() {
   CW_EVENTS = rows || [];
   window._cwCalEvents = CW_EVENTS;
   return CW_EVENTS;
+}
+
+async function loadOverrides() {
+  var rows = await sbFetch('cw2_schedule_override',
+    'or=(room.eq.' + ROOM + ',room.eq.global)&select=*');
+  var map = {};
+  (rows || []).forEach(function(r) { map[r.room + '|' + r.date] = r; });
+  window._cwOverrides = map;
+  return map;
 }
 
 function daysBetween(a, b) {
@@ -1583,6 +1601,7 @@ async function startBoard() {
   setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
   await loadCwEvents();
+  await loadOverrides();
 
   var screens = await loadScreens();
   if (screens && screens.length) {
@@ -1623,6 +1642,7 @@ async function startBoard() {
   // Refresh dynamic data every 5 minutes
   setInterval(async function() {
     await loadCwEvents();
+    await loadOverrides();
     await loadWeather();
     await loadObjectives();
     await loadBirthdays();
