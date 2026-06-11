@@ -1324,27 +1324,26 @@ function buildBirthdayScreen() {
   });
 
   var todays   = sorted.filter(function(b) { return b.month === todayM && b.day === todayD; });
-  var thisWeek = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 0 && d <= 7; });
-  var upcoming = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 7; });
+  var upcoming = sorted.filter(function(b) { var d = daysUntil(b.month, b.day); return d > 0 && d <= 90; });
 
   var lines = [];
   if (todays.length) {
     lines.push('HAPPY BIRTHDAY');
     todays.forEach(function(b) { lines.push(b.name.toUpperCase()); });
-    lines.push('');
-  } else if (thisWeek.length) {
-    lines.push('BIRTHDAYS THIS WEEK');
-    thisWeek.slice(0, 2).forEach(function(b) {
-      lines.push(b.name.toUpperCase());
-      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
+    if (upcoming.length) {
       lines.push('');
-    });
+      lines.push('COMING UP');
+      upcoming.slice(0, 3).forEach(function(b) {
+        lines.push(b.name.toUpperCase() + '  ' + months[b.month] + ' ' + b.day);
+      });
+    }
   } else {
-    lines.push('COMING UP  BIRTHDAYS');
-    upcoming.slice(0, 3).forEach(function(b) {
+    lines.push('BIRTHDAYS COMING UP');
+    upcoming.slice(0, 6).forEach(function(b) {
+      var d = daysUntil(b.month, b.day);
+      var when = d === 1 ? 'TOMORROW' : 'IN ' + d + ' DAYS';
       lines.push(b.name.toUpperCase());
-      lines.push(months[b.month] + ' ' + b.day + '  IN ' + daysUntil(b.month, b.day) + ' DAYS');
-      lines.push('');
+      if (lines.length < ROWS) lines.push(months[b.month] + ' ' + b.day + '  ' + when);
     });
   }
 
