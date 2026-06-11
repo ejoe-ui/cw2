@@ -1157,6 +1157,10 @@ function buildCountdownScreen() {
 function getScheduleForDate(date) {
   var ds = dateStr(date);
   var dow = date.getDay();
+  // Schedule override — MY room first, then global (highest authority)
+  var ovr = window._cwOverrides || {};
+  var hit = ovr[ROOM + '|' + ds] || ovr['global|' + ds];
+  if (hit && hit.schedule_type && SCHEDULES[hit.schedule_type]) return hit.schedule_type;
   if (DATE_OVERRIDES[ds]) return DATE_OVERRIDES[ds];
   var events = window._cwCalEvents || [];
   var titles = events
