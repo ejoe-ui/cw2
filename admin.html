@@ -359,6 +359,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
         </select>
       </div>
     </div>
+    <div id="ovrCustomPanel" style="display:none;border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;background:var(--surface2);">
+      <div class="f-group" style="margin-bottom:12px;">
+        <label class="f-label">BOARD HEADER <span style="font-weight:400;color:var(--text-3)">(shows on the display · 20 chars)</span></label>
+        <input class="sb-input" id="ovrCustomLabel" type="text" maxlength="20" placeholder="e.g. ASSEMBLY DAY">
+      </div>
+      <div class="f-label" style="margin-bottom:6px;">PERIODS</div>
+      <div id="ovrPeriodRows"></div>
+      <button class="sb-btn-sec" style="margin-top:8px;" onclick="ovrAddPeriodRow()">+ Add Period</button>
+      <div class="msg-status" id="ovrCustomError" style="text-align:left;margin-top:6px;"></div>
+    </div>
     <div class="f-group" style="margin-bottom:12px;">
       <label class="f-label">NOTE <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
       <input class="sb-input" id="ovrNote" type="text" maxlength="60" placeholder="e.g. state testing day">
@@ -1104,9 +1114,62 @@ function ovrLabelFor(key){var p=OVERRIDE_PRESETS.find(function(x){return x.key==
 function ovrTodayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function ovrInitForm(){
   var sel=document.getElementById('ovrSchedule');
-  if(sel&&!sel.options.length){sel.innerHTML=OVERRIDE_PRESETS.map(function(p){return'<option value="'+p.key+'">'+p.label+'</option>';}).join('');}
+  if(sel&&!sel.options.length){sel.innerHTML=OVERRIDE_PRESETS.map(function(p){return'<option value="'+p.key+'">'+p.label+'</option>';}).join('')+'<option value="__custom__">Custom…</option>';sel.onchange=ovrToggleCustom;}
   var dateEl=document.getElementById('ovrDate');if(dateEl&&!dateEl.value)dateEl.value=ovrTodayStr();
   var scopeGroup=document.getElementById('ovrScopeGroup');if(scopeGroup)scopeGroup.style.display=isMaster?'flex':'none';
+}
+  function ovrToggleCustom(){
+  var isCustom=document.getElementById('ovrSchedule').value==='__custom__';
+  var panel=document.getElementById('ovrCustomPanel');
+  if(panel)panel.style.display=isCustom?'block':'none';
+  if(isCustom){var rows=document.getElementById('ovrPeriodRows');if(rows&&!rows.children.length)ovrAddPeriodRow();}
+}
+function ovrAddPeriodRow(label,start,end,isBreak){
+  var wrap=document.getElementById('ovrPeriodRows');if(!wrap)return;
+  var div=document.createElement('div');
+  div.className='ovr-prow';
+  div.style.cssText='display:flex;gap:6px;align-items:center;margin-bottom:6px;';
+  div.innerHTML='<input class="sb-input ovr-plabel" type="text" maxlength="14" placeholder="P1 / LUNCH" style="flex:1;min-width:0;" value="'+(label||'').replace(/"/g,'&quot;')+'">'+
+    '<input class="sb-input ovr-pstart" type="time" style="width:118px;flex-shrink:0;" value="'+(start||'')+'">'+
+    '<span style="color:var(--text-3);">–</span>'+
+    '<input class="sb-input ovr-pend" type="time" style="width:118px;flex-shrink:0;" value="'+(end||'')+'">'+
+    '<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-2);white-space:nowrap;"><input type="checkbox" class="ovr-pbreak"'+(isBreak?' checked':'')+'> Break</label>'+
+    '<button class="sb-btn-sm" onclick="ovrRemovePeriodRow(this)" style="flex-shrink:0;">✕</button>';
+  wrap.appendChild(div);
+}
+function ovrRemovePeriodRow(btn){var row=btn.closest('.ovr-prow');if(row)row.remove();}
+function ovrReadCustom(){
+  var rows=document.querySelectorAll('#ovrPeriodRows .ovr-prow');
+  var periods=[],seen={};
+  rows.forEach(function(row,i){
+    var label=row.querySelector('.ovr-plabel').value.trim();
+    var start=row.querySelector('.ovr-pstart').value;
+    var end=row.querySelector('.ovr-pend').value;
+    var isBreak=row.querySelector('.ovr-pbreak').checked;
+    if(!label&&!start&&!end)return;
+    var slug=label.toLowerCase().replace(/[^a-z0-9]/g,'')||('p'+(i+1));
+    if(seen[slug])slug=slug+(i+1);
+    seen[slug]=true;
+    var p={id:slug,label:label,start:start,end:end};
+    if(isBreak)p.break=true;
+    periods.push(p);
+  });
+  return periods;
+}
+function ovrValidateCustom(periods){
+  if(!periods.length)return'Add at least one period.';
+  function toMins(t){var p=t.split(':');return parseInt(p[0],10)*60+parseInt(p[1],10);}
+  var prevEnd=0;
+  for(var i=0;i<periods.length;i++){
+    var p=periods[i];
+    if(!p.label)return'Row '+(i+1)+': add a label.';
+    if(!p.start||!p.end)return'Row '+(i+1)+' ('+p.label+'): set start and end times.';
+    var s=toMins(p.start),e=toMins(p.end);
+    if(e<=s)return'Row '+(i+1)+' ('+p.label+'): end must be after start.';
+    if(s<prevEnd)return'Row '+(i+1)+' ('+p.label+'): overlaps the previous period.';
+    prevEnd=e;
+  }
+  return null;
 }
 function ovrClearForm(){
   document.getElementById('ovrDate').value=ovrTodayStr();
@@ -1114,6 +1177,10 @@ function ovrClearForm(){
   var sc=document.getElementById('ovrScope');if(sc)sc.value='room';
   document.getElementById('ovrNote').value='';
   document.getElementById('ovrStatus').textContent='';
+  var panel=document.getElementById('ovrCustomPanel');if(panel)panel.style.display='none';
+  var rows=document.getElementById('ovrPeriodRows');if(rows)rows.innerHTML='';
+  var cl=document.getElementById('ovrCustomLabel');if(cl)cl.value='';
+  var ce=document.getElementById('ovrCustomError');if(ce)ce.textContent='';
 }
 async function ovrSave(){
   var date=document.getElementById('ovrDate').value;
@@ -1126,9 +1193,21 @@ async function ovrSave(){
   if(!date){status.textContent='Pick a date.';return;}
   if(!schedule){status.textContent='Pick a schedule.';return;}
   var targetRoom=scope==='global'?'global':ROOM;
+  var data={room:targetRoom,date:date,schedule_type:schedule,custom_periods:null,custom_label:null,note:note||null};
+  if(schedule==='__custom__'){
+    var periods=ovrReadCustom();
+    var err=ovrValidateCustom(periods);
+    var cerr=document.getElementById('ovrCustomError');
+    if(err){if(cerr)cerr.textContent=err;return;}
+    if(cerr)cerr.textContent='';
+    var hdr=document.getElementById('ovrCustomLabel').value.trim();
+    if(!hdr){if(cerr)cerr.textContent='Add a board header.';return;}
+    data.schedule_type=null;
+    data.custom_periods=periods;
+    data.custom_label=hdr;
+  }
   btn.disabled=true;btn.textContent='Saving...';status.textContent='';
   var existing=await sbFetch('cw2_schedule_override','room=eq.'+targetRoom+'&date=eq.'+date+'&select=id');
-  var data={room:targetRoom,date:date,schedule_type:schedule,custom_periods:null,note:note||null};
   var ok;
   if(existing&&existing.length){ok=await sbUpdate('cw2_schedule_override',existing[0].id,data);}
   else{ok=await sbInsert('cw2_schedule_override',data);}
@@ -1145,7 +1224,7 @@ async function ovrLoadList(){
   if(!rows.length){list.innerHTML='<div class="bday-empty">No upcoming overrides.</div>';return;}
   list.innerHTML=rows.map(function(r){
     var isGlobal=r.room==='global';
-    var schedLabel=r.custom_periods?'Custom schedule':ovrLabelFor(r.schedule_type);
+    var schedLabel=r.custom_periods?(r.custom_label||'Custom schedule'):ovrLabelFor(r.schedule_type);
     var d=new Date(r.date+'T00:00:00');
     var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
