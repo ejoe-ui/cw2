@@ -1021,6 +1021,14 @@ async function loadOverrides() {
   return map;
 }
 
+function getCustomLabel(date) {
+  var ds = dateStr(date);
+  var ovr = window._cwOverrides || {};
+  var hit = ovr[ROOM + '|' + ds] || ovr['global|' + ds];
+  if (hit && hit.custom_periods && hit.custom_label) return hit.custom_label;
+  return null;
+}
+
 function daysBetween(a, b) {
   var msPerDay = 24 * 60 * 60 * 1000;
   var da = new Date(a + 'T00:00:00');
@@ -1075,7 +1083,9 @@ function buildCalendarScreen() {
   } else {
     lines.push('TODAY  ' + dayName + '  ' + mon + '  ' + dayNum);
     var schedName = getScheduleForDate(now);
-    if (schedName === 'earlyRelease')      lines.push('EARLY RELEASE DAY');
+    var customLabel = getCustomLabel(now);
+    if (customLabel)                       lines.push(customLabel);
+    else if (schedName === 'earlyRelease') lines.push('EARLY RELEASE DAY');
     else if (schedName === 'blockWed')     lines.push('BLOCK DAY  P1 P3 P5 P7');
     else if (schedName === 'blockThu')     lines.push('BLOCK DAY  P2 P4 P6 P7');
     else if (schedName === 'minimum')      lines.push('MINIMUM DAY');
@@ -1115,7 +1125,8 @@ function buildBellScreen() {
   };
   var days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   var now = new Date();
-  var header = (schedLabels[schedName] || 'BELL SCHEDULE') + '  ' + days[now.getDay()];
+  var customLabel = getCustomLabel(now);
+  var header = (customLabel || schedLabels[schedName] || 'BELL SCHEDULE') + '  ' + days[now.getDay()];
   var nm = nowMins();
   var lines = [header];
   sched.periods.forEach(function(p) {
