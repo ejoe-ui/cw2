@@ -1113,6 +1113,13 @@ function buildCalendarScreen() {
   return { lines: lines, speed: 15, id: 'calendar', align: 'center', sort_order: 0 };
 }
 
+function to12h(t) {
+  var parts = t.split(':');
+  var h = parseInt(parts[0], 10);
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  return h12 + ':' + parts[1];
+}
+
 function buildBellScreen() {
   var sched = getSchedule();
   if (!sched) return null;
@@ -1135,7 +1142,7 @@ function buildBellScreen() {
     var isPast    = nm >= e;
     var label = p.label;
     while (label.length < 7) label += ' ';
-    var timeStr = p.start + ' - ' + p.end;
+    var timeStr = to12h(p.start) + ' - ' + to12h(p.end);
     var prefix = isCurrent ? 'NOW ' : (isPast && !p.break ? ' .  ' : '    ');
     var suffix = isCurrent ? '  <' : '';
     lines.push(prefix + label + ' ' + timeStr + suffix);
