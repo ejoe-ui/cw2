@@ -337,7 +337,41 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <div class="err" id="objError" style="text-align:left;min-height:0;"></div>
     </div>
   </div>
-
+<!-- SCHEDULE OVERRIDE -->
+  <div class="sb-box" id="section-schedule-override">
+    <div class="sb-box-hd">
+      <div><span>🗓 Schedule Override</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Force a specific bell schedule for a day · auto-reverts after</div></div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px;">
+      <div class="f-group" style="flex:1;min-width:140px;">
+        <label class="f-label">DATE</label>
+        <input class="sb-input" id="ovrDate" type="date">
+      </div>
+      <div class="f-group" style="flex:2;min-width:200px;">
+        <label class="f-label">SCHEDULE</label>
+        <select class="sb-input" id="ovrSchedule"></select>
+      </div>
+      <div class="f-group" id="ovrScopeGroup" style="min-width:140px;display:none;">
+        <label class="f-label">SCOPE</label>
+        <select class="sb-input" id="ovrScope">
+          <option value="room">My Room only</option>
+          <option value="global">All rooms (global)</option>
+        </select>
+      </div>
+    </div>
+    <div class="f-group" style="margin-bottom:12px;">
+      <label class="f-label">NOTE <span style="font-weight:400;color:var(--text-3)">(optional)</span></label>
+      <input class="sb-input" id="ovrNote" type="text" maxlength="60" placeholder="e.g. state testing day">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
+      <span class="msg-status" id="ovrStatus" style="flex:1;text-align:left;"></span>
+      <button class="sb-btn-sec" onclick="ovrClearForm()">Clear</button>
+      <button class="sb-btn" id="ovrSaveBtn" onclick="ovrSave()">Set Override</button>
+    </div>
+    <div class="msg-list-hd"><span>Upcoming Overrides</span></div>
+    <div id="ovr-list"><div class="bday-empty">Loading...</div></div>
+  </div>
+  
   <!-- QUICK MESSAGE -->
   <div class="sb-box" id="section-messages">
     <div class="sb-box-hd">
@@ -716,6 +750,7 @@ async function unlockAdmin(){
   await msgLoadList();
   await quietLoadNames();
   await quietLoadStandings();
+  ovrInitForm();await ovrLoadList();
   document.getElementById('roomMgmtSection').style.display=isMaster?'block':'none';
   document.getElementById('globalBoardsSection').style.display=isMaster?'block':'none';
   if(classroom&&classroom.config&&classroom.config.pin_is_default)
@@ -1050,6 +1085,84 @@ async function resetRoomPin(){
   document.getElementById('resetRoomNum').value='';toast('Room '+roomNum+' PIN reset — new PIN: '+defaultPin);
 }
 
+  // ── SCHEDULE OVERRIDE ──
+var OVERRIDE_PRESETS=[
+  {label:'Regular',key:'regular'},
+  {label:'Block — Wednesday',key:'blockWed'},
+  {label:'Block — Thursday',key:'blockThu'},
+  {label:'Minimum Day',key:'minimum'},
+  {label:'Early Release',key:'earlyRelease'},
+  {label:'Activity (End of Day)',key:'activity'},
+  {label:'Midday Activity',key:'codeDay'},
+  {label:'Midday Activity — Wednesday',key:'middayActivityWed'},
+  {label:'Midday Activity — Thursday',key:'middayActivityThu'},
+  {label:'Foggy — Regular',key:'foggy'},
+  {label:'Foggy Block — Wednesday',key:'foggyBlockWed'},
+  {label:'Foggy Block — Thursday',key:'foggyBlockThu'},
+];
+function ovrLabelFor(key){var p=OVERRIDE_PRESETS.find(function(x){return x.key===key;});return p?p.label:key;}
+function ovrTodayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function ovrInitForm(){
+  var sel=document.getElementById('ovrSchedule');
+  if(sel&&!sel.options.length){sel.innerHTML=OVERRIDE_PRESETS.map(function(p){return'<option value="'+p.key+'">'+p.label+'</option>';}).join('');}
+  var dateEl=document.getElementById('ovrDate');if(dateEl&&!dateEl.value)dateEl.value=ovrTodayStr();
+  var scopeGroup=document.getElementById('ovrScopeGroup');if(scopeGroup)scopeGroup.style.display=isMaster?'flex':'none';
+}
+function ovrClearForm(){
+  document.getElementById('ovrDate').value=ovrTodayStr();
+  document.getElementById('ovrSchedule').selectedIndex=0;
+  var sc=document.getElementById('ovrScope');if(sc)sc.value='room';
+  document.getElementById('ovrNote').value='';
+  document.getElementById('ovrStatus').textContent='';
+}
+async function ovrSave(){
+  var date=document.getElementById('ovrDate').value;
+  var schedule=document.getElementById('ovrSchedule').value;
+  var scopeEl=document.getElementById('ovrScope');
+  var scope=(isMaster&&scopeEl)?scopeEl.value:'room';
+  var note=document.getElementById('ovrNote').value.trim();
+  var status=document.getElementById('ovrStatus');
+  var btn=document.getElementById('ovrSaveBtn');
+  if(!date){status.textContent='Pick a date.';return;}
+  if(!schedule){status.textContent='Pick a schedule.';return;}
+  var targetRoom=scope==='global'?'global':ROOM;
+  btn.disabled=true;btn.textContent='Saving...';status.textContent='';
+  var existing=await sbFetch('cw2_schedule_override','room=eq.'+targetRoom+'&date=eq.'+date+'&select=id');
+  var data={room:targetRoom,date:date,schedule_type:schedule,custom_periods:null,note:note||null};
+  var ok;
+  if(existing&&existing.length){ok=await sbUpdate('cw2_schedule_override',existing[0].id,data);}
+  else{ok=await sbInsert('cw2_schedule_override',data);}
+  btn.disabled=false;btn.textContent='Set Override';
+  if(ok){toast('Override set — display updates within 60s');ovrClearForm();await ovrLoadList();}
+  else{status.textContent='Save failed — try again.';toast('Override save failed',true);}
+}
+async function ovrLoadList(){
+  var today=ovrTodayStr();
+  var rows=await sbFetch('cw2_schedule_override','or=(room.eq.'+ROOM+',room.eq.global)&date=gte.'+today+'&order=date.asc');
+  var list=document.getElementById('ovr-list');
+  if(!list)return;
+  rows=rows||[];
+  if(!rows.length){list.innerHTML='<div class="bday-empty">No upcoming overrides.</div>';return;}
+  list.innerHTML=rows.map(function(r){
+    var isGlobal=r.room==='global';
+    var schedLabel=r.custom_periods?'Custom schedule':ovrLabelFor(r.schedule_type);
+    var d=new Date(r.date+'T00:00:00');
+    var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var dateLabel=days[d.getDay()]+' '+months[d.getMonth()]+' '+d.getDate();
+    var isToday=r.date===today;
+    return '<div class="msg-card"><div class="msg-card-body">'+
+      '<div class="msg-card-line">'+dateLabel+(isToday?' · TODAY':'')+' — '+schedLabel.toUpperCase()+'</div>'+
+      '<div class="msg-card-meta">'+(isGlobal?'<span class="global-tag">Global</span> ':'')+(r.note?r.note:'')+'</div>'+
+      '</div><button class="msg-del" onclick="ovrDelete(\''+r.id+'\')">✕ Remove</button></div>';
+  }).join('');
+}
+async function ovrDelete(id){
+  if(!confirm('Remove this override? The day will revert to its normal schedule.'))return;
+  var ok=await sbDelete('cw2_schedule_override',id);
+  if(ok){toast('Override removed');await ovrLoadList();}
+  else{toast('Remove failed',true);}
+}
 
 // ── RANDOM NAME PICKER ──────────────────────────────────────
 var pickerPool=[],pickerUsed=[],pickerSpinInterval=null;
