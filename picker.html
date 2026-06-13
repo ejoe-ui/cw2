@@ -138,6 +138,16 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 .correct-btn{width:26px;height:26px;border-radius:5px;border:1.5px solid var(--green);background:transparent;color:var(--green);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .correct-btn:hover{background:var(--green-bg);}
 .correct-btn.awarded{background:var(--green);color:#fff;border-color:var(--green);}
+.minus-btn{width:26px;height:26px;border-radius:5px;border:1.5px solid var(--red);background:transparent;color:var(--red);font-size:16px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.minus-btn:hover{background:var(--red-bg);}
+
+/* ── SAVED SESSIONS ── */
+.saved-list{display:flex;flex-direction:column;gap:6px;max-height:340px;overflow-y:auto;}
+.saved-row{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color .15s;}
+.saved-row:hover{border-color:var(--border2);}
+.saved-info{flex:1;min-width:0;}
+.saved-label{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.saved-meta{font-size:10px;color:var(--text3);margin-top:2px;}
 
 /* ── POINTS TOGGLE ── */
 .toggle-row{display:flex;align-items:center;gap:10px;}
@@ -216,7 +226,7 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
         <!-- Points toggle -->
         <div class="toggle-row" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-          <label class="toggle-switch"><input type="checkbox" id="pointsToggle" onchange="togglePoints()"><span class="toggle-slider"></span></label>
+          <label class="toggle-switch"><input type="checkbox" id="pointsToggle" checked onchange="togglePoints()"><span class="toggle-slider"></span></label>
           <span class="toggle-label">Track participation & correct points</span>
         </div>
 
@@ -288,10 +298,25 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
     <div class="panel" id="summaryPanel" style="display:none;margin-top:1rem;">
       <div class="panel-hd">
         <div class="panel-title">Session Summary</div>
-        <button class="btn btn-sm" onclick="closeSummary()">Close</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="btn btn-sm btn-accent" onclick="saveSession()">💾 Save Session</button>
+          <button class="btn btn-sm" onclick="downloadSessionCSV()">⬇ CSV</button>
+          <button class="btn btn-sm" onclick="closeSummary()">Close</button>
+        </div>
       </div>
       <div class="panel-body" style="padding:12px;">
         <table class="summary-table" id="summaryTable"></table>
+      </div>
+    </div>
+
+    <!-- Saved Sessions -->
+    <div class="panel" id="savedPanel" style="display:none;margin-top:1rem;">
+      <div class="panel-hd">
+        <div class="panel-title">Saved Sessions</div>
+        <div style="font-size:11px;color:var(--text3);" id="savedCount">—</div>
+      </div>
+      <div class="panel-body" style="padding:12px;">
+        <div class="saved-list" id="savedList"><div class="empty">No saved sessions yet</div></div>
       </div>
     </div>
   </div>
@@ -331,7 +356,7 @@ var students = [];        // current period full list [{name, grade, inCan, abse
 var sessionLog = [];      // [{name, status, participation, correct, logId}]
 var currentPick = null;   // name of currently picked student
 var isSpinning = false;
-var pointsOn = false;
+var pointsOn = true;
 var spinInterval = null;
 var darkMode = localStorage.getItem('picker-theme') === 'dark';
 
@@ -350,6 +375,7 @@ applyTheme();
   if(ROOM){
     sub.textContent = 'Room ' + ROOM + ' · Loading...';
     loadRosterFromSupabase();
+    loadSavedSessions();
   } else {
     sub.textContent = 'No room set — add ?room=27 to URL';
     sub.style.color = 'var(--red)';
@@ -679,6 +705,21 @@ function awardCorrect(logId){
   renderLog();
   toast(entry.name.split(' ')[0] + ' +1 correct ✓');
 }
+function removePoint(logId){
+  var entry = sessionLog.find(function(e){ return e.logId === logId; });
+  if(!entry) return;
+  if((entry.correct || 0) > 0){
+    entry.correct -= 1;
+    toast(entry.name.split(' ')[0] + ' −1 correct');
+  } else if((entry.participation || 0) > 0){
+    entry.participation -= 1;
+    toast(entry.name.split(' ')[0] + ' −1 participation');
+  } else {
+    toast('No points to remove for ' + entry.name.split(' ')[0]);
+    return;
+  }
+  renderLog();
+}
 // ── SEND PICK TO DISPLAY ──────────────────────────────────
 async function sendPickToDisplay(name){
   if(!ROOM) return;
@@ -758,13 +799,22 @@ function renderLog(){
       }
     }
 
-    // +Correct button — always shown, even for put-back
-    var correctBtn = document.createElement('button');
-    correctBtn.className = 'correct-btn' + (entry.correct > 0 ? ' awarded' : '');
-    correctBtn.title = 'Award correct answer point';
-    correctBtn.textContent = '✓';
-    correctBtn.onclick = function(){ awardCorrect(entry.logId); };
-    ptsDiv.appendChild(correctBtn);
+    // Point controls — only when tracking is on
+    if(pointsOn){
+      var minusBtn = document.createElement('button');
+      minusBtn.className = 'minus-btn';
+      minusBtn.title = 'Remove a point (correct first, then participation)';
+      minusBtn.textContent = '−';
+      minusBtn.onclick = function(){ removePoint(entry.logId); };
+      ptsDiv.appendChild(minusBtn);
+
+      var correctBtn = document.createElement('button');
+      correctBtn.className = 'correct-btn' + (entry.correct > 0 ? ' awarded' : '');
+      correctBtn.title = 'Award correct answer point';
+      correctBtn.textContent = '✓';
+      correctBtn.onclick = function(){ awardCorrect(entry.logId); };
+      ptsDiv.appendChild(correctBtn);
+    }
 
     row.appendChild(numDiv);
     row.appendChild(nameDiv);
@@ -792,46 +842,169 @@ function resetSession(){
 }
 
 // ── SUMMARY ────────────────────────────────────────────────────
-function showSummary(){
-  var panel = document.getElementById('summaryPanel');
-  panel.style.display = 'block';
-
-  // Aggregate per student
+function buildSessionAggregate(){
   var agg = {};
   sessionLog.forEach(function(e){
-    if(!agg[e.name]) agg[e.name] = { participation: 0, correct: 0, picks: 0 };
+    if(!agg[e.name]) agg[e.name] = { name: e.name, participation: 0, correct: 0, picks: 0 };
     agg[e.name].picks++;
     agg[e.name].participation += e.participation || 0;
     agg[e.name].correct += e.correct || 0;
   });
+  var sorted = Object.keys(agg)
+    .sort(function(a,b){ return agg[b].picks - agg[a].picks; })
+    .map(function(n){ return agg[n]; });
+  sorted.forEach(function(row){
+    var lastEntry = sessionLog.slice().reverse().find(function(e){ return e.name === row.name; });
+    row.lastStatus = lastEntry ? lastEntry.status : '';
+  });
+  return sorted;
+}
 
-  var sorted = Object.keys(agg).sort(function(a,b){ return agg[b].picks - agg[a].picks; });
+function statusLabel(s){
+  return s === 'gotit' ? '✓ Got It' : s === 'passed' ? '✗ Pass' : s === 'back' ? '↩ Put Back' : '';
+}
 
+function renderSummaryTable(agg, showPoints){
   var table = document.getElementById('summaryTable');
+  if(!agg || !agg.length){
+    table.innerHTML = '<thead><tr><th>Name</th></tr></thead><tbody><tr><td style="padding:1rem;color:var(--text3)">No picks recorded yet</td></tr></tbody>';
+    return;
+  }
   table.innerHTML = '<thead><tr>' +
     '<th>Name</th><th>Picks</th><th>Last Status</th>' +
-    (pointsOn ? '<th>Participation</th><th>Correct</th>' : '') +
+    (showPoints ? '<th>Participation</th><th>Correct</th>' : '') +
     '</tr></thead>';
-
   var tbody = document.createElement('tbody');
-  sorted.forEach(function(name){
-    var data = agg[name];
-    var lastEntry = sessionLog.slice().reverse().find(function(e){ return e.name === name; });
-    var lastStatus = lastEntry ? (lastEntry.status === 'gotit' ? '✓ Got It' : lastEntry.status === 'passed' ? '✗ Pass' : '↩ Put Back') : '';
+  agg.forEach(function(row){
     var tr = document.createElement('tr');
-    tr.innerHTML = '<td style="font-weight:600">' + name + '</td>' +
-      '<td class="pts-num">' + data.picks + '</td>' +
-      '<td>' + lastStatus + '</td>' +
-      (pointsOn ? '<td class="pts-num" style="color:var(--purple)">' + data.participation + '</td><td class="pts-num" style="color:var(--green)">' + data.correct + '</td>' : '');
+    tr.innerHTML = '<td style="font-weight:600">' + row.name + '</td>' +
+      '<td class="pts-num">' + row.picks + '</td>' +
+      '<td>' + statusLabel(row.lastStatus) + '</td>' +
+      (showPoints ? '<td class="pts-num" style="color:var(--purple)">' + (row.participation||0) + '</td><td class="pts-num" style="color:var(--green)">' + (row.correct||0) + '</td>' : '');
     tbody.appendChild(tr);
   });
   table.appendChild(tbody);
+}
 
+function showSummary(){
+  var panel = document.getElementById('summaryPanel');
+  panel.style.display = 'block';
+  renderSummaryTable(buildSessionAggregate(), pointsOn);
   panel.scrollIntoView({ behavior: 'smooth' });
 }
 
 function closeSummary(){
   document.getElementById('summaryPanel').style.display = 'none';
+}
+
+// ── CSV EXPORT ─────────────────────────────────────────────────
+function aggregateToCSV(agg){
+  var lines = [['Name','Picks','Last Status','Participation','Correct']];
+  agg.forEach(function(r){
+    var status = r.lastStatus === 'gotit' ? 'Got It' : r.lastStatus === 'passed' ? 'Pass' : r.lastStatus === 'back' ? 'Put Back' : '';
+    lines.push([r.name, r.picks, status, r.participation||0, r.correct||0]);
+  });
+  return lines.map(function(row){
+    return row.map(function(cell){
+      var s = String(cell);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+    }).join(',');
+  }).join('\n');
+}
+
+function triggerCSVDownload(csv, filename){
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function downloadSessionCSV(){
+  var agg = buildSessionAggregate();
+  if(!agg.length){ toast('No picks to export'); return; }
+  var stamp = new Date().toISOString().slice(0,10);
+  triggerCSVDownload(aggregateToCSV(agg), 'picker-room' + ROOM + '-p' + (activePeriod||'X') + '-' + stamp + '.csv');
+  toast('CSV downloaded');
+}
+
+// ── SAVE / LOAD SESSIONS ───────────────────────────────────────
+async function saveSession(){
+  if(!ROOM){ toast('No room set'); return; }
+  if(!activePeriod){ toast('Pick a period first'); return; }
+  var agg = buildSessionAggregate();
+  if(!agg.length){ toast('No picks to save'); return; }
+  var def = 'P' + activePeriod + ' · ' + new Date().toLocaleDateString();
+  var label = prompt('Name this saved session:', def);
+  if(label === null) return; // cancelled
+  var ok = await sbInsertMany('cw2_picker_sessions', [{
+    room: ROOM, period: activePeriod, label: label || def,
+    student_count: agg.length, summary: agg
+  }]);
+  if(ok){ toast('Session saved'); loadSavedSessions(); }
+  else { toast('Save failed — create the table first'); }
+}
+
+async function loadSavedSessions(){
+  if(!ROOM) return;
+  var rows = await sbFetch('cw2_picker_sessions', 'room=eq.' + ROOM + '&order=saved_at.desc&limit=40');
+  renderSavedSessions(rows || []);
+}
+
+function renderSavedSessions(rows){
+  var panel = document.getElementById('savedPanel');
+  var list = document.getElementById('savedList');
+  var countEl = document.getElementById('savedCount');
+  if(!rows.length){
+    // Keep panel hidden until there's at least one save
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  if(countEl) countEl.textContent = rows.length + (rows.length === 1 ? ' session' : ' sessions');
+  list.innerHTML = '';
+  rows.forEach(function(r){
+    var d = new Date(r.saved_at);
+    var hh = d.getHours() % 12 || 12;
+    var when = (d.getMonth()+1) + '/' + d.getDate() + ' ' + hh + ':' + String(d.getMinutes()).padStart(2,'0') + (d.getHours() >= 12 ? 'pm' : 'am');
+    var row = document.createElement('div');
+    row.className = 'saved-row';
+    var info = document.createElement('div');
+    info.className = 'saved-info';
+    info.innerHTML = '<div class="saved-label">' + (r.label || 'Untitled') + '</div>' +
+      '<div class="saved-meta">' + when + ' · P' + (r.period||'?') + ' · ' + (r.student_count||0) + ' students</div>';
+    var btnWrap = document.createElement('div');
+    btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
+    var csvBtn = document.createElement('button');
+    csvBtn.className = 'btn btn-xs';
+    csvBtn.textContent = 'CSV';
+    csvBtn.onclick = function(){ downloadSavedCSV(r); };
+    var delBtn = document.createElement('button');
+    delBtn.className = 'btn btn-xs danger-btn';
+    delBtn.textContent = '✕';
+    delBtn.onclick = function(){ deleteSavedSession(r.id); };
+    btnWrap.appendChild(csvBtn);
+    btnWrap.appendChild(delBtn);
+    row.appendChild(info);
+    row.appendChild(btnWrap);
+    list.appendChild(row);
+  });
+}
+
+function downloadSavedCSV(r){
+  var agg = Array.isArray(r.summary) ? r.summary : [];
+  if(!agg.length){ toast('No data in this session'); return; }
+  var stamp = new Date(r.saved_at).toISOString().slice(0,10);
+  triggerCSVDownload(aggregateToCSV(agg), 'picker-room' + ROOM + '-p' + (r.period||'X') + '-' + stamp + '.csv');
+  toast('CSV downloaded');
+}
+
+async function deleteSavedSession(id){
+  if(!confirm('Delete this saved session? This cannot be undone.')) return;
+  var ok = await sbDelete('cw2_picker_sessions', 'id=eq.' + id);
+  if(ok){ toast('Saved session deleted'); loadSavedSessions(); }
+  else { toast('Delete failed'); }
 }
 
 // ── TOAST ──────────────────────────────────────────────────────
