@@ -1067,6 +1067,46 @@ function daysBetween(a, b) {
   return Math.round((da - db) / msPerDay);
 }
 
+// Look-ahead window for the Calendar + Countdown boards (~2 months).
+// Boards fill with the soonest events inside this window; if fewer events
+// exist than board rows, the board just shows what it has. Tune freely.
+var UPCOMING_WINDOW_DAYS = 60;
+
+// Merged upcoming-events source for the Calendar + Countdown boards.
+// Combines curated cw2_events with the district calendar feed — TIMED and
+// all-day alike (graduation, academic awards, games, holidays all flow
+// through if the feed carries them). Deduped by title|date, sorted
+// soonest-first, capped to the window above.
+function getUpcomingEvents(ds) {
+  var cutoff = new Date(ds + 'T00:00:00');
+  cutoff.setDate(cutoff.getDate() + UPCOMING_WINDOW_DAYS);
+  var cutoffStr = dateStr(cutoff);
+  var inWindow = function(d) { return d && d >= ds && d <= cutoffStr; };
+
+  var curated = CW_EVENTS
+    .filter(function(e) { return inWindow(e.start_date); })
+    .map(function(e) {
+      return { title: e.title, start_date: e.start_date, show_countdown: e.show_countdown };
+    });
+  var feed = (window._cwCalEvents || [])
+    .filter(function(e) { return inWindow(e.start_date); })
+    .map(function(e) {
+      return { title: e.title, start_date: e.start_date, show_countdown: true };
+    });
+  var seen = {};
+  var all = curated.concat(feed).filter(function(e) {
+    if (!e.title || !e.title.trim()) return false;
+    var key = e.title.toUpperCase().trim() + '|' + e.start_date;
+    if (seen[key]) return false;
+    seen[key] = true;
+    return true;
+  });
+  all.sort(function(a, b) {
+    return a.start_date < b.start_date ? -1 : a.start_date > b.start_date ? 1 : 0;
+  });
+  return all;
+}
+
 function buildCalendarScreen() {
   var now = new Date();
   var ds = dateStr(now);
@@ -1130,7 +1170,7 @@ function buildCalendarScreen() {
   // Upcoming events — max 2 to avoid cramming
   var remaining = ROWS - lines.length;
   var maxEvents = Math.min(2, remaining);
-  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds; }).slice(0, maxEvents);
+  var upcoming = getUpcomingEvents(ds).slice(0, maxEvents);
   upcoming.forEach(function(e) {
     var daysAway = daysBetween(e.start_date, ds);
     var suffix = daysAway === 0 ? 'TODAY' : daysAway === 1 ? 'TOMORROW' : daysAway + ' DAYS';
@@ -1185,7 +1225,7 @@ function buildBellScreen() {
 function buildCountdownScreen() {
   var now = new Date();
   var ds = dateStr(now);
-  var upcoming = CW_EVENTS.filter(function(e) { return e.start_date >= ds && e.show_countdown !== false; }).slice(0, ROWS - 1);
+  var upcoming = getUpcomingEvents(ds).filter(function(e) { return e.show_countdown !== false; }).slice(0, ROWS - 1);
   if (!upcoming.length) return null;
   var lines = ['COMING UP AT RHS'];
   upcoming.forEach(function(e) {
