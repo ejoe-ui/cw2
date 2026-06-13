@@ -248,6 +248,7 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
   </div>
   <div class="h-spacer"></div>
   <div style="display:flex;align-items:center;gap:8px;">
+    <button class="lock-btn" id="pickerBtn" onclick="window.open('/picker.html?room='+ROOM,'_blank')" style="display:none;background:#006938;color:#fff;border-color:#006938;">🎲 Name Picker</button>
     <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">🌙 Dark mode</button>
     <button class="lock-btn" id="lockBtn" onclick="logout()" style="display:none">Lock</button>
   </div>
@@ -715,6 +716,7 @@ async function unlockAdmin(){
   document.getElementById('pin-screen').style.display='none';
   document.getElementById('main').style.display='block';
   document.getElementById('lockBtn').style.display='block';
+  document.getElementById('pickerBtn').style.display='block';
   var tag=document.getElementById('hRoom');tag.textContent='Room '+ROOM;tag.style.display='block';
   var cw=document.getElementById('hClockWrap'),cs=document.getElementById('hClockSep');
   if(cw)cw.style.display='flex';if(cs)cs.style.display='block';
@@ -750,6 +752,7 @@ function logout(){
   document.getElementById('pin-screen').style.display='flex';
   document.getElementById('main').style.display='none';
   document.getElementById('lockBtn').style.display='none';
+  document.getElementById('pickerBtn').style.display='none';
   document.getElementById('hRoom').style.display='none';
   var cw=document.getElementById('hClockWrap'),cs=document.getElementById('hClockSep');
   if(cw)cw.style.display='none';if(cs)cs.style.display='none';
