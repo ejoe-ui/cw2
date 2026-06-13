@@ -515,6 +515,8 @@
 <script>
 const SUPABASE_URL  = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+// District events calendar — Google Apps Script JSON feed (ported from CW v1)
+const CAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwdoA4UVuCyq8RU7hP6dBrRWAMVcMqq-0DNmZE09j6oVst1iPa7KzWq7raoCT3i0SL_/exec';
 
 async function sbFetch(table, query) {
   const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
@@ -1008,8 +1010,37 @@ async function loadCwEvents() {
   var ds = dateStr(now);
   var rows = await sbFetch('cw2_events', 'active=eq.true&end_date=gte.' + ds + '&order=start_date.asc');
   CW_EVENTS = rows || [];
-  window._cwCalEvents = CW_EVENTS;
   return CW_EVENTS;
+}
+
+// ── DISTRICT CALENDAR FEED ───────────────────────────────────
+// Pulls the RHS Google Apps Script JSON feed and feeds schedule
+// auto-detection (foggy / minimum / block / activity / code / early release).
+// Normalizes each event to carry BOTH `start` (getSchedule) and
+// `start_date` (getScheduleForDate) plus `title`, so both readers match
+// without touching their logic. Owns window._cwCalEvents.
+// Manual cw2_schedule_override still takes precedence over this layer.
+async function loadCwCalendar() {
+  try {
+    var res = await fetch(CAL_SCRIPT_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+    if (data.status !== 'ok' || !data.events) throw new Error('bad response');
+    window._cwCalEvents = data.events.map(function(e) {
+      var startStr = e.start || '';
+      return {
+        title:      e.title || '',
+        start:      startStr,
+        start_date: startStr.slice(0, 10),
+        allDay:     e.allDay
+      };
+    });
+    return window._cwCalEvents;
+  } catch (e) {
+    console.warn('[CW2] Calendar fetch failed:', e.message);
+    if (!window._cwCalEvents) window._cwCalEvents = [];
+    return window._cwCalEvents;
+  }
 }
 
 async function loadOverrides() {
@@ -1624,6 +1655,7 @@ async function startBoard() {
   await loadRoomConfig();
   await loadCwEvents();
   await loadOverrides();
+  await loadCwCalendar();
 
   var screens = await loadScreens();
   if (screens && screens.length) {
@@ -1665,6 +1697,7 @@ async function startBoard() {
   setInterval(async function() {
     await loadCwEvents();
     await loadOverrides();
+    await loadCwCalendar();
     await loadWeather();
     await loadObjectives();
     await loadBirthdays();
