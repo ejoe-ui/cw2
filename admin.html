@@ -388,7 +388,31 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
     <div class="msg-list-hd"><span>Upcoming Overrides</span></div>
     <div id="ovr-list"><div class="bday-empty">Loading...</div></div>
   </div>
-  
+  <!-- EVE MODE SETTINGS -->
+  <div class="sb-box" id="section-eve-settings">
+    <div class="sb-box-hd">
+      <div><span>🤖 EVE Mode Settings</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Controls for the EVE display screen · updates within 60s</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;">Inspiration Tile</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Rotating content strip — fun facts, words of wisdom, etc.</div>
+      </div>
+      <button class="btn" id="eveInspirationBtn" onclick="eveToggleInspiration()" style="min-width:64px;">Loading...</button>
+    </div>
+    <div style="padding-top:14px;">
+      <div class="f-group">
+        <label class="f-label">PREP PERIODS <span style="font-weight:400;color:var(--text-3);">(comma-separated)</span></label>
+        <input class="sb-input" id="evePrepPeriods" type="text" maxlength="20" placeholder="e.g. 3 or 3,6" style="max-width:200px;">
+        <div class="f-hint">Pass ring shows RED during prep — no students in class. Default: 3.</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;align-items:center;">
+        <span style="font-size:11px;color:var(--text-3);min-height:16px;" id="eveSettingsStatus"></span>
+        <button class="sb-btn" onclick="eveSaveSettings()">Save EVE Settings</button>
+      </div>
+    </div>
+  </div>
+ 
   <!-- QUICK MESSAGE -->
   <div class="sb-box" id="section-messages">
     <div class="sb-box-hd">
@@ -756,6 +780,7 @@ async function unlockAdmin(){
   document.getElementById('settingReveal').textContent=rbVal===true?'👁 Shown':'🚫 Hidden';
   await loadBoards();
   await loadDisplayControls();
+  eveLoadSettings();
   if(dcDirty){
     var toSave=Object.assign({},dcCats);toSave.display_order=dcOrder.slice();
     await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
@@ -1289,7 +1314,40 @@ async function ovrDelete(id){
   if(ok){toast('Override removed');await ovrLoadList();}
   else{toast('Remove failed',true);}
 }
-
+// ── EVE MODE SETTINGS ──
+function eveLoadSettings(){
+  var cats=dcSettings?(dcSettings.global_categories||{}):{};
+  var inspOn=cats.eve_inspiration!==false;
+  var prepPeriods=cats.eve_prep_periods||'3';
+  var btn=document.getElementById('eveInspirationBtn');
+  if(btn){btn.textContent=inspOn?'✓ On':'✗ Off';btn.className=inspOn?'btn accent':'btn danger';}
+  var prepInput=document.getElementById('evePrepPeriods');
+  if(prepInput)prepInput.value=prepPeriods;
+}
+function eveToggleInspiration(){
+  if(!dcSettings){toast('Log in first',true);return;}
+  var current=dcCats.eve_inspiration!==false;
+  dcCats.eve_inspiration=!current;
+  var btn=document.getElementById('eveInspirationBtn');
+  if(btn){btn.textContent=!current?'✓ On':'✗ Off';btn.className=!current?'btn accent':'btn danger';}
+  dcDirty=true;dcUpdateDirty();
+}
+async function eveSaveSettings(){
+  if(!dcSettings){toast('Load settings first',true);return;}
+  var prepInput=document.getElementById('evePrepPeriods');
+  var prepVal=(prepInput?prepInput.value.trim():'')||'3';
+  var toSave=Object.assign({},dcCats);
+  toSave.display_order=dcOrder.slice();
+  toSave.eve_prep_periods=prepVal;
+  var ok=await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
+  if(ok){
+    dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
+    var status=document.getElementById('eveSettingsStatus');
+    if(status){status.textContent='✓ Saved';setTimeout(function(){status.textContent='';},2500);}
+    toast('EVE settings saved — updates within 60s');
+  }else{toast('Save failed',true);}
+}
+  
 // ── TOAST ──
 function toast(msg,isErr){var el=document.getElementById('toast');el.textContent=msg;el.className='show'+(isErr?' err':'');clearTimeout(el._t);el._t=setTimeout(function(){el.className='';},2500);}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===document.getElementById('modal-overlay'))closeModal();});
