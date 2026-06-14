@@ -541,9 +541,16 @@ function cwNorm(s) {
 }
 function cwBlocked(name) { return !!CW_NO_MEDIA[cwNorm(name)]; }
 async function loadNoMedia() {
-  var rows = await sbFetch('cw2_no_media', 'select=norm_name');
+  var rows = await sbFetch('cw2_no_media', 'select=norm_name,first_name,last_name');
   CW_NO_MEDIA = {};
-  (rows || []).forEach(function(r) { if (r.norm_name) CW_NO_MEDIA[r.norm_name] = true; });
+  (rows || []).forEach(function(r) {
+    if (r.norm_name) CW_NO_MEDIA[r.norm_name] = true;
+    // also index "first name (first token) + full last name" — matches the picker's short display form
+    // e.g. block list "Gabriel De Jesus Garcia Corona" also catches picker's "Gabriel Garcia Corona"
+    var first = (r.first_name == null ? '' : String(r.first_name)).trim().split(/\s+/)[0] || '';
+    var shortKey = cwNorm(first + ' ' + (r.last_name == null ? '' : r.last_name));
+    if (shortKey) CW_NO_MEDIA[shortKey] = true;
+  });
 }
 
 async function loadRoomConfig() {
