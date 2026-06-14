@@ -1762,6 +1762,8 @@ async function startBoard() {
 
   // Refresh dynamic data every 5 minutes
   setInterval(async function() {
+    await loadRoomConfig();
+    await loadNoMedia();
     await loadCwEvents();
     await loadOverrides();
     await loadCwCalendar();
