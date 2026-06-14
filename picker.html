@@ -197,7 +197,47 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
 
   <!-- LEFT: ROSTER PANEL -->
   <div>
-    <!-- Upload -->
+    <!-- Period selector (daily driver — on top) -->
+    <div class="panel" style="margin-bottom:1rem;display:none;" id="periodPanel">
+      <div class="panel-hd">
+        <div class="panel-title">Period</div>
+        <div style="font-size:11px;color:var(--text3);" id="periodInfo"></div>
+      </div>
+      <div class="panel-body">
+        <div class="period-tabs" id="periodTabs"></div>
+
+        <!-- Points toggle -->
+        <div class="toggle-row" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+          <label class="toggle-switch"><input type="checkbox" id="pointsToggle" checked onchange="togglePoints()"><span class="toggle-slider"></span></label>
+          <span class="toggle-label">Track participation & correct points</span>
+        </div>
+
+        <!-- Student list header -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);">Students <span id="studentCountLabel" style="color:var(--text3);font-weight:400;"></span></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-sm" onclick="showGuestForm()">+ Guest</button>
+            <button class="btn btn-sm" onclick="toggleAllStudents(true)">All In</button>
+            <button class="btn btn-sm" onclick="toggleAllStudents(false)">All Out</button>
+          </div>
+        </div>
+
+        <!-- Guest add (session only) -->
+        <div id="guestForm" style="display:none;margin-bottom:8px;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;">
+          <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">Guest joins this session only — gone on reload.</div>
+          <div style="display:flex;gap:6px;">
+            <input id="guestName" type="text" placeholder="Guest name" style="flex:1;min-width:0;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);">
+            <input id="guestGrade" type="text" placeholder="Gr" maxlength="2" style="width:40px;padding:6px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);text-align:center;">
+            <button class="btn btn-sm" onclick="addGuestStudent()">Add</button>
+            <button class="btn btn-sm" onclick="hideGuestForm()">✕</button>
+          </div>
+        </div>
+
+        <div class="student-list" id="studentList"></div>
+      </div>
+    </div>
+
+    <!-- Roster upload (setup — below the daily driver) -->
     <div class="panel" style="margin-bottom:1rem;">
       <div class="panel-hd">
         <div class="panel-title">Roster</div>
@@ -212,33 +252,22 @@ input:checked+.toggle-slider:before{transform:translateX(16px);}
           <div class="upload-hint">Class Roster xlsx · one or multiple periods</div>
         </label>
         <div class="status-bar" id="uploadStatus"></div>
-      </div>
-    </div>
 
-    <!-- Period selector -->
-    <div class="panel" style="margin-bottom:1rem;" id="periodPanel" style="display:none">
-      <div class="panel-hd">
-        <div class="panel-title">Period</div>
-        <div style="font-size:11px;color:var(--text3);" id="periodInfo"></div>
-      </div>
-      <div class="panel-body">
-        <div class="period-tabs" id="periodTabs"></div>
-
-        <!-- Points toggle -->
-        <div class="toggle-row" style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);">
-          <label class="toggle-switch"><input type="checkbox" id="pointsToggle" checked onchange="togglePoints()"><span class="toggle-slider"></span></label>
-          <span class="toggle-label">Track participation & correct points</span>
-        </div>
-
-        <!-- Student list -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div style="font-size:11px;font-weight:600;color:var(--text2);">Students <span id="studentCountLabel" style="color:var(--text3);font-weight:400;"></span></div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-sm" onclick="toggleAllStudents(true)">All In</button>
-            <button class="btn btn-sm" onclick="toggleAllStudents(false)">All Out</button>
+        <!-- Permanent add to roster -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);">
+          <button class="btn btn-sm" style="width:100%;justify-content:center;" onclick="showPermForm()">+ Add student to roster</button>
+          <div id="permForm" style="display:none;margin-top:8px;">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:6px;">Adds permanently to the selected period's roster.</div>
+            <div style="display:flex;gap:6px;">
+              <input id="permName" type="text" placeholder="Student name" style="flex:1;min-width:0;padding:6px 8px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);">
+              <input id="permGrade" type="text" placeholder="Gr" maxlength="2" style="width:40px;padding:6px;font-size:13px;border:1px solid var(--border);border-radius:5px;background:var(--surface);color:var(--text);text-align:center;">
+            </div>
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button class="btn btn-sm" style="flex:1;justify-content:center;" onclick="addPermanentStudent()">Add to roster</button>
+              <button class="btn btn-sm" onclick="hidePermForm()">Cancel</button>
+            </div>
           </div>
         </div>
-        <div class="student-list" id="studentList"></div>
       </div>
     </div>
   </div>
@@ -565,6 +594,7 @@ function renderStudentList(){
     var nameDiv = document.createElement('div');
     nameDiv.className = 's-name';
     nameDiv.textContent = s.name;
+    if(s.guest){ var gchip=document.createElement('span'); gchip.textContent='guest'; gchip.style.cssText='font-size:9px;font-weight:700;color:var(--accent);background:var(--accent-bg);padding:1px 5px;border-radius:3px;margin-left:6px;'; nameDiv.appendChild(gchip); }
 
     var gradeDiv = document.createElement('div');
     gradeDiv.className = 's-grade';
@@ -594,6 +624,36 @@ function toggleAllStudents(inCan){
   students.forEach(function(s){ if(!s.absent){ s.inCan = inCan; } });
   renderStudentList();
   updateCounters();
+}
+
+// ── ADD STUDENT (guest = session only · permanent = roster) ──
+function showGuestForm(){ if(!activePeriod){ toast('Select a period first'); return; } document.getElementById('guestForm').style.display='block'; document.getElementById('guestName').focus(); }
+function hideGuestForm(){ document.getElementById('guestForm').style.display='none'; document.getElementById('guestName').value=''; document.getElementById('guestGrade').value=''; }
+function addGuestStudent(){
+  var name=(document.getElementById('guestName').value||'').trim();
+  if(!name){ toast('Enter a name'); return; }
+  if(!activePeriod){ toast('Select a period first'); return; }
+  var grade=(document.getElementById('guestGrade').value||'').trim();
+  students.push({ name:name, grade:grade, id:'', inCan:true, absent:false, guest:true });
+  hideGuestForm();
+  renderStudentList(); updateCounters();
+  toast(name+' joined for this session');
+}
+function showPermForm(){ if(!activePeriod){ toast('Upload or select a period first'); return; } document.getElementById('permForm').style.display='block'; document.getElementById('permName').focus(); }
+function hidePermForm(){ document.getElementById('permForm').style.display='none'; document.getElementById('permName').value=''; document.getElementById('permGrade').value=''; }
+async function addPermanentStudent(){
+  var name=(document.getElementById('permName').value||'').trim();
+  if(!name){ toast('Enter a name'); return; }
+  if(!activePeriod){ toast('Upload or select a period first'); return; }
+  var grade=(document.getElementById('permGrade').value||'').trim();
+  var ok=await sbInsertMany('cw2_roster',[{ room:ROOM, period:activePeriod, student_name:name, student_id:null, grade:grade||null, active:true }]);
+  if(!ok){ toast('Save failed — try again'); return; }
+  if(!roster[activePeriod]) roster[activePeriod]=[];
+  roster[activePeriod].push({ name:name, grade:grade, id:'' });
+  students.push({ name:name, grade:grade, id:'', inCan:true, absent:false });
+  hidePermForm();
+  renderPeriodTabs(); renderStudentList(); updateCounters();
+  toast(name+' added to P'+activePeriod+' roster');
 }
 
 function togglePoints(){
