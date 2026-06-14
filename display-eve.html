@@ -197,8 +197,12 @@
     font-size:clamp(11px,1cqw,18px); letter-spacing:0.06em; color:#dbe9f7;
     text-transform:uppercase;
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-  .un-when { font-family:var(--font-num); font-weight:600; font-size:clamp(10px,0.92cqw,16px);
-    letter-spacing:0.08em; color:var(--eve-blue-lit); white-space:nowrap; }
+  .un-when { display:flex; flex-direction:column; align-items:flex-end; text-align:right;
+    white-space:nowrap; flex-shrink:0; line-height:1.15; }
+  .un-date { font-family:var(--font-num); font-weight:700; font-size:clamp(11px,1cqw,17px);
+    letter-spacing:0.05em; color:var(--eve-blue-lit); }
+  .un-days { font-family:var(--font-num); font-weight:500; font-size:clamp(9px,0.78cqw,13px);
+    letter-spacing:0.08em; color:var(--eve-muted); }
 
   /* CENTER countdown */
   #ring-wrap { position:relative; width:clamp(200px,min(22cqw,30cqh),420px); aspect-ratio:1;
@@ -423,9 +427,11 @@
   .bd-row { display:flex; align-items:center; gap:0.7cqw; }
   .bd-dot { width:8px; height:8px; border-radius:50%; background:var(--eve-blue);
     box-shadow:0 0 8px rgba(30,155,255,0.6); flex-shrink:0; }
-  .bd-name { font-family:var(--font-ui); font-weight:500; font-size:clamp(11px,1cqw,18px);
+  .bd-name { flex:0 1 auto; min-width:0; font-family:var(--font-ui); font-weight:500; font-size:clamp(11px,1cqw,18px);
     letter-spacing:0.04em; color:var(--eve-text); text-transform:uppercase;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .bd-date { margin-left:auto; flex-shrink:0; padding-left:0.8cqw; font-family:var(--font-num); font-weight:600;
+    font-size:clamp(10px,0.85cqw,15px); letter-spacing:0.05em; color:var(--eve-blue-lit); }
   #bday-head { display:flex; align-items:center; justify-content:space-between; }
   #bday-cake { width:clamp(26px,2.4cqw,46px); color:var(--eve-blue); opacity:0.85; }
 
@@ -1162,6 +1168,7 @@ async function loadCwCalendar(){
   }catch(e){ if(!window._cwCalEvents) window._cwCalEvents=[]; return window._cwCalEvents; }
 }
 function daysBetween(a,b){ var d=24*60*60*1000; return Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/d); }
+function monDay(ds){ var dt=new Date(ds+'T00:00:00'); var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return M[dt.getMonth()]+' '+dt.getDate(); }
 var UPCOMING_WINDOW_DAYS = 60;
 function getUpcomingEvents(ds){
   var cutoff=new Date(ds+'T00:00:00'); cutoff.setDate(cutoff.getDate()+UPCOMING_WINDOW_DAYS); var cs=dateStr(cutoff);
@@ -1267,7 +1274,8 @@ function renderUpNext(){
     var d=daysBetween(e.start_date,ds);
     html+='<div class="un-row"><div class="un-icon">'+ICON(eventIcon(e.title))+'</div>'+
       '<div class="un-name">'+(e.title||'').toUpperCase()+'</div>'+
-      '<div class="un-when">'+whenLabel(d)+'</div></div>';
+      '<div class="un-when"><div class="un-date">'+monDay(e.start_date)+'</div>'+
+      '<div class="un-days">'+whenLabel(d)+'</div></div></div>';
   });
   document.getElementById('upnext-list').innerHTML=html;
 }
@@ -1768,7 +1776,9 @@ function renderBirthdays(){
   if(!top.length){ html='<div class="bd-row"><div class="bd-name" style="color:var(--eve-muted)">No birthdays soon</div></div>'; }
   top.forEach(function(b){
     var initialName=(b.name||'').replace(/\s+(\S)\S*$/,' $1.'); // "Giselle L."
-    html+='<div class="bd-row"><div class="bd-dot"></div><div class="bd-name">'+initialName.toUpperCase()+'</div></div>';
+    var BM=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    var bdate=(b.month?BM[b.month-1]+' '+b.day:'');
+    html+='<div class="bd-row"><div class="bd-dot"></div><div class="bd-name">'+initialName.toUpperCase()+'</div>'+(bdate?'<div class="bd-date">'+bdate+'</div>':'')+'</div>';
   });
   document.getElementById('bday-list').innerHTML=html;
 }
