@@ -531,6 +531,16 @@
   .wx-day .dt { font-family:var(--font-num); font-weight:600; font-size:clamp(9px,0.74cqw,13px);
     color:var(--eve-text); white-space:nowrap; }
   .wx-day .dt .lo { color:var(--eve-muted); }
+  #wx-body { display:flex; flex-direction:column; flex:1; min-height:0; }
+
+  /* wide window: forecast moves to the right of the temp instead of below it,
+     so a stretched-short weather card no longer drops the forecast out the bottom */
+  @media (min-aspect-ratio: 9/5) {
+    #wx-body { flex-direction:row; align-items:center; gap:1.2cqw; }
+    #wx-main { flex:0 0 auto; }
+    #wx-fc { flex:1; margin-top:0; padding-top:0; border-top:none;
+      padding-left:1.2cqw; border-left:1px solid rgba(150,170,190,0.24); align-content:center; }
+  }
 
   /* ── MR. JOE SAYS announcement (black glass) ───────── */
   #announce { position:relative; display:none; align-items:center; gap:1cqw;
@@ -869,14 +879,16 @@
             <div class="rc-head">Weather</div>
             <div id="wx-icon"></div>
           </div>
-          <div id="wx-main">
-            <div id="wx-temp">—</div>
-            <div>
-              <div id="wx-cond">—</div>
-              <div id="wx-feels">—</div>
+          <div id="wx-body">
+            <div id="wx-main">
+              <div id="wx-temp">—</div>
+              <div>
+                <div id="wx-cond">—</div>
+                <div id="wx-feels">—</div>
+              </div>
             </div>
+            <div id="wx-fc"></div>
           </div>
-          <div id="wx-fc"></div>
         </div>
       </div>
 
