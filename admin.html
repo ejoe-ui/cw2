@@ -400,6 +400,17 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       </div>
       <button class="btn" id="eveInspirationBtn" onclick="eveToggleInspiration()" style="min-width:64px;">Loading...</button>
     </div>
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Inspiration Content</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-fun_facts"> Fun Facts 💡</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-wise_words"> Words of Wisdom 🌟</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-cowboy_code"> Cowboy Code 🤠</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-history_drops"> History Drops 🗂</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-word_of_day"> Word of the Day 📖</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-business"> Business Facts 📈</label>
+      </div>
+    </div>
     <div style="padding-top:14px;">
       <div class="f-group">
         <label class="f-label">PREP PERIODS <span style="font-weight:400;color:var(--text-3);">(comma-separated)</span></label>
@@ -1323,6 +1334,10 @@ function eveLoadSettings(){
   if(btn){btn.textContent=inspOn?'✓ On':'✗ Off';btn.className=inspOn?'btn accent':'btn danger';}
   var prepInput=document.getElementById('evePrepPeriods');
   if(prepInput)prepInput.value=prepPeriods;
+  var EVE_CATS=['fun_facts','wise_words','cowboy_code','history_drops','word_of_day','business'];
+  var savedCats=cats.eve_inspiration_cats;
+  var activeCats=Array.isArray(savedCats)?savedCats:EVE_CATS.filter(function(c){return c!=='business';});
+  EVE_CATS.forEach(function(c){var cb=document.getElementById('eve-cat-'+c);if(cb)cb.checked=activeCats.indexOf(c)>=0;});
 }
 function eveToggleInspiration(){
   if(!dcSettings){toast('Log in first',true);return;}
@@ -1336,9 +1351,12 @@ async function eveSaveSettings(){
   if(!dcSettings){toast('Load settings first',true);return;}
   var prepInput=document.getElementById('evePrepPeriods');
   var prepVal=(prepInput?prepInput.value.trim():'')||'3';
+  var EVE_CATS=['fun_facts','wise_words','cowboy_code','history_drops','word_of_day','business'];
+  var selectedCats=EVE_CATS.filter(function(c){var cb=document.getElementById('eve-cat-'+c);return cb&&cb.checked;});
   var toSave=Object.assign({},dcCats);
   toSave.display_order=dcOrder.slice();
   toSave.eve_prep_periods=prepVal;
+  toSave.eve_inspiration_cats=selectedCats;
   var ok=await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
   if(ok){
     dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
