@@ -1455,6 +1455,42 @@ function fmtClock(secs){ secs=Math.max(0,Math.floor(secs));
   var h=Math.floor(secs/3600), m=Math.floor((secs%3600)/60), s=secs%60;
   function p(n){ return (n<10?'0':'')+n; }
   return h>0 ? h+':'+p(m)+':'+p(s) : p(m)+':'+p(s); }
+/* shrink visor text until it fits inside the round face (long timers / long names) */
+function fitVisorText(el, wFrac, hFrac, startFrac){
+  if(!el || el.offsetParent===null) return;
+  var face=document.getElementById('ring-face'); if(!face) return;
+  var d=Math.min(face.clientWidth, face.clientHeight); if(!d) return;
+  var boxW=d*wFrac, boxH=d*hFrac, size=d*startFrac, guard=0;
+  el.style.fontSize=size.toFixed(1)+'px';
+  while((el.scrollWidth>boxW || el.scrollHeight>boxH) && size>11 && guard<200){
+    size-=Math.max(1, size*0.045); guard++; el.style.fontSize=size.toFixed(1)+'px';
+  }
+}
+function fitClock(el){
+  if(!el) return;
+  var face=document.getElementById('ring-face'), d=face?Math.round(Math.min(face.clientWidth,face.clientHeight)):0;
+  var sig=(el.textContent||'').length+'|'+d;
+  if(el._fitSig===sig) return; el._fitSig=sig;
+  fitVisorText(el, 0.82, 0.62, 0.34);
+}
+function fitPickName(el){
+  if(!el) return;
+  var face=document.getElementById('ring-face'), d=face?Math.round(Math.min(face.clientWidth,face.clientHeight)):0;
+  var sig=(el.textContent||'')+'|'+d;
+  if(el._fitSig===sig) return; el._fitSig=sig;
+  fitVisorText(el, 0.76, 0.56, 0.15);
+}
+var _fitRz;
+window.addEventListener('resize', function(){
+  clearTimeout(_fitRz);
+  _fitRz=setTimeout(function(){
+    var cd=document.getElementById('cdNum'); if(cd) cd._fitSig=null;
+    var pn=document.getElementById('pick-name'); if(pn) pn._fitSig=null;
+    if(HERO_MODE==='timer') renderTimer();
+    else if(HERO_MODE==='stopwatch') renderStopwatch();
+    else if(HERO_MODE==='picker') renderPickView();
+  }, 150);
+});
 function setHeroMode(mode){
   if(['auto','timer','stopwatch','picker'].indexOf(mode)===-1) return;
   HERO_MODE=mode; clearInterval(heroInt); heroInt=null;
@@ -1474,7 +1510,7 @@ function setHeroMode(mode){
     if(!pickLoaded && !pickLoading) loadPickRoster(); else { renderPickControls(); renderPickView(); }
     return;
   }
-  cdNum.classList.add('cd-time');
+  cdNum.classList.add('cd-time'); cdNum._fitSig=null;
   document.getElementById('ppNum').style.display='none';
   heroTabsSync(); buildHeroSub();
   if(mode==='timer'){ renderTimer(); heroInt=setInterval(renderTimer,250); }
@@ -1521,6 +1557,7 @@ function renderTimer(){
   var secs=Math.ceil(timerRemain);
   document.getElementById('cdLabel').textContent='TIMER';
   document.getElementById('cdNum').textContent=fmtClock(secs);
+  fitClock(document.getElementById('cdNum'));
   document.getElementById('cdUnit').textContent= timerRunning?'REMAINING':(secs<=0?'TIME':'READY');
   var frac= timerTotal>0 ? Math.max(0,Math.min(1,secs/timerTotal)) : 0;
   document.getElementById('ringProg').style.strokeDashoffset=String(RING_LEN*(1-frac));
@@ -1536,6 +1573,7 @@ function renderStopwatch(){
   var ms=swElapsed+(swRunning?(Date.now()-swStartAt):0), secs=Math.floor(ms/1000);
   document.getElementById('cdLabel').textContent='STOPWATCH';
   document.getElementById('cdNum').textContent=fmtClock(secs);
+  fitClock(document.getElementById('cdNum'));
   document.getElementById('cdUnit').textContent= swRunning?'ELAPSED':'STOPPED';
   var frac=(secs%60)/60;
   document.getElementById('ringProg').style.strokeDashoffset=String(RING_LEN*(1-frac));
@@ -1582,7 +1620,7 @@ function pickLand(w){
   pickCurrent=w.name; pickSpinning=false;
   var nameEl=document.getElementById('pick-name'), subEl=document.getElementById('pick-sub');
   if(nameEl){ nameEl.textContent=w.name.toUpperCase(); nameEl.style.opacity='';
-    nameEl.classList.remove('flip','reveal'); void nameEl.offsetWidth; nameEl.classList.add('reveal'); }
+    nameEl.classList.remove('flip','reveal'); void nameEl.offsetWidth; nameEl.classList.add('reveal'); fitPickName(nameEl); }
   if(subEl){ subEl.style.opacity=''; subEl.textContent=w.grade?('GRADE '+w.grade):'PICKED'; }
   renderPickControls(); renderPickView();
 }
@@ -1641,6 +1679,7 @@ function renderPickView(){
     else if(!pickPool().length){ nameEl.textContent='CAN EMPTY'; if(subEl) subEl.textContent='NEW ROUND'; }
     else if(!pickSpinning){ nameEl.textContent='READY'; if(subEl) subEl.textContent='TAP SPIN'; }
   }
+  fitPickName(nameEl);
   document.getElementById('ppLabel').textContent='PICKER';
   document.getElementById('ppNum').style.display='none';
   document.getElementById('ppUnit').textContent= pickPeriods.length ? (pickPool().length+' / '+pickStudents.length+' IN CAN') : '';
