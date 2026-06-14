@@ -1941,7 +1941,6 @@ async function loadInspiration(){
   (rows||[]).forEach(function(r){
     var cat=r.category||'cowboy_code';
     if(!want[cat]) return;
-    if(cats[cat]===false) return;
     var lines=Array.isArray(r.lines)?r.lines:JSON.parse(r.lines||'[]');
     var text=lines.map(function(x){ return (x==null?'':String(x)).trim(); }).filter(Boolean).join(' ');
     if(!text) return;
