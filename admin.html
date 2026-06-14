@@ -338,6 +338,12 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <div class="err" id="objError" style="text-align:left;min-height:0;"></div>
     </div>
   </div>
+
+  <!-- NAME PICKER -->
+  <div class="section">
+    <button class="btn accent" onclick="window.open('/picker.html?room='+ROOM,'_blank')" style="width:100%;gap:8px;padding:12px;font-size:14px;font-weight:700;">🎲 Open Name Picker</button>
+  </div>
+
 <!-- SCHEDULE OVERRIDE -->
   <div class="sb-box" id="section-schedule-override">
     <div class="sb-box-hd">
@@ -538,6 +544,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
         <div class="setting-label">Honor Roll</div>
         <div class="setting-value" id="settingHonorRoll" style="font-size:14px;padding-top:3px">—</div>
       </div>
+      <div class="setting-card" style="cursor:pointer" onclick="toggleRevealBlocked()">
+        <div class="setting-label">No-Media Reveal</div>
+        <div class="setting-value" id="settingReveal" style="font-size:14px;padding-top:3px">—</div>
+      </div>
     </div>
   </div>
 
@@ -555,6 +565,25 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
 
 
 
+  <!-- NO-MEDIA LIST (master only) -->
+  <div class="section" id="noMediaSection" style="display:none">
+    <div class="sec-head">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="sec-title">No-Media List</div>
+        <span style="font-size:10px;font-weight:500;color:var(--text-3);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;">master only · school-wide</span>
+      </div>
+      <span class="sb-count" id="nmCount">—</span>
+    </div>
+    <div class="bday-info" style="margin-bottom:10px;">Upload the district <strong>DO NOT Release</strong> .xlsx. Every student in the file is blocked from public boards — birthdays, honor roll, and the pick reveal. Each upload <strong>replaces</strong> the whole list. The DoNotRelease column is ignored.</div>
+    <label class="bday-drop" id="nm-dropzone">
+      <input type="file" id="nm-file-input" accept=".xlsx" style="display:none" onchange="nmHandleFiles(this.files)">
+      <div style="font-size:24px;">🛡️</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text-2);">Drop the DO NOT Release .xlsx here or click to browse</div>
+      <div style="font-size:11px;color:var(--text-3);">Replaces the current list · school-wide</div>
+    </label>
+    <div id="nm-upload-status" class="bday-status"></div>
+  </div>
+
   <!-- DISPLAY URL -->
   <div class="section">
     <div class="sec-head"><div class="sec-title">Display URL</div></div>
@@ -562,9 +591,6 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
       <div class="url-text" id="displayUrl"></div>
       <button class="btn" onclick="copyDisplayUrl()">Copy</button>
       <button class="btn" onclick="openDisplay()">Open ↗</button>
-    </div>
-    <div style="margin-top:10px;">
-      <button class="btn accent" onclick="window.open('/picker.html?room='+ROOM,'_blank')" style="gap:6px;">🎲 Open Name Picker</button>
     </div>
   </div>
 
@@ -723,9 +749,11 @@ async function unlockAdmin(){
   updateHeaderClock();
   if(!classroom){var rows=await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');classroom=(rows&&rows[0])?rows[0]:null;}
   updateRoomInfo();
-  var hrRows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=show_honor_roll');
+  var hrRows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=show_honor_roll,reveal_show_blocked');
   var hrVal=hrRows&&hrRows[0]?hrRows[0].show_honor_roll:null;
   document.getElementById('settingHonorRoll').textContent=hrVal===false?'✗ Off':'✓ On';
+  var rbVal=hrRows&&hrRows[0]?hrRows[0].reveal_show_blocked:null;
+  document.getElementById('settingReveal').textContent=rbVal===true?'👁 Shown':'🚫 Hidden';
   await loadBoards();
   await loadDisplayControls();
   if(dcDirty){
@@ -742,6 +770,8 @@ async function unlockAdmin(){
   ovrInitForm();await ovrLoadList();
   document.getElementById('roomMgmtSection').style.display=isMaster?'block':'none';
   document.getElementById('globalBoardsSection').style.display=isMaster?'block':'none';
+  document.getElementById('noMediaSection').style.display=isMaster?'block':'none';
+  if(isMaster)nmLoadCount();
   if(classroom&&classroom.config&&classroom.config.pin_is_default)
     setTimeout(function(){toast('Please set a new PIN — scroll down to Change Teacher Login PIN');},600);
 }
@@ -1035,6 +1065,43 @@ async function toggleHonorRoll(){
   await sbUpdate('cw2_settings',rows[0].id,{show_honor_roll:next});
   document.getElementById('settingHonorRoll').textContent=next?'✓ On':'✗ Off';
   toast('Honor roll '+(next?'enabled':'disabled'));
+}
+
+async function toggleRevealBlocked(){
+  var rows=await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=id,reveal_show_blocked');
+  if(!rows||!rows.length){toast('Settings not found',true);return;}
+  var next=rows[0].reveal_show_blocked===true?false:true;
+  var r=await sbUpdate('cw2_settings',rows[0].id,{reveal_show_blocked:next});
+  if(!r){toast('Save failed — is the reveal_show_blocked column added?',true);return;}
+  document.getElementById('settingReveal').textContent=next?'👁 Shown':'🚫 Hidden';
+  toast('Blocked names '+(next?'shown on the reveal':'hidden on the reveal'));
+}
+
+// ── NO-MEDIA LIST (master · global) ──
+function nmNorm(s){s=(s==null?'':String(s));if(s.normalize)s=s.normalize('NFKD').replace(/[\u0300-\u036f]/g,'');return s.toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();}
+async function nmLoadCount(){try{var r=await fetch(SUPABASE_URL+'/rest/v1/cw2_no_media?select=id',{headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'count=exact','Range':'0-0'}});var cr=r.headers.get('content-range');var total=cr?cr.split('/')[1]:'0';if(total==='*'||total==null)total='0';document.getElementById('nmCount').textContent=total+' blocked';}catch(e){document.getElementById('nmCount').textContent='—';}}
+function nmParseFile(file){return new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(e){try{var wb=XLSX.read(e.target.result,{type:'array'}),ws=wb.Sheets[wb.SheetNames[0]],rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null}),out=[];for(var i=1;i<rows.length;i++){var row=rows[i];if(!row||row.every(function(c){return c===null||c===undefined||c==='';}))continue;var sid=row[0],last=row[1],first=row[2],grade=row[3];if(!last||!first)continue;var nn=nmNorm(String(first).trim()+' '+String(last).trim());if(!nn)continue;out.push({student_id:(sid==null||sid===''?null:(parseInt(sid,10)||null)),last_name:String(last).trim(),first_name:String(first).trim(),grade:(grade==null||grade===''?null:(parseInt(grade,10)||null)),norm_name:nn});}resolve(out);}catch(err){reject(err);}};reader.onerror=function(){reject(new Error('File read failed'));};reader.readAsArrayBuffer(file);});}
+async function nmHandleFiles(files){
+  if(!files||!files.length)return;
+  var status=document.getElementById('nm-upload-status');
+  status.textContent='Parsing '+files[0].name+'...';
+  var parsed;
+  try{parsed=await nmParseFile(files[0]);}catch(e){status.textContent='Error reading file: '+e.message;return;}
+  if(!parsed.length){status.textContent='No students found in that file — check it has Last Name / First Name columns.';return;}
+  if(!confirm('Replace the entire No-Media List with '+parsed.length+' students from this file?')){status.textContent='Cancelled.';return;}
+  status.textContent='Uploading '+parsed.length+' students...';
+  var mark=new Date().toISOString();
+  var payload=parsed.map(function(r){r.created_at=mark;return r;});
+  try{
+    // 1) insert the new list first (fail-safe: if this fails, the old list is untouched)
+    var ins=await fetch(SUPABASE_URL+'/rest/v1/cw2_no_media',{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify(payload)});
+    if(!ins.ok)throw new Error(await ins.text());
+    // 2) then remove the previous list (anything older than this upload)
+    await fetch(SUPABASE_URL+'/rest/v1/cw2_no_media?created_at=lt.'+encodeURIComponent(mark),{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'return=minimal'}});
+    status.textContent='✓ '+parsed.length+' students blocked. List replaced.';
+    document.getElementById('nm-file-input').value='';
+    await nmLoadCount();
+  }catch(e){status.textContent='Upload failed: '+e.message;}
 }
 
 // ── PIN CHANGE ──
