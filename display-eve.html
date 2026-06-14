@@ -1284,7 +1284,8 @@ function renderUpNext(){
 var RING_LEN = 578;
 // ── EVE EYES + prep detection ────────────────────────
 function prepPeriods(){
-  var v=(typeof SETTINGS!=='undefined' && SETTINGS && SETTINGS.prep_periods!=null) ? SETTINGS.prep_periods : '3';
+  var gc=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
+  var v=(gc.eve_prep_periods!=null)?gc.eve_prep_periods:'3';
   if(Array.isArray(v)) return v.map(String);
   return String(v).split(/[,\s]+/).filter(Boolean);
 }
@@ -1929,9 +1930,13 @@ function inspMark(cat){
   return icons[cat]||icons.cowboy_code;
 }
 async function loadInspiration(){
+  var gc=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
+  if(gc.eve_inspiration===false){ CW_INSPIRE=[]; return; }
+  var DEFAULT_CATS=['fun_facts','positive_thoughts','cowboy_code','history_drops','word_of_day'];
+  var savedCats=Array.isArray(gc.eve_inspiration_cats)?gc.eve_inspiration_cats:DEFAULT_CATS;
+  var want={};
+  savedCats.forEach(function(c){ want[c]=1; if(c==='wise_words') want.positive_thoughts=1; });
   var rows=await sbFetch('cw2_screens','room=eq.global&enabled=eq.true&order=sort_order.asc');
-  var cats=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{cowboy_code:true,word_of_day:true,fun_facts:true,positive_thoughts:true,business:true};
-  var want={cowboy_code:1,word_of_day:1,fun_facts:1,positive_thoughts:1};
   var pool=[];
   (rows||[]).forEach(function(r){
     var cat=r.category||'cowboy_code';
