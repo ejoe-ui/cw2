@@ -532,6 +532,20 @@ const ROOM      = params.get('room') || '27';
 let   CLASSROOM = null;
 let   SETTINGS  = null;
 
+// ── NO-MEDIA LIST (FERPA · global block list) ────────
+var CW_NO_MEDIA = {};   // normalized full name -> true
+function cwNorm(s) {
+  s = (s == null ? '' : String(s));
+  if (s.normalize) s = s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '');
+  return s.toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function cwBlocked(name) { return !!CW_NO_MEDIA[cwNorm(name)]; }
+async function loadNoMedia() {
+  var rows = await sbFetch('cw2_no_media', 'select=norm_name');
+  CW_NO_MEDIA = {};
+  (rows || []).forEach(function(r) { if (r.norm_name) CW_NO_MEDIA[r.norm_name] = true; });
+}
+
 async function loadRoomConfig() {
   const classrooms = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
   const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
@@ -1464,7 +1478,9 @@ function buildBirthdayScreen() {
   }
 
   var months = ['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-  var sorted = CW_BIRTHDAYS.slice().sort(function(a, b) {
+  var visible = CW_BIRTHDAYS.filter(function(b) { return !cwBlocked(b.name); });
+  if (!visible.length) return null;
+  var sorted = visible.sort(function(a, b) {
     return daysUntil(a.month, a.day) - daysUntil(b.month, b.day);
   });
 
@@ -1682,6 +1698,8 @@ async function loadHonorRoll() {
   }
   var rows = await sbFetch('cw2_honor_roll', 'room=eq.global&active=eq.true&order=name.asc');
   if (!rows || !rows.length) return;
+  rows = rows.filter(function(r) { return !cwBlocked(r.name); });
+  if (!rows.length) { document.getElementById('honor-ticker-wrap').style.display = 'none'; return; }
   var inner = document.getElementById('honor-ticker-inner');
   var html  = rows.map(function(r) {
     return '<span class="ticker-name">' + r.name + '</span><span class="ticker-sep">·</span>';
@@ -1694,6 +1712,7 @@ async function loadHonorRoll() {
 async function startBoard() {
   setSyncStatus('', 'LOADING...');
   await loadRoomConfig();
+  await loadNoMedia();
   await loadCwEvents();
   await loadOverrides();
   await loadCwCalendar();
@@ -1800,6 +1819,8 @@ async function checkPickerState() {
   var age = (Date.now() - new Date(d.picked_at).getTime()) / 1000;
   if (age < PICK_SHOW_SEC && d.picked_at !== lastPickShown) {
     lastPickShown = d.picked_at;
+    var showBlocked = SETTINGS && SETTINGS.reveal_show_blocked === true;
+    if (cwBlocked(d.student_name) && !showBlocked) return;  // no-media: keep the name off the public reveal (teacher can opt in)
     showPickOverlay(d.student_name, PICK_SHOW_SEC - age);
   }
 }
