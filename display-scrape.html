@@ -928,8 +928,33 @@ body{display:flex;align-items:center;justify-content:center;}
   font-size: clamp(11px,1.0cqw,17px);
 }
 
-</style>
-</head>
+/* ══════════════════════════════════════════════════════
+   HONOR ROLL LAYOUT LOCK  (mirrors EVE pattern)
+   Problem: multiple #app overrides + fixed cqh row height
+   let the bottom-row overflow onto the ticker at wide viewports.
+   Fix: one !important declaration that wins, a bounded bottom row,
+   and a clamped honor row that is always the final grid item.
+══════════════════════════════════════════════════════ */
+#app {
+  grid-template-rows:
+    auto                         /* topbar */
+    1fr                          /* main   */
+    minmax(0, 20cqh)             /* bottom-row: flexible, never overflows */
+    auto !important;             /* honor roll: natural height, always last */
+}
+#bottom-row {
+  overflow: hidden;
+  min-height: 0;
+}
+#honor {
+  /* fixed-height pill, same approach as EVE */
+  height: clamp(28px, 3.6cqh, 52px) !important;
+  min-height: 0;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+
 <body>
 <div id="stage">
 <div id="app">
