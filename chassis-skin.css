@@ -1,0 +1,270 @@
+/* ══════════════════════════════════════════════════════
+   SCRAP•E CHASSIS SKIN — background image pass
+   File: chassis-skin.css
+   Repo: ejoe-ui/cw2
+   Usage: <link rel="stylesheet" href="chassis-skin.css">
+          or paste as final <style> block in display-scrape.html
+
+   The chassis image owns ALL metal, bolts, rivets, and borders.
+   Every panel in this pass becomes a transparent or glass insert.
+   Calibrate #stage padding + #main column widths to align
+   the grid cutouts to the image after first load.
+══════════════════════════════════════════════════════ */
+
+/* ── CHASSIS BACKGROUND ────────────────────────────── */
+
+#stage {
+  background-image: url('_new_sports_day.png') !important;
+  background-size: 100% 100% !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+  /* Kill all previous CSS gradient backgrounds */
+  background-color: #080401 !important;
+}
+
+/* Stage padding = inset from image edge to first panel cutout.
+   CALIBRATE THESE after first screenshot. */
+#stage {
+  padding: 3.8cqh 5.2cqw !important;
+}
+
+/* App: no extra padding — stage padding handles wall inset */
+#app {
+  padding: 0 !important;
+  gap: 1.1cqh !important;
+}
+
+/* Main column widths: match the image's left / center / right cutout widths.
+   CALIBRATE THESE after first screenshot. */
+#main {
+  grid-template-columns: 22cqw 1fr 20cqw !important;
+  gap: 1.8cqw !important;
+}
+
+/* Bottom row aligned to main columns */
+#bottom-row {
+  grid-template-columns: 22cqw 1fr 20cqw !important;
+  gap: 1.8cqw !important;
+}
+
+
+/* ── STRUCTURAL PANELS: fully transparent ───────────── */
+/* The image provides all housing, borders, and metal. */
+
+.mp,
+#topbar,
+#special-days,
+#crt-wrap,
+#honor,
+.lower-crt,
+#left-bottom,
+#rightcol {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove all CSS bolt/screw decorations — image has real ones */
+.screw,
+.screw.tl, .screw.tr, .screw.bl, .screw.br,
+#topbar::before,
+#topbar::after,
+.sd-header::before,
+.sd-header::after,
+.sd-card::before,
+.sd-card::after,
+.chassis-beam-h::before,
+.chassis-beam-h::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Crossbeam: invisible spacer only — no visible rail */
+.chassis-beam-h {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+
+/* ── CRT SCREENS: deep glass inserts ───────────────── */
+
+.crt-bezel {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+.crt-screen {
+  background:
+    radial-gradient(ellipse at 50% 44%, rgba(232,214,106,0.06) 0%, transparent 65%),
+    #030200 !important;
+  border: 2px solid #050300 !important;
+  border-radius: 6px !important;
+  box-shadow:
+    inset 0 0 60px rgba(0,0,0,0.96),
+    inset 0 8px 20px rgba(0,0,0,0.90),
+    inset 0 -8px 20px rgba(0,0,0,0.90) !important;
+}
+
+/* Lower CRT glass insert */
+.lower-crt-glass {
+  background:
+    radial-gradient(ellipse at 26% 50%, rgba(232,214,106,0.07) 0%, transparent 48%),
+    #030200 !important;
+  border: 2px solid #050300 !important;
+  border-radius: 6px !important;
+  box-shadow:
+    inset 0 0 32px rgba(0,0,0,0.92),
+    inset 0 4px 10px rgba(0,0,0,0.88) !important;
+}
+
+/* Status strip below main CRT */
+.crt-status {
+  background: rgba(3,2,0,0.80) !important;
+  border-top: 1px solid rgba(136,80,24,0.30) !important;
+  box-shadow: none !important;
+}
+
+
+/* ── CONTENT PANELS: near-transparent dark tint ─────── */
+/* Lets the panel label and text read cleanly
+   over the chassis texture without a hard box border. */
+
+#upnext,
+#sound-panel,
+#bday-panel,
+#wx-panel,
+#scrape-status {
+  background: rgba(4,2,0,0.48) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Panel headers: no background, just a subtle separator line */
+.ph {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(136,80,24,0.32) !important;
+  box-shadow: none !important;
+}
+
+
+/* ── TOPBAR ELEMENTS: text/badge only ──────────────── */
+/* The image owns the topbar rail. Just keep text readable. */
+
+.tb-badge,
+.tb-clock {
+  background: rgba(3,2,0,0.72) !important;
+  border: 1px solid rgba(136,80,24,0.35) !important;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.50) !important;
+}
+
+.tb-title {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #c8841a !important;
+  text-shadow:
+    0 0 12px rgba(210,130,10,0.48),
+    0 0 24px rgba(210,130,10,0.20) !important;
+}
+
+.tb-period,
+.tb-exit {
+  background: rgba(3,2,0,0.60) !important;
+  border: 1px solid rgba(136,80,24,0.28) !important;
+}
+
+
+/* ── SPECIAL DAYS STRIP ────────────────────────────── */
+
+#special-days {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.sd-header {
+  background: rgba(8,4,0,0.42) !important;
+  border-bottom: 1px solid rgba(136,80,24,0.28) !important;
+  box-shadow: none !important;
+}
+
+#sd-cards {
+  background: transparent !important;
+}
+
+/* SD card cutout inserts — dark glass windows in the tray */
+.sd-card {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(232,214,106,0.05) 0%, transparent 62%),
+    #030200 !important;
+  border: 1px solid rgba(80,44,10,0.40) !important;
+  border-radius: 5px !important;
+  box-shadow:
+    inset 0 0 20px rgba(0,0,0,0.88),
+    0 1px 3px rgba(0,0,0,0.35) !important;
+}
+
+
+/* ── CLASS OBJECTIVES: keep as paper object ─────────── */
+/* The image has a paper/clipboard zone — let the tan color show */
+
+#obj-panel {
+  background:
+    linear-gradient(180deg, rgba(255,235,170,0.06), rgba(45,25,4,0.18)),
+    #7a5c20 !important;
+  border: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(0,0,0,0.22),
+    2px 3px 10px rgba(0,0,0,0.40) !important;
+}
+
+#obj-panel::before {
+  opacity: 0.30 !important;
+}
+
+
+/* ── HONOR ROLL ─────────────────────────────────────── */
+
+#honor {
+  background: rgba(3,2,0,0.78) !important;
+  border: none !important;
+  box-shadow: inset 0 0 18px rgba(210,130,10,0.08) !important;
+}
+
+#honor-lbl {
+  background: rgba(138,77,8,0.86) !important;
+  border-right: 1px solid rgba(136,80,24,0.35) !important;
+}
+
+
+/* ── PHYSICAL ACCENT OBJECTS ────────────────────────── */
+/* These sit ON TOP of the chassis — polaroid, note, mascot */
+
+#accent-note,
+.polaroid {
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.65));
+}
+
+.s-mascot {
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.60)) drop-shadow(0 0 5px rgba(210,130,10,0.15));
+}
+
+
+/* ══════════════════════════════════════════════════════
+   CALIBRATION NOTES (update after first screenshot)
+   ─────────────────────────────────────────────────────
+   1. #stage padding: adjust until panel edges sit inside cutouts
+      Current: 3.8cqh 5.2cqw — go wider if panels bleed onto metal
+
+   2. #main / #bottom-row column widths: match left/center/right cutout ratio
+      Current: 22cqw 1fr 20cqw — watch the right column, image has a thin strip
+
+   3. If CRT screen doesn't fill its cutout:
+      Adjust .crt-screen width in the "4:3 proportion pass" (in main file)
+
+   4. Image file must be in the same directory as display-scrape.html
+      File: _new_sports_day.png
+══════════════════════════════════════════════════════ */
