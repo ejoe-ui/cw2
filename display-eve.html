@@ -972,6 +972,7 @@
       <button id="pickCopyBtn" onclick="pickCopyCSV()">Copy CSV</button>
       <button onclick="pickPrint()">Print</button>
     </div>
+    <button id="pickSaveBtn" onclick="pickSaveSession()" style="width:100%;padding:11px 0;margin-bottom:9px;border:0;border-radius:12px;cursor:pointer;background:linear-gradient(180deg,#2aa8ff,#1577ef);color:#fff;font-family:var(--font-num);font-weight:700;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;box-shadow:0 6px 16px rgba(21,119,239,0.35);">Save Session</button>
     <button id="pick-clear" onclick="pickClearSession()">Clear Session</button>
     <button id="pick-cfg-done" onclick="closePickSummary()">Close</button>
   </div>
@@ -1766,6 +1767,28 @@ function pickClearSession(){
   if(!confirm('Clear this session? This wipes the point totals and refills the can.')) return;
   pickLog=[]; pickStudents.forEach(function(s){ s.inCan=true; }); pickCurrent=null;
   renderPickTable(); renderPickControls(); renderPickView();
+}
+async function pickSaveSession(){
+  var agg=buildPickAggregate();
+  if(!agg.length){ alert('No picks to save yet.'); return; }
+  var def='P'+(pickPeriod||'?')+' · '+new Date().toLocaleDateString();
+  var label=prompt('Name this session:',def); if(label===null) return;
+  var payload={room:ROOM, period:pickPeriod||null, label:label||def,
+    student_count:agg.length,
+    summary:agg.map(function(r){ return {name:r.name,picks:r.picks,participation:r.participation,correct:0,lastStatus:r.lastStatus}; })
+  };
+  var res=await fetch(SUPABASE_URL+'/rest/v1/cw2_picker_sessions',{
+    method:'POST',
+    headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,
+      'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify(payload)
+  });
+  var btn=document.getElementById('pickSaveBtn');
+  if(res.ok){
+    if(btn){var o=btn.textContent;btn.textContent='Saved ✓';setTimeout(function(){btn.textContent=o;},1800);}
+  } else {
+    alert('Save failed — check that cw2_picker_sessions exists in Supabase.');
+  }
 }
 
 // BIRTHDAYS
