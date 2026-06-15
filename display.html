@@ -1983,7 +1983,8 @@ var DISPLAY_MODES = [
   { key:'modern-dark',  label:'Modern · Dark',  angle:  45 },
   { key:'modern-light', label:'Modern · Light', angle: 135 },
   { key:'walle',        label:'WALL-E',          angle: 160 },
-  { key:'eve',          label:'EVE Board',       angle: 175 },
+  { key:'eve',          label:'EVE Board',       angle: 168 },
+  { key:'scrape',       label:'SCRAP•E',         angle: 184, redirect:true },
   { key:'eve-screen',   label:'EVE Screen',      angle: 200, redirect:true },
 ];
 var dialModeIdx = 0, dialOpen = false;
@@ -2035,7 +2036,8 @@ function applyDisplayMode(idx, animate) {
 function setDialMode(idx) {
   var mode = DISPLAY_MODES[idx];
   if (mode && mode.redirect) {
-    location.href = '/display-eve.html?room=' + ROOM;
+    if (mode.key === 'scrape') location.href = '/display-scrape.html?room=' + ROOM;
+    else location.href = '/display-eve.html?room=' + ROOM;
     return;
   }
   dialModeIdx = idx;
