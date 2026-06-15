@@ -1186,6 +1186,121 @@ body{display:flex;align-items:center;justify-content:center;}
   overflow: hidden;
 }
 
+/* ══════════════════════════════════════════════════════
+   CHASSIS STRUCTURAL PASS — final authority
+   Outer wall + inter-panel beams + thick CRT housing
+   All !important to beat all previous passes.
+══════════════════════════════════════════════════════ */
+
+/* The stage IS the chassis. Its padding = metal walls on all 4 sides. */
+#stage { padding: 3.4cqh 3.8cqw !important; }
+
+/* App: no extra padding (stage handles it), larger row gaps = metal seams */
+#app {
+  padding: 0 !important;
+  gap: 1.3cqh !important;
+  /* 5 rows: topbar | main | crossbeam | bottom | honor */
+  grid-template-rows: auto 1fr 2.2cqh minmax(0, 20cqh) auto !important;
+}
+
+/* Clear the old margin-top workaround — beam row handles the gap now */
+#bottom-row { margin-top: 0 !important; }
+
+/* Main columns: larger gap = visible vertical metal beams between modules */
+#main {
+  grid-template-columns: 24cqw 1fr 22cqw !important;
+  gap: 1.6cqw !important;
+}
+
+/* Bottom row aligned to main columns so panels stack cleanly */
+#bottom-row {
+  grid-template-columns: 24cqw 1fr 22cqw !important;
+  gap: 1.6cqw !important;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Right column: more separation between Sound / Birthdays / Weather modules */
+#rightcol { gap: 0.9cqh !important; }
+
+/* ── CHASSIS CROSSBEAM ── */
+/* A real metal structural element between main and bottom sections */
+.chassis-beam-h {
+  background:
+    linear-gradient(180deg,
+      rgba(0,0,0,0.55) 0%,
+      #2a1808 12%,
+      #3a2510 42%,
+      #3a2510 58%,
+      #2a1808 88%,
+      rgba(0,0,0,0.55) 100%);
+  border-top:  1.5px solid rgba(130,75,22,0.65);
+  border-bottom: 1.5px solid rgba(130,75,22,0.65);
+  box-shadow:
+    inset 0 3px 6px rgba(0,0,0,0.7),
+    inset 0 -3px 6px rgba(0,0,0,0.7);
+  position: relative;
+}
+/* Rivet pairs at each end of the crossbeam */
+.chassis-beam-h::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 14px 50%, #5a3a10 3.5px, rgba(0,0,0,0.4) 4.5px, transparent 5px),
+    radial-gradient(circle at 32px 50%, #5a3a10 3.5px, rgba(0,0,0,0.4) 4.5px, transparent 5px),
+    radial-gradient(circle at calc(100% - 14px) 50%, #5a3a10 3.5px, rgba(0,0,0,0.4) 4.5px, transparent 5px),
+    radial-gradient(circle at calc(100% - 32px) 50%, #5a3a10 3.5px, rgba(0,0,0,0.4) 4.5px, transparent 5px);
+}
+
+/* ── CRT HOUSING ── heavily nested metal frame, screen deeply recessed */
+#crt-wrap {
+  padding: 12px !important;
+  background:
+    linear-gradient(155deg, rgba(80,52,20,0.55) 0%, transparent 38%),
+    var(--metal) !important;
+  border: 2.5px solid var(--rust-lt) !important;
+  box-shadow:
+    inset 0 3px 0 rgba(200,150,50,0.2),
+    inset 0 -5px 14px rgba(0,0,0,0.7),
+    0 8px 24px rgba(0,0,0,0.7) !important;
+}
+.crt-bezel {
+  /* Directional border gives physical depth: bright top, dark bottom */
+  border-width: 9px !important;
+  border-style: solid !important;
+  border-color: #8a5820 #2a1808 #1a0a02 #4a2e10 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(170deg, #4e3218 0%, #1e1006 60%, #0e0600 100%) !important;
+  padding: 5px !important;
+  box-shadow:
+    inset 0 4px 0 rgba(200,150,50,0.24),
+    inset 0 -10px 24px rgba(0,0,0,0.88),
+    0 12px 30px rgba(0,0,0,0.78) !important;
+}
+/* Screen deeply recessed — heavy inset shadows on all edges */
+.crt-screen {
+  border-radius: 7px !important;
+  border: 2px solid #050200 !important;
+  box-shadow:
+    inset 0 0 70px rgba(0,0,0,0.96),
+    inset 0 10px 24px rgba(0,0,0,0.92),
+    inset 0 -10px 24px rgba(0,0,0,0.92),
+    inset 8px 0 16px rgba(0,0,0,0.7),
+    inset -8px 0 16px rgba(0,0,0,0.7) !important;
+}
+
+/* ── PANEL INTERNAL BREATHING ROOM ── */
+/* Content should not feel crammed against panel edges */
+#upnext    { padding: 1.4cqh 1.4cqw !important; }
+#sound-panel,
+#bday-panel,
+#wx-panel  { padding: 1.1cqh 1.2cqw !important; }
+#obj-inner { padding: 0.65cqh 0.9cqw !important; }
+#scrape-status { padding: 0.75cqh 0.9cqw !important; }
+
+/* ── HONOR ROLL — final lock ── */
+#honor { height: clamp(28px, 3.6cqh, 52px) !important; overflow: hidden; }
+
 
 </style>
 </head>
@@ -1324,6 +1439,9 @@ body{display:flex;align-items:center;justify-content:center;}
 
   </div>
 </div>
+
+<!-- CHASSIS CROSSBEAM — structural metal rail between main and bottom sections -->
+<div class="chassis-beam-h"></div>
 
 <!-- BOTTOM ROW -->
 <div id="bottom-row">
