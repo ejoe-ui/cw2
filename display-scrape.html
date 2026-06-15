@@ -385,14 +385,14 @@ body{display:flex;align-items:center;justify-content:center;}
   background:var(--metal);border:1px solid var(--rust);border-radius:2px;padding:1px 6px;
   flex-shrink:0;
 }
-/* One small accent note — taped to bottom-right of CRT, overlapping into right column gap */
+/* One small accent note — taped to upper-right of CRT frame, between center and right column */
 #accent-note{
-  position:absolute;bottom:2.5cqh;right:-3cqw;z-index:20;
-  width:clamp(72px,7cqw,108px);
+  position:absolute;top:1.5cqh;right:-2.5cqw;z-index:20;
+  width:clamp(68px,6.5cqw,100px);
   background:var(--paper-cream);
   padding:clamp(5px,0.5cqh,8px) clamp(5px,0.5cqw,8px) clamp(9px,0.95cqh,13px);
   box-shadow:2px 3px 9px rgba(0,0,0,0.6),1px 1px 0 rgba(255,255,255,0.04);
-  transform:rotate(-2.5deg);
+  transform:rotate(2deg);
   clip-path:polygon(0 0,100% 0,100% 91%,95% 96%,88% 92%,82% 97%,75% 91%,68% 96%,60% 91%,52% 96%,44% 91%,36% 97%,28% 91%,20% 96%,12% 91%,5% 96%,0 91%);
   transition:opacity 0.5s;
 }
@@ -406,7 +406,7 @@ body{display:flex;align-items:center;justify-content:center;}
 #accent-note .an-content{font-family:var(--font-note);font-size:clamp(8px,0.74cqw,11px);color:#1a0c00;line-height:1.2;font-weight:bold;margin-top:2px;}
 
 /* ── NOTE SLIDE ANIMATION ── */
-@keyframes noteIn{0%{opacity:0;transform:translateY(4px) rotate(-2.5deg)}100%{opacity:1;transform:translateY(0) rotate(-2.5deg)}}
+@keyframes noteIn{0%{opacity:0;transform:translateY(4px) rotate(2deg)}100%{opacity:1;transform:translateY(0) rotate(2deg)}}
 #accent-note.entering{animation:noteIn 0.5s ease forwards;}
 
 /* ── CLASS OBJECTIVES ── */
@@ -811,9 +811,9 @@ body{display:flex;align-items:center;justify-content:center;}
 
 /* Polaroid: stop it from fighting the ticker. */
 .polaroid {
-  max-width: clamp(78px,8.6cqw,138px);
-  padding: clamp(5px,0.5cqw,8px) clamp(5px,0.5cqw,8px) clamp(12px,1.25cqh,20px);
-  transform: rotate(-2.2deg) translateY(-0.35cqh);
+  max-width: clamp(70px,7.5cqw,118px);
+  padding: clamp(4px,0.42cqw,7px) clamp(4px,0.42cqw,7px) clamp(10px,1.05cqh,16px);
+  transform: rotate(-2.2deg) translateY(-1.2cqh);
 }
 
 /* Scrapbook: more visible dark cork/metal around the papers. */
@@ -1621,6 +1621,16 @@ function sdPixelIcon(kind){
   return icons[kind]||icons.cal;
 }
 /* Icon color by event type — hierarchy: pale-yellow=important, amber=normal, green=nature, warn=alert */
+function sdEvIcon(title){
+  var t=(title||'').toLowerCase();
+  if(t.includes('grad')||t.includes('senior'))return'cap';
+  if(t.includes('break')||t.includes('spring')||t.includes('summer'))return'palm';
+  if(t.includes('bbq')||t.includes('rally')||t.includes('sunset'))return'flame';
+  if(t.includes('walk')||t.includes('orient')||t.includes('parent')||t.includes('link'))return'people';
+  if(t.includes('award')||t.includes('honor'))return'star';
+  if(t.includes('last day')||t.includes('first day'))return'sun';
+  return'cal';
+}
 function sdIconColor(kind,title){
   var t=(title||'').toLowerCase();
   if(kind==='cap'||t.includes('grad')||t.includes('award')||t.includes('senior'))return'var(--crt-bright)';
