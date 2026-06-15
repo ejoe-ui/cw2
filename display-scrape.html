@@ -1127,6 +1127,66 @@ body{display:flex;align-items:center;justify-content:center;}
 .mp.rc, #sound-panel, #bday-panel, #wx-panel { padding: 0.95cqh 1.05cqw; }
 
 
+/* ══════════════════════════════════════════════════════
+   CHASSIS PROPORTIONS PASS
+   The outer frame IS the machine walls.
+   Gaps between panels ARE the chassis metal.
+   All overrides consolidated here — this block wins.
+══════════════════════════════════════════════════════ */
+
+/* Stage = chassis outer walls. Substantial padding on all sides
+   creates visible metal border that holds the whole machine. */
+#stage {
+  padding: 2.5cqh 3cqw !important;
+}
+
+/* App = content area inside chassis — no additional padding */
+#app {
+  padding: 0 !important;
+  gap: 1.0cqh !important;
+}
+
+/* Lock grid rows — same structure but verified last */
+#app {
+  grid-template-rows: auto 1fr minmax(0, 20cqh) auto !important;
+}
+
+/* Thicker horizontal crossbeam between main row and bottom row.
+   Reference shows this seam is ~2× the other gaps. */
+#bottom-row { margin-top: 0.8cqh !important; }
+
+/* Main grid: center CRT gets more room, sides trimmed to match reference.
+   cqw units are relative to #stage (100vw), and stage has 3cqw padding
+   each side, so 6cqw is chassis wall — these panel widths work in that space. */
+#main {
+  grid-template-columns: 23cqw 1fr 21cqw !important;
+  gap: 1.4cqw !important;
+}
+
+/* Bottom row aligned to main grid columns so panels stack cleanly */
+#bottom-row {
+  grid-template-columns: 23cqw 1fr 21cqw !important;
+  gap: 1.4cqw !important;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Right column panels — slightly tighter gap to match reference */
+#rightcol { gap: 0.7cqh !important; }
+
+/* Top bar as heavy rail — override previous chassis pass values to
+   ensure minimum height suits the larger chassis proportions */
+#topbar {
+  min-height: clamp(38px, 5.8cqh, 70px) !important;
+}
+
+/* Honor roll — locked height, always last row */
+#honor {
+  height: clamp(28px, 3.6cqh, 52px) !important;
+  overflow: hidden;
+}
+
+
 </style>
 </head>
 <body>
