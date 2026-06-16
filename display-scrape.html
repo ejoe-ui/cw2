@@ -6520,3 +6520,138 @@ async function loadAll(){
   transform: translateY(-22.75%) !important;
 }
 </style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 54
+   - Eyes: 5px pixels, moved further right
+   - Calendar: tighter rows, bigger font, text wrap
+   - Lower CRT: pass status text moved up / visible
+   - Upcoming sport days: closer gap, moved up
+   - Weather gauges: label + value overlay in lower half
+══════════════════════════════════════════════════════ */
+
+/* ── EYES: 5px pixel, further right ── */
+#scrape-eyes {
+  left: 6.6% !important;
+  top: 62.5% !important;
+  width: 88px !important;
+  height: 20px !important;
+}
+#scrape-eye-blink { gap: 18px !important; }
+.se-eye {
+  width: 15px !important;
+  height: 15px !important;
+  background-size: 5px 5px !important;
+}
+.se-eye::before {
+  width: 5px !important;
+  height: 5px !important;
+  box-shadow:
+    5px 0 0 #22ff50,
+    10px 0 0 #22ff50,
+    0 5px 0 #22ff50,
+    5px 5px 0 #22ff50,
+    10px 5px 0 #22ff50,
+    0 10px 0 #22ff50,
+    5px 10px 0 #22ff50,
+    10px 10px 0 #22ff50 !important;
+}
+
+/* ── CALENDAR / UPNEXT: tighter rows, bigger font, allow wrap ── */
+#upnext-list {
+  justify-content: flex-start !important;
+  gap: 0 !important;
+}
+.un-row {
+  padding: 0.28cqh 0 !important;
+  gap: 0.6cqw !important;
+  align-items: flex-start !important;
+}
+.un-name {
+  font-size: clamp(13px, 1.22cqw, 22px) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  line-height: 1.15 !important;
+}
+.un-days {
+  font-size: clamp(11px, 1.0cqw, 18px) !important;
+  flex-shrink: 0 !important;
+  padding-top: 0.1cqh !important;
+}
+.un-icon {
+  margin-top: 0.1cqh !important;
+  flex-shrink: 0 !important;
+}
+
+/* ── LOWER CRT: raise content so pass status text is fully visible ── */
+#lower-crt {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.lower-crt-glass {
+  align-items: center !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.lower-schedule-zone,
+.lower-pass-zone {
+  justify-content: center !important;
+  align-items: center !important;
+  transform: none !important;
+  padding: 0 1% !important;
+}
+.lower-pass-zone {
+  align-items: flex-end !important;
+  text-align: right !important;
+}
+.lower-pass-main {
+  font-size: clamp(10px, 0.95vw, 18px) !important;
+  white-space: normal !important;
+  line-height: 1.2 !important;
+}
+
+/* ── UPCOMING SPORT DAYS: closer cards, moved up ── */
+#special-days {
+  top: 77.5% !important;
+}
+#sd-cards {
+  gap: 0.6% !important;
+  padding: 0.5% 1.0% 3.5% 1.0% !important;
+}
+
+/* ── WEATHER GAUGES: overlay label + value in lower half of dial ── */
+.gw {
+  position: relative !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 0 !important;
+}
+.gl {
+  position: absolute !important;
+  bottom: 24% !important;
+  left: 0 !important; right: 0 !important;
+  text-align: center !important;
+  z-index: 2 !important;
+  font-size: clamp(7px, 0.68cqw, 11px) !important;
+  color: rgba(180,130,40,0.80) !important;
+  pointer-events: none !important;
+}
+.gv {
+  position: absolute !important;
+  bottom: 10% !important;
+  left: 0 !important; right: 0 !important;
+  text-align: center !important;
+  z-index: 2 !important;
+  font-size: clamp(9px, 0.88cqw, 15px) !important;
+  pointer-events: none !important;
+}
+.g-light {
+  position: absolute !important;
+  bottom: 36% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 2 !important;
+  margin: 0 !important;
+}
+</style>
