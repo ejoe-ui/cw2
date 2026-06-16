@@ -4758,3 +4758,28 @@ async function loadAll(){
   background: rgba(140,100,30,0.55) !important;
 }
 </style>
+<style>
+/* ── REMOVE DUPLICATES + SCRAPE STATUS AREA ── */
+
+/* Title bar — chassis has it */
+.tb-title { display: none !important; }
+
+/* Panel headers — chassis has them */
+#sound-panel .ph,
+#bday-panel .ph,
+#wx-panel .ph { display: none !important; }
+
+/* Class objectives paper */
+#obj-panel { display: none !important; }
+
+/* SCRAP•E status area + dots */
+#scrape-status { display: none !important; }
+.s-dots { display: none !important; }
+
+/* Left bottom now has no content — collapse it */
+#left-bottom {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+</style>
