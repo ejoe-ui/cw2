@@ -235,7 +235,7 @@ body{display:flex;align-items:center;justify-content:center;}
 
 /* Sound */
 #sound-panel{padding:0.9cqh 1cqw;cursor:pointer;}
-#sm-bars{display:flex;align-items:flex-end;gap:2px;height:clamp(28px,3.2cqh,52px);}
+#sm-bars{display:flex;align-items:flex-end;gap:2px;height:clamp(60px,8.5cqh,130px);}
 .smb{flex:1;border-radius:1px 1px 0 0;background:var(--metal-mid);transition:all .1s;}
 .smb.sg{background:var(--scrape-good);box-shadow:0 0 4px rgba(154,162,58,0.7);}
 .smb.sa{background:var(--amber);box-shadow:0 0 3px rgba(210,130,10,0.6);}
@@ -246,6 +246,16 @@ body{display:flex;align-items:center;justify-content:center;}
 /* GOOD LEVEL label turns green */
 .sm-st.good{color:var(--scrape-good);}
 .sm-st.warn{color:var(--scrape-warn);}
+/* Amber side dots — 4 vertical lights tied to noise level */
+#sm-wrap{display:flex;align-items:flex-end;gap:0.5cqw;flex:1;}
+#sm-dots{display:flex;flex-direction:column-reverse;justify-content:space-between;height:clamp(60px,8.5cqh,130px);padding:2px 0;}
+.smd{width:clamp(7px,0.65cqw,11px);height:clamp(7px,0.65cqw,11px);border-radius:50%;
+  background:rgba(90,53,18,0.35);border:1px solid rgba(210,130,10,0.2);transition:all .12s;}
+.smd.on{background:var(--amber);border-color:var(--amber);
+  box-shadow:0 0 6px var(--amber),0 0 12px rgba(210,130,10,0.5);}
+.smd.hi{background:#ffb836;border-color:#ffb836;
+  box-shadow:0 0 8px #ffb836,0 0 18px rgba(255,184,54,0.6);}
+
 
 /* Birthdays */
 #bday-panel{padding:0.9cqh 1cqw;flex:1;}
@@ -2025,7 +2035,7 @@ html, body { background:#050302 !important; }
   min-height:0 !important;
   overflow:hidden !important;
 }
-#sm-bars { height: clamp(22px, 2.5cqh, 38px) !important; }
+#sm-bars { height: clamp(60px, 8.5cqh, 130px) !important; }
 .sm-row { margin-top:0.15cqh !important; }
 .bday-list, #bday-list { gap:0.1cqh !important; }
 .bd-row { padding:0.18cqh 0 !important; }
@@ -3616,7 +3626,7 @@ html, body { background:#050302 !important; }
     <div id="sound-panel" class="mp" onclick="scrapeToggleNoise()" style="padding:0.85cqh 0.95cqw;">
       <div class="screw tl"></div><div class="screw tr"></div>
       <div class="ph" style="margin-bottom:0.5cqh;">Sound Level</div>
-      <div id="sm-bars"></div>
+      <div id="sm-wrap"><div id="sm-bars"></div><div id="sm-dots"><div class="smd" id="smd3"></div><div class="smd" id="smd2"></div><div class="smd" id="smd1"></div><div class="smd" id="smd0"></div></div></div>
       <div class="sm-row">
         <span class="sm-db" id="smDb">—</span>
         <span class="sm-st" id="smSt">TAP TO ENABLE</span>
@@ -4211,7 +4221,7 @@ function renderBirthdays(){
   var BM=['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var vis=CW_BIRTHDAYS.filter(function(b){return !cwBlocked(b.name);});
   vis.sort(function(a,b){return bdaysUntil(a.month,a.day)-bdaysUntil(b.month,b.day);});
-  var top=vis.slice(0,5),html='';
+  var top=vis.slice(0,6),html='';
   if(!top.length){html='<div class="bd-row"><div class="bd-name" style="color:var(--scrape-burnt)">No birthdays soon</div></div>';}
   top.forEach(function(b){
     var init=(b.name||'').replace(/\s+(\S)\S*$/,' $1.');
@@ -4433,7 +4443,18 @@ function nmTick(){
   for(var i=0;i<slice;i++)sum+=data[i]*data[i];
   var rms=Math.sqrt(sum/slice),level=Math.min(100,Math.round((rms/255)*100*2.2));
   nmLvl=nmLvl*0.72+level*0.28;
-  var bars=document.querySelectorAll('.smb');var lit=Math.round((nmLvl/100)*NM_BARS);
+  var bars=document.querySelectorAll('.smb');
+  // Update amber side dots (4 dots, bottom=quietest, top=loudest)
+  var thresholds=[25,50,75,90];
+  for(var _d=0;_d<4;_d++){
+    var dot=document.getElementById('smd'+_d);
+    if(!dot) continue;
+    if(level>=thresholds[_d]){
+      dot.className='smd '+(_d===3&&level>=90?'hi':'on');
+    } else {
+      dot.className='smd';
+    }
+  }var lit=Math.round((nmLvl/100)*NM_BARS);
   bars.forEach(function(b,i){b.className='smb'+(i<lit?(nmLvl>=68?' sr':nmLvl>=40?' sa':' sg'):'');});
   var db=Math.round(32+nmLvl*0.58);
   document.getElementById('smDb').textContent=db+' dB';
