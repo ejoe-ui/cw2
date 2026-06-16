@@ -4783,3 +4783,26 @@ async function loadAll(){
   box-shadow: none !important;
 }
 </style>
+<style>
+/* ── CLEANUP PASS 2 ── */
+
+/* Hide remaining duplicate section labels */
+.ph { display: none !important; }
+.sd-header { display: none !important; }
+#accent-note { display: none !important; }
+
+/* Collapse empty bottom-left completely */
+#left-bottom { display: none !important; }
+
+/* Hide PASS STATUS dots and label from lower CRT */
+.lower-pass-zone { display: none !important; }
+.lower-divider { display: none !important; }
+
+/* Weather text label overlapping gauge */
+.wx-feels-row { opacity: 0.7 !important; }
+
+/* Tighten lower CRT — only show the bell countdown */
+.lower-crt-map {
+  grid-template-columns: 1fr !important;
+}
+</style>
