@@ -4780,6 +4780,8 @@ async function loadAll(){
 }
 </style>
 
+
+
 </body>
 </html>
 <style>
@@ -6030,5 +6032,72 @@ async function loadAll(){
   right: 12.5% !important;
   top: 32% !important;
   transform: none !important;
+}
+</style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 47
+   - Special Days: widen container to show full 6th card
+   - Sound dots: position absolute beside bars, fix visibility
+   - Live dot: nudge right/top to hit chassis LED spot
+══════════════════════════════════════════════════════ */
+
+/* ── SPECIAL DAYS: widen right to fit 6th card ── */
+#special-days {
+  width: 40.0% !important;
+  left: 30.5% !important;
+}
+#sd-cards {
+  grid-template-columns: repeat(6, 1fr) !important;
+  gap: 1.4% !important;
+  padding: 0.35% 1.5% 4.9% 1.6% !important;
+}
+
+/* ── SOUND DOTS: absolute-position beside bars in rightcol sound panel ── */
+#rightcol #sound-panel #sm-wrap {
+  position: static !important;
+  display: block !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: visible !important;
+}
+#rightcol #sound-panel #sm-dots {
+  position: absolute !important;
+  right: 1.0% !important;
+  top: 46.5% !important;
+  height: 20.5% !important;
+  width: clamp(9px, 0.85cqw, 14px) !important;
+  display: flex !important;
+  flex-direction: column-reverse !important;
+  justify-content: space-between !important;
+  padding: 1px 0 !important;
+  z-index: 5 !important;
+}
+#rightcol #sound-panel .smd {
+  width: clamp(7px, 0.65cqw, 11px) !important;
+  height: clamp(7px, 0.65cqw, 11px) !important;
+  border-radius: 50% !important;
+  background: rgba(90,53,18,0.35) !important;
+  border: 1px solid rgba(210,130,10,0.2) !important;
+  flex-shrink: 0 !important;
+}
+#rightcol #sound-panel .smd.on {
+  background: var(--amber) !important;
+  border-color: var(--amber) !important;
+  box-shadow: 0 0 6px var(--amber), 0 0 12px rgba(210,130,10,0.5) !important;
+}
+#rightcol #sound-panel .smd.hi {
+  background: #ffb836 !important;
+  border-color: #ffb836 !important;
+  box-shadow: 0 0 8px #ffb836, 0 0 18px rgba(255,184,54,0.6) !important;
+}
+
+/* ── LIVE DOT: adjust position to sit on chassis LED ── */
+#topbar .tb-live,
+.tb-live {
+  right: 10.5% !important;
+  top: 28% !important;
+  transform: none !important;
+  position: absolute !important;
 }
 </style>
