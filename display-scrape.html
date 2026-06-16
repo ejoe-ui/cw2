@@ -6375,3 +6375,80 @@ async function loadAll(){
 .se-eye.left  { transform: none !important; }
 .se-eye.right { transform: none !important; }
 </style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 52
+   - Eyes: 2-4-4-2 pixel art pattern, square pixels
+   - Graph-paper grid background in eye socket
+   - Moved right + down
+══════════════════════════════════════════════════════ */
+
+#scrape-eyes {
+  left: 3.4% !important;
+  top: 59.5% !important;
+  width: 120px !important;
+  height: 32px !important;
+}
+
+#scrape-eye-blink {
+  gap: 14px !important;
+  transform: none !important;
+}
+#scrape-eye-blink.blink {
+  transform: scaleY(0.06) !important;
+}
+#scrape-eye-blink::before { content: none !important; }
+
+.se-eye {
+  width: 28px !important;   /* 28px = 4 pixels wide */
+  height: 28px !important;  /* 28px = 4 pixels tall */
+  border-radius: 2px !important;
+  overflow: visible !important;
+  /* graph-paper socket background */
+  background:
+    linear-gradient(rgba(0,100,20,0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,100,20,0.22) 1px, transparent 1px),
+    rgba(0,8,2,0.82) !important;
+  background-size: 7px 7px !important;
+  box-shadow: none !important;
+  filter:
+    drop-shadow(0 0 3px rgba(50,255,70,0.90))
+    drop-shadow(0 0 8px rgba(30,200,50,0.55))
+    drop-shadow(0 0 14px rgba(10,160,30,0.30)) !important;
+  animation: se-pulse 3.2s ease-in-out infinite !important;
+  transform: none !important;
+}
+
+/* 2-4-4-2 pixel pattern via box-shadow on ::before */
+/* Origin = col 1, row 0  →  left:7px, top:0 */
+.se-eye::before {
+  content: "" !important;
+  position: absolute !important;
+  width: 7px !important;
+  height: 7px !important;
+  left: 7px !important;
+  top: 0 !important;
+  background: #22ff50 !important;
+  box-shadow:
+    7px 0 0 #22ff50,
+    -7px 7px 0 #22ff50,
+    0 7px 0 #22ff50,
+    7px 7px 0 #22ff50,
+    14px 7px 0 #22ff50,
+    -7px 14px 0 #22ff50,
+    0 14px 0 #22ff50,
+    7px 14px 0 #22ff50,
+    14px 14px 0 #22ff50,
+    0 21px 0 #22ff50,
+    7px 21px 0 #22ff50 !important;
+}
+
+.se-eye::after { content: none !important; }
+.se-eye.left  { transform: none !important; }
+.se-eye.right { transform: none !important; }
+
+@keyframes se-pulse {
+  0%,100% { filter: drop-shadow(0 0 3px rgba(50,255,70,.90)) drop-shadow(0 0 8px rgba(30,200,50,.55)) drop-shadow(0 0 14px rgba(10,160,30,.30)); }
+  50%      { filter: drop-shadow(0 0 5px rgba(50,255,70,1.0)) drop-shadow(0 0 12px rgba(30,200,50,.80)) drop-shadow(0 0 22px rgba(10,160,30,.50)); }
+}
+</style>
