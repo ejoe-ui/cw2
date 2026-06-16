@@ -5866,3 +5866,23 @@ async function loadAll(){
   background-image: url('chassis-bg.png') !important;
 }
 </style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 44
+   - RHS · ROOM 27 badge: up 1% (translateY -3%)
+   - Live dot: up 0.5%, left 0.25% (translate -1.0%, -2.0%)
+   - Nothing else touched
+══════════════════════════════════════════════════════ */
+
+/* RHS · ROOM 27: nudge up from Pass 42 baseline. */
+#topbar #tbBadge,
+.tb-badge#tbBadge{
+  transform:translateY(-3%) !important;
+}
+
+/* Live dot: nudge up and left to better cover the chassis background dot. */
+#topbar .tb-live,
+.tb-live{
+  transform:translate(-1.0%, -2.0%) !important;
+}
+</style>
