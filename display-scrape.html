@@ -2444,7 +2444,7 @@ html, body { background:#050302 !important; }
   position:absolute !important;
   inset:0 !important;
   display:grid !important;
-  grid-template-columns:repeat(5, 1fr) !important;
+  grid-template-columns:repeat(6, 1fr) !important;
   gap:1.8% !important;
   padding:2.5% 2.0% 2.0% 2.2% !important;
   height:100% !important;
@@ -2455,7 +2455,7 @@ html, body { background:#050302 !important; }
   box-shadow:none !important;
   padding:6% 4% 5% !important;
 }
-.sd-card:nth-child(n+6){display:none !important;}
+/* .sd-card:nth-child(n+6){display:none !important;} — show 6 */
 .sd-icon{width:clamp(20px,1.6vw,34px) !important; height:clamp(20px,1.6vw,34px) !important;}
 .sd-title{font-size:clamp(6px,.48vw,9px) !important; line-height:1.05 !important; -webkit-line-clamp:3 !important;}
 .sd-date{font-size:clamp(5px,.38vw,8px) !important;}
@@ -2628,7 +2628,7 @@ html, body { background:#050302 !important; }
   height:14.0% !important;
 }
 #sd-cards{
-  grid-template-columns:repeat(5,1fr) !important;
+  grid-template-columns:repeat(6,1fr) !important;
   gap:2.05% !important;
   padding:3.0% 2.5% 3.0% 2.6% !important;
 }
@@ -6017,16 +6017,18 @@ async function loadAll(){
   height: clamp(18px, 1.8vw, 30px) !important;
 }
 
-/* ── CLOCK: bigger ── */
+/* ── CLOCK: sized down ── */
 .tb-clock,
 #tbClock {
-  font-size: clamp(20px, 2.4cqw, 42px) !important;
-  padding: 0.3cqh 1.1cqw !important;
+  font-size: clamp(12px, 1.35vw, 24px) !important;
+  padding: 0.15cqh 0.6cqw !important;
 }
 
-/* ── LIVE DOT: additional nudge ── */
+/* ── LIVE DOT: sit beside the clock ── */
 #topbar .tb-live,
 .tb-live {
-  transform: translate(-1.5%, -2.5%) !important;
+  right: 12.5% !important;
+  top: 32% !important;
+  transform: none !important;
 }
 </style>
