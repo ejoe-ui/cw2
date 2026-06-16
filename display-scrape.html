@@ -4192,7 +4192,7 @@ function ICON(kind){
 }
 function evIcon(title){var t=(title||'').toLowerCase();if(t.includes('grad'))return'cap';if(t.includes('break')||t.includes('spring'))return'palm';if(t.includes('bbq')||t.includes('rally'))return'flame';if(t.includes('walk')||t.includes('orient')||t.includes('parent'))return'people';return'cal';}
 function renderUpNext(){
-  var ds=dateStr(new Date()),up=getUpcomingEvents(ds).slice(0,5),html='';
+  var ds=dateStr(new Date()),up=getUpcomingEvents(ds).slice(0,6),html='';
   var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   if(!up.length){html='<div class="un-row"><div class="un-name" style="color:var(--amber-dim)">No upcoming events</div></div>';}
   up.forEach(function(e){
@@ -4211,7 +4211,7 @@ function renderBirthdays(){
   var BM=['','JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var vis=CW_BIRTHDAYS.filter(function(b){return !cwBlocked(b.name);});
   vis.sort(function(a,b){return bdaysUntil(a.month,a.day)-bdaysUntil(b.month,b.day);});
-  var top=vis.slice(0,3),html='';
+  var top=vis.slice(0,5),html='';
   if(!top.length){html='<div class="bd-row"><div class="bd-name" style="color:var(--scrape-burnt)">No birthdays soon</div></div>';}
   top.forEach(function(b){
     var init=(b.name||'').replace(/\s+(\S)\S*$/,' $1.');
@@ -5884,5 +5884,75 @@ async function loadAll(){
 #topbar .tb-live,
 .tb-live{
   transform:translate(-1.0%, -2.0%) !important;
+}
+</style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 45
+   - Lower CRT (First Bell / Pass Status): labels and values much bigger
+   - First Bell zone: left-anchor the content
+   - Weather gauge labels/values: more readable
+   - Birthday text: slightly larger
+   - JS: birthdays cap 3→5, upcoming events cap 5→6 (done in JS above)
+   - Nothing structural touched
+══════════════════════════════════════════════════════ */
+
+/* ── LOWER CRT: bigger label + value text ── */
+#lower-crt .lower-label,
+#lower-crt .lower-status,
+.lower-schedule-zone .lower-label,
+.lower-schedule-zone .lower-status,
+.lower-pass-zone .lower-label,
+.lower-pass-zone .lower-status {
+  font-size: clamp(12px, 1.05vw, 20px) !important;
+  letter-spacing: .16em !important;
+}
+
+#lower-crt .lower-main,
+.lower-schedule-zone .lower-main,
+.lower-pass-zone .lower-main {
+  font-size: clamp(22px, 2.4vw, 44px) !important;
+}
+
+#lower-crt .lower-pass-head,
+.lower-pass-zone .lower-pass-head {
+  font-size: clamp(12px, 1.05vw, 20px) !important;
+  letter-spacing: .16em !important;
+}
+
+#lower-crt .lower-pass-main,
+.lower-pass-zone .lower-pass-main {
+  font-size: clamp(22px, 2.4vw, 44px) !important;
+}
+
+/* Push First Bell content flush to the left of its zone. */
+#lower-crt .lower-schedule-zone,
+.lower-schedule-zone {
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding-left: 3% !important;
+  transform: translateX(0%) !important;
+}
+
+/* ── WEATHER GAUGES: more readable labels + values ── */
+.gl {
+  font-size: clamp(9px, 0.92cqw, 15px) !important;
+}
+.gv {
+  font-size: clamp(10px, 1.0cqw, 16px) !important;
+}
+.gsvg {
+  width: clamp(50px, 5.8cqw, 88px) !important;
+  height: clamp(50px, 5.8cqw, 88px) !important;
+}
+
+/* ── BIRTHDAYS: slightly larger text ── */
+#rightcol #bday-panel .bd-name,
+.bd-name {
+  font-size: clamp(10px, 0.95cqw, 16px) !important;
+}
+#rightcol #bday-panel .bd-date,
+.bd-date {
+  font-size: clamp(9px, 0.85cqw, 14px) !important;
 }
 </style>
