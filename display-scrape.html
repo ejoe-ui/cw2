@@ -4260,7 +4260,7 @@ function sdIconColor(kind,title){
 }
 function renderSpecialDays(){
   var ds=dateStr(new Date());
-  var up=getUpcomingEvents(ds).slice(0,5);
+  var up=getUpcomingEvents(ds).slice(0,6);
   var html='';
   if(!up.length){
     html='<div style="font-family:var(--font-crt);font-size:clamp(9px,0.82cqw,13px);color:var(--scrape-burnt);padding:1cqh;letter-spacing:0.1em;">NO UPCOMING EVENTS DETECTED</div>';
@@ -4279,6 +4279,16 @@ function renderSpecialDays(){
       '<div class="sd-days">'+when+'</div>'+
     '</div>';
   });
+  /* Pad to 6 slots with a sports-schedule placeholder */
+  var needed=6-up.length;
+  for(var p=0;p<needed;p++){
+    html+='<div class="sd-card" style="opacity:0.45;">'+
+      '<div class="sd-icon" style="color:var(--scrape-burnt)">'+sdPixelIcon('star')+'</div>'+
+      '<div class="sd-title">SPORTS SCHEDULE</div>'+
+      '<div class="sd-date">COMING SOON</div>'+
+      '<div class="sd-days">—</div>'+
+    '</div>';
+  }
   document.getElementById('sd-cards').innerHTML=html;
 }
 
@@ -5954,5 +5964,48 @@ async function loadAll(){
 #rightcol #bday-panel .bd-date,
 .bd-date {
   font-size: clamp(9px, 0.85cqw, 14px) !important;
+}
+</style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 46
+   - Bottom SD cards: slice 5→6, pad to 6 with sports placeholder (JS above)
+   - SD card title/date/days: much larger text
+   - Clock: bigger
+   - Live dot: additional nudge
+   - Nothing structural touched
+══════════════════════════════════════════════════════ */
+
+/* ── BOTTOM STRIP CARDS: bigger, readable text ── */
+.sd-title {
+  font-size: clamp(9px, 0.78vw, 14px) !important;
+  line-height: 1.2 !important;
+  -webkit-line-clamp: 3 !important;
+  letter-spacing: 0.06em !important;
+}
+.sd-date {
+  font-size: clamp(8px, 0.68vw, 12px) !important;
+  letter-spacing: 0.08em !important;
+}
+.sd-days {
+  font-size: clamp(8px, 0.70vw, 13px) !important;
+  letter-spacing: 0.05em !important;
+}
+.sd-icon svg {
+  width: clamp(18px, 1.8vw, 30px) !important;
+  height: clamp(18px, 1.8vw, 30px) !important;
+}
+
+/* ── CLOCK: bigger ── */
+.tb-clock,
+#tbClock {
+  font-size: clamp(20px, 2.4cqw, 42px) !important;
+  padding: 0.3cqh 1.1cqw !important;
+}
+
+/* ── LIVE DOT: additional nudge ── */
+#topbar .tb-live,
+.tb-live {
+  transform: translate(-1.5%, -2.5%) !important;
 }
 </style>
