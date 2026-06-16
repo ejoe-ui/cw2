@@ -388,10 +388,10 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
     <div class="msg-list-hd"><span>Upcoming Overrides</span></div>
     <div id="ovr-list"><div class="bday-empty">Loading...</div></div>
   </div>
-  <!-- EVE MODE SETTINGS -->
-  <div class="sb-box" id="section-eve-settings">
+  <!-- ORB MODE SETTINGS -->
+  <div class="sb-box" id="section-orb-settings">
     <div class="sb-box-hd">
-      <div><span>🤖 EVE Mode Settings</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Controls for the EVE display screen · updates within 60s</div></div>
+      <div><span>🤖 ORB Mode Settings</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Controls for the ORB display screen · updates within 60s</div></div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
       <div>
@@ -399,30 +399,30 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
         <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Rotating content strip — fun facts, words of wisdom, etc.</div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <button class="btn" id="eveInspirationBtn" onclick="eveToggleInspiration()" style="min-width:64px;">Loading...</button>
-        <button class="btn" onclick="window.open('/display-eve.html?room='+ROOM,'_blank')" style="white-space:nowrap;">Open EVE Screen ↗</button>
+        <button class="btn" id="orbInspirationBtn" onclick="orbToggleInspiration()" style="min-width:64px;">Loading...</button>
+        <button class="btn" onclick="window.open('/display-orb.html?room='+ROOM,'_blank')" style="white-space:nowrap;">Open ORB Screen ↗</button>
       </div>
     </div>
     <div style="padding:12px 0;border-bottom:1px solid var(--border);">
       <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Inspiration Content</div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-fun_facts"> Fun Facts 💡</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-wise_words"> Words of Wisdom 🌟</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-cowboy_code"> Cowboy Code 🤠</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-history_drops"> History Drops 🗂</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-word_of_day"> Word of the Day 📖</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="eve-cat-business"> Business Facts 📈</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-fun_facts"> Fun Facts 💡</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-wise_words"> Words of Wisdom 🌟</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-cowboy_code"> Cowboy Code 🤠</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-history_drops"> History Drops 🗂</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-word_of_day"> Word of the Day 📖</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="orb-cat-business"> Business Facts 📈</label>
       </div>
     </div>
     <div style="padding-top:14px;">
       <div class="f-group">
         <label class="f-label">PREP PERIODS <span style="font-weight:400;color:var(--text-3);">(comma-separated)</span></label>
-        <input class="sb-input" id="evePrepPeriods" type="text" maxlength="20" placeholder="e.g. 3 or 3,6" style="max-width:200px;">
+        <input class="sb-input" id="orbPrepPeriods" type="text" maxlength="20" placeholder="e.g. 3 or 3,6" style="max-width:200px;">
         <div class="f-hint">Pass ring shows RED during prep — no students in class. Default: 3.</div>
       </div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px;align-items:center;">
-        <span style="font-size:11px;color:var(--text-3);min-height:16px;" id="eveSettingsStatus"></span>
-        <button class="sb-btn" onclick="eveSaveSettings()">Save EVE Settings</button>
+        <span style="font-size:11px;color:var(--text-3);min-height:16px;" id="orbSettingsStatus"></span>
+        <button class="sb-btn" onclick="orbSaveSettings()">Save ORB Settings</button>
       </div>
     </div>
   </div>
@@ -794,7 +794,7 @@ async function unlockAdmin(){
   document.getElementById('settingReveal').textContent=rbVal===true?'👁 Shown':'🚫 Hidden';
   await loadBoards();
   await loadDisplayControls();
-  eveLoadSettings();
+  orbLoadSettings();
   if(dcDirty){
     var toSave=Object.assign({},dcCats);toSave.display_order=dcOrder.slice();
     await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
@@ -1329,30 +1329,30 @@ async function ovrDelete(id){
   else{toast('Remove failed',true);}
 }
 // ── EVE MODE SETTINGS ──
-function eveLoadSettings(){
+function orbLoadSettings(){
   var cats=dcSettings?(dcSettings.global_categories||{}):{};
   var inspOn=cats.eve_inspiration!==false;
   var prepPeriods=cats.eve_prep_periods||'3';
-  var btn=document.getElementById('eveInspirationBtn');
+  var btn=document.getElementById('orbInspirationBtn');
   if(btn){btn.textContent=inspOn?'✓ On':'✗ Off';btn.className=inspOn?'btn accent':'btn danger';}
-  var prepInput=document.getElementById('evePrepPeriods');
+  var prepInput=document.getElementById('orbPrepPeriods');
   if(prepInput)prepInput.value=prepPeriods;
   var EVE_CATS=['fun_facts','wise_words','cowboy_code','history_drops','word_of_day','business'];
   var savedCats=cats.eve_inspiration_cats;
   var activeCats=Array.isArray(savedCats)?savedCats:EVE_CATS.filter(function(c){return c!=='business';});
   EVE_CATS.forEach(function(c){var cb=document.getElementById('eve-cat-'+c);if(cb)cb.checked=activeCats.indexOf(c)>=0;});
 }
-function eveToggleInspiration(){
+function orbToggleInspiration(){
   if(!dcSettings){toast('Log in first',true);return;}
   var current=dcCats.eve_inspiration!==false;
   dcCats.eve_inspiration=!current;
-  var btn=document.getElementById('eveInspirationBtn');
+  var btn=document.getElementById('orbInspirationBtn');
   if(btn){btn.textContent=!current?'✓ On':'✗ Off';btn.className=!current?'btn accent':'btn danger';}
   dcDirty=true;dcUpdateDirty();
 }
-async function eveSaveSettings(){
+async function orbSaveSettings(){
   if(!dcSettings){toast('Load settings first',true);return;}
-  var prepInput=document.getElementById('evePrepPeriods');
+  var prepInput=document.getElementById('orbPrepPeriods');
   var prepVal=(prepInput?prepInput.value.trim():'')||'3';
   var EVE_CATS=['fun_facts','wise_words','cowboy_code','history_drops','word_of_day','business'];
   var selectedCats=EVE_CATS.filter(function(c){var cb=document.getElementById('eve-cat-'+c);return cb&&cb.checked;});
@@ -1363,7 +1363,7 @@ async function eveSaveSettings(){
   var ok=await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
   if(ok){
     dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
-    var status=document.getElementById('eveSettingsStatus');
+    var status=document.getElementById('orbSettingsStatus');
     if(status){status.textContent='✓ Saved';setTimeout(function(){status.textContent='';},2500);}
     toast('EVE settings saved — updates within 60s');
   }else{toast('Save failed',true);}
