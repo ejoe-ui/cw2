@@ -6452,3 +6452,71 @@ async function loadAll(){
   50%      { filter: drop-shadow(0 0 5px rgba(50,255,70,1.0)) drop-shadow(0 0 12px rgba(30,200,50,.80)) drop-shadow(0 0 22px rgba(10,160,30,.50)); }
 }
 </style>
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E REGISTRATION PASS 53
+   - Eyes: 3×3 solid pixel grid, P=6px, farther apart, right+down
+   - 6th event card: fix vertical alignment (match cards 1-5)
+══════════════════════════════════════════════════════ */
+
+/* ── EYES ── */
+#scrape-eyes {
+  left: 5.2% !important;
+  top: 62.5% !important;
+  width: 100px !important;
+  height: 24px !important;
+}
+
+#scrape-eye-blink {
+  gap: 20px !important;
+  transform: none !important;
+}
+
+/* 3×3 eye: 18×18px square container with grid background */
+.se-eye {
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 1px !important;
+  overflow: visible !important;
+  background:
+    linear-gradient(rgba(0,110,20,0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,110,20,0.22) 1px, transparent 1px),
+    rgba(0,8,2,0.85) !important;
+  background-size: 6px 6px !important;
+  box-shadow: none !important;
+  filter:
+    drop-shadow(0 0 3px rgba(50,255,70,0.92))
+    drop-shadow(0 0 7px rgba(30,200,50,0.58))
+    drop-shadow(0 0 13px rgba(10,160,30,0.32)) !important;
+  animation: se-pulse 3.2s ease-in-out infinite !important;
+  transform: none !important;
+}
+
+/* 3×3 solid pixel block — origin at col 0, row 0 */
+.se-eye::before {
+  content: "" !important;
+  position: absolute !important;
+  width: 6px !important;
+  height: 6px !important;
+  left: 0 !important;
+  top: 0 !important;
+  background: #22ff50 !important;
+  box-shadow:
+    6px 0 0 #22ff50,
+    12px 0 0 #22ff50,
+    0 6px 0 #22ff50,
+    6px 6px 0 #22ff50,
+    12px 6px 0 #22ff50,
+    0 12px 0 #22ff50,
+    6px 12px 0 #22ff50,
+    12px 12px 0 #22ff50 !important;
+}
+.se-eye::after { content: none !important; }
+.se-eye.left  { transform: none !important; }
+.se-eye.right { transform: none !important; }
+
+/* ── 6TH EVENT CARD: match the vertical offset of cards 4-5 ── */
+#special-days #sd-cards .sd-card:nth-child(6) {
+  transform: translateY(-22.75%) !important;
+}
+</style>
