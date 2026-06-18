@@ -12105,3 +12105,98 @@ async function loadAll(){
     0 0 9px 3px #3d2a00 !important;
 }
 </style>
+<!-- ============================================================
+     PASS 133 — Sound bulb size fix + honor roll reflow guard
+     - Sound bulbs were made 50% larger in Pass 113 — reverting
+       back toward original clamp(8px,.88vw,17px) proportions.
+     - will-change:transform on #honor-inner isolates the ticker
+       animation in its own compositing layer so reparent
+       DOM operations (Pass 131) can't reset it mid-scroll.
+     ============================================================ -->
+<style id="scrape-pass133-sound-bulb-size-fix">
+#sound-random-hole-lights {
+  --sound-bulb-size: clamp(7px, 0.78cqw, 14px) !important;
+}
+#sound-random-hole-lights .sound-random-light {
+  width:  var(--sound-bulb-size) !important;
+  height: var(--sound-bulb-size) !important;
+}
+/* Protect honor roll animation from DOM reflows */
+#honor-inner {
+  will-change: transform;
+}
+</style>
+
+<!-- ============================================================
+     PASS 134 — SCRAP-E Status Bulbs
+     2 LED overlays on rail bolts below SCRAP-E body.
+     position:fixed — no reparenting into #stage needed,
+     no DOM mutation = no honor roll animation reset.
+     Pixel positions in 1536×864 image (background-size:100%):
+       Bolt 1: x=26  (1.7%),  y=717 (83.0%)
+       Bolt 2: x=68  (4.4%),  y=717 (83.0%)
+     Color mirrors dotMode via existing #pd0 classList.
+     ============================================================ -->
+<style id="scrape-pass134-status-bulbs">
+.scrape-sbulb {
+  position: fixed;
+  width:  0.65cqw;
+  height: 1.15cqh;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  top: 83.0%;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out, background 0.4s, box-shadow 0.4s;
+}
+#scrape-sbulb-1 { left: 1.7%; }
+#scrape-sbulb-2 { left: 4.4%; }
+
+.scrape-sbulb.sb-g {
+  opacity: 0.72;
+  background: radial-gradient(circle, #c8cc60 0%, #7a8220 45%, #323800 100%);
+  box-shadow: 0 0 3px 1px #909830, 0 0 7px 2px #5a6218;
+}
+.scrape-sbulb.sb-a {
+  opacity: 0.78;
+  background: radial-gradient(circle, #e89040 0%, #9a5010 45%, #3d1e00 100%);
+  box-shadow: 0 0 3px 1px #c07020, 0 0 7px 2px #804a10;
+  animation: scrapeSbulbPulse 1s infinite ease-in-out;
+}
+.scrape-sbulb.sb-r {
+  opacity: 0.72;
+  background: radial-gradient(circle, #d87040 0%, #8a3010 45%, #3a1000 100%);
+  box-shadow: 0 0 3px 1px #b04820, 0 0 7px 2px #702808;
+}
+@keyframes scrapeSbulbPulse {
+  0%, 100% { opacity: 0.78; }
+  50%       { opacity: 0.30; }
+}
+</style>
+
+<div id="scrape-sbulb-1" class="scrape-sbulb"></div>
+<div id="scrape-sbulb-2" class="scrape-sbulb"></div>
+
+<script id="scrape-pass134-sbulb-sync">
+(function(){
+  var bulbs = [
+    document.getElementById('scrape-sbulb-1'),
+    document.getElementById('scrape-sbulb-2')
+  ];
+  function sync() {
+    var pd0 = document.getElementById('pd0');
+    if (!pd0) return;
+    var c = pd0.classList;
+    var m = c.contains('g') ? 'g' : c.contains('a') ? 'a' : c.contains('r') ? 'r' : 'off';
+    bulbs.forEach(function(b) {
+      if (!b) return;
+      b.classList.remove('sb-g','sb-a','sb-r');
+      if (m !== 'off') b.classList.add('sb-' + m);
+    });
+  }
+  /* Wait 2s for pass-status logic to run its first tick, then stay in sync */
+  setTimeout(sync, 2000);
+  setInterval(sync, 5000);
+})();
+</script>
