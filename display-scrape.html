@@ -12080,3 +12080,259 @@ async function loadAll(){
   setInterval(fixBellSeparators, 35000);
 })();
 </script>
+
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E PASS 125 — Eye Animation System
+   Modes: normal · wide (loud) · sleepy · birthday · broadcast · dart
+══════════════════════════════════════════════════════ */
+
+/* Wide eyes — TOO LOUD */
+#scrape-live-eyes.eyes-wide .scrape-eye{
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(6deg) scaleX(1.22) scaleY(1.35) !important;
+  box-shadow:
+    inset 0 0 6px rgba(100,220,60,.18),
+    inset 0 -8px 14px rgba(0,30,6,.32),
+    0 0 10px rgba(100,220,60,.65),
+    0 0 22px rgba(60,180,40,.38) !important;
+}
+#scrape-live-eyes.eyes-wide .scrape-eye.right{
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(-6deg) scaleX(1.22) scaleY(1.35) !important;
+}
+
+/* Sleepy eyes — after hours */
+#scrape-live-eyes.eyes-sleepy .scrape-eye{
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(6deg) scaleY(0.42) !important;
+  opacity:.65 !important;
+  box-shadow:
+    inset 0 0 4px rgba(100,220,60,.08),
+    0 0 4px rgba(100,220,60,.12) !important;
+  transition:transform .8s ease, opacity .8s ease !important;
+}
+#scrape-live-eyes.eyes-sleepy .scrape-eye.right{
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(-6deg) scaleY(0.42) !important;
+}
+
+/* Birthday eyes — excited pulse glow */
+@keyframes eyeBirthdayPulse{
+  0%,100%{ box-shadow:inset 0 0 6px rgba(100,220,60,.18), 0 0 8px rgba(100,220,60,.5), 0 0 18px rgba(60,180,40,.3); }
+  50%{ box-shadow:inset 0 0 10px rgba(160,255,100,.35), 0 0 18px rgba(140,255,80,.75), 0 0 34px rgba(80,220,50,.5); }
+}
+#scrape-live-eyes.eyes-birthday .scrape-eye{
+  animation:eyeBirthdayPulse .55s ease-in-out infinite !important;
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(6deg) scaleY(1.18) !important;
+}
+#scrape-live-eyes.eyes-birthday .scrape-eye.right{
+  transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(-6deg) scaleY(1.18) !important;
+  animation-delay:.12s !important;
+}
+
+/* Broadcast eyes — slow pulse */
+@keyframes eyeBroadcastPulse{
+  0%,100%{ box-shadow:inset 0 0 6px rgba(100,220,60,.14), 0 0 5px rgba(100,220,60,.32), 0 0 12px rgba(60,180,40,.16); }
+  50%{ box-shadow:inset 0 0 8px rgba(100,220,60,.22), 0 0 14px rgba(100,220,60,.52), 0 0 26px rgba(60,180,40,.32); }
+}
+#scrape-live-eyes.eyes-broadcast .scrape-eye{
+  animation:eyeBroadcastPulse 1.8s ease-in-out infinite !important;
+}
+
+/* Happy blink — occasional during birthday settle */
+@keyframes eyeHappyBlink{
+  0%,90%,100%{ transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(6deg) scaleY(1); }
+  92%,97%{ transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(6deg) scaleY(0.08); }
+}
+@keyframes eyeHappyBlinkR{
+  0%,90%,100%{ transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(-6deg) scaleY(1); }
+  92%,97%{ transform:translate(calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)), calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))) rotate(-6deg) scaleY(0.08); }
+}
+#scrape-live-eyes.eyes-happy .scrape-eye.left{
+  animation:eyeHappyBlink 4.2s ease-in-out infinite !important;
+}
+#scrape-live-eyes.eyes-happy .scrape-eye.right{
+  animation:eyeHappyBlinkR 4.2s ease-in-out infinite !important;
+  animation-delay:.18s !important;
+}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E PASS 125 — Eye Animation Controller
+══════════════════════════════════════════════════════ */
+(function(){
+
+  /* ── 1. Boost mouse tracking range ── */
+  /* Patch the tick function's clamp values by overriding mousemove target calc.
+     We inject a stronger multiplier via a global that the rAF tick will use. */
+  window._scrapeEyeMouseMult = { divX: 85, divY: 100, clampX: 3.2, clampY: 2.2 };
+
+  /* Re-attach mousemove with stronger range */
+  window.addEventListener('mousemove', function(e){
+    var m = window._scrapeEyeMouseMult;
+    var rig = document.getElementById('scrape-live-eyes');
+    if(!rig) return;
+    var r = rig.getBoundingClientRect();
+    if(!r.width) return;
+    var cx = r.left + r.width/2, cy = r.top + r.height/2;
+    var tx = Math.max(-m.clampX, Math.min(m.clampX, (e.clientX - cx) / m.divX));
+    var ty = Math.max(-m.clampY, Math.min(m.clampY, (e.clientY - cy) / m.divY));
+    window._scrapeEyeMouseTarget = {x: tx, y: ty, t: performance.now()};
+  }, {passive:true});
+
+  /* Override idle drift to be wider */
+  window._scrapeEyeIdleRange = {x: 2.8, y: 2.0};
+
+  /* ── 2. Eye mode manager ── */
+  var EYE_MODES = ['eyes-wide','eyes-sleepy','eyes-birthday','eyes-broadcast','eyes-happy'];
+  var _eyeMode = null;
+  var _birthdayBurstTimer = null;
+  var _birthdaySettled = false;
+
+  function setEyeMode(mode){
+    var rig = document.getElementById('scrape-live-eyes');
+    if(!rig) return;
+    EYE_MODES.forEach(function(m){ rig.classList.remove(m); });
+    if(mode){ rig.classList.add(mode); }
+    _eyeMode = mode;
+  }
+
+  /* ── 3. Sound reactive — wide eyes at TOO LOUD ── */
+  var _wideActive = false;
+  var _wideCooldown = 0;
+
+  function checkSound(){
+    var lvl = window.nmLvl || 0;
+    var now = Date.now();
+    if(lvl >= 68 && !_wideActive && now > _wideCooldown){
+      _wideActive = true;
+      setEyeMode('eyes-wide');
+      setTimeout(function(){
+        _wideActive = false;
+        _wideCooldown = Date.now() + 3000; // 3s cooldown before can go wide again
+        decideMode();
+      }, 1800);
+    }
+  }
+
+  /* ── 4. Birthday detection ── */
+  function isBirthdayToday(){
+    var bdays = window.CW_BIRTHDAYS || [];
+    if(!bdays.length) return false;
+    var now = new Date();
+    var mm = String(now.getMonth()+1).padStart(2,'0');
+    var dd = String(now.getDate()).padStart(2,'0');
+    return bdays.some(function(b){
+      if(!b.birth_date) return false;
+      var parts = b.birth_date.split('-');
+      return parts[1] === mm && parts[2] === dd;
+    });
+  }
+
+  function triggerBirthdayBurst(){
+    if(_birthdayBurstTimer) clearTimeout(_birthdayBurstTimer);
+    _birthdaySettled = false;
+    setEyeMode('eyes-birthday');
+    _birthdayBurstTimer = setTimeout(function(){
+      _birthdaySettled = true;
+      setEyeMode('eyes-happy');
+    }, 30000);
+  }
+
+  /* ── 5. After-hours sleepy mode ── */
+  function isAfterHours(){
+    var sched = (typeof getSchedule==='function') ? getSchedule() : null;
+    var nm = (typeof nowMins==='function') ? nowMins() : 0;
+    if(!sched) return true;
+    var lastEnd = (typeof toMins==='function') ? toMins(sched.periods[sched.periods.length-1].end) : 915;
+    var firstStart = toMins(sched.periods[0].start);
+    return nm >= lastEnd || nm < firstStart - 90;
+  }
+
+  /* ── 6. Broadcast pulse ── */
+  window._scrapeEyeBroadcastActive = false;
+  /* Hook: called by Pass 122 broadcast mode */
+  var _origShowStory = window.showBroadcastStory;
+  function onBroadcastStart(){
+    window._scrapeEyeBroadcastActive = true;
+    decideMode();
+  }
+  function onBroadcastEnd(){
+    window._scrapeEyeBroadcastActive = false;
+    decideMode();
+  }
+  /* Expose hooks for Pass 122 */
+  window.scrapeEyeOnBroadcast = onBroadcastStart;
+  window.scrapeEyeOffBroadcast = onBroadcastEnd;
+
+  /* ── 7. Story dart — eyes dart left then right when new story loads ── */
+  window.scrapeEyeDart = function(){
+    var rig = document.getElementById('scrape-live-eyes');
+    if(!rig) return;
+    rig.style.setProperty('--scrape-eye-x', '-3.5px');
+    rig.style.setProperty('--scrape-eye-idle-x', '0px');
+    setTimeout(function(){
+      rig.style.setProperty('--scrape-eye-x', '3.5px');
+      setTimeout(function(){
+        rig.style.setProperty('--scrape-eye-x', '0px');
+      }, 280);
+    }, 220);
+  };
+
+  /* ── 8. Main mode decider ── */
+  function decideMode(){
+    if(_wideActive) return; // sound reactive takes priority
+    if(_birthdayBurstTimer && !_birthdaySettled){ return; } // birthday burst running
+    if(_birthdaySettled){ setEyeMode('eyes-happy'); return; }
+    if(window._scrapeEyeBroadcastActive){ setEyeMode('eyes-broadcast'); return; }
+    if(isAfterHours()){ setEyeMode('eyes-sleepy'); return; }
+    setEyeMode(null); // normal
+  }
+
+  /* ── 9. Period-start birthday burst ── */
+  var _lastPeriodBurst = null;
+  function checkPeriodStart(){
+    var sched = (typeof getSchedule==='function') ? getSchedule() : null;
+    if(!sched) return;
+    var nm = (typeof nowMins==='function') ? nowMins() : 0;
+    var tmins = (typeof toMins==='function') ? toMins : function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    sched.periods.forEach(function(p){
+      if(p.break) return;
+      var s = tmins(p.start);
+      if(Math.abs(nm - s) <= 1 && _lastPeriodBurst !== p.id){
+        _lastPeriodBurst = p.id;
+        if(isBirthdayToday()) triggerBirthdayBurst();
+      }
+    });
+  }
+
+  /* ── Boot ── */
+  function init(){
+    // Initial mode check
+    setTimeout(function(){
+      if(isBirthdayToday()) triggerBirthdayBurst();
+      else decideMode();
+    }, 3000);
+
+    // Sound check every 500ms
+    setInterval(function(){
+      if(!_wideActive) checkSound();
+    }, 500);
+
+    // Mode re-eval every 60s
+    setInterval(function(){
+      if(!_wideActive && !(_birthdayBurstTimer && !_birthdaySettled)){
+        decideMode();
+      }
+    }, 60000);
+
+    // Period start check every 30s
+    setInterval(checkPeriodStart, 30000);
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
