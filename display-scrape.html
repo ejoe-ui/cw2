@@ -12407,3 +12407,19 @@ async function loadAll(){
   }
 }
 </style>
+<!-- PASS 129 — Blink root cause fix -->
+<style id="scrape-pass129-blink-parent-fix">
+#scrape-live-eyes{
+  opacity:1;
+  animation:scrapePass129RigBlink 10s infinite linear !important;
+}
+@keyframes scrapePass129RigBlink{
+  0%, 87%, 95%, 100%{ opacity:1; }
+  87.5%             { opacity:.04; }
+  89%               { opacity:.04; }
+  89.8%             { opacity:.58; }
+  90.5%             { opacity:.04; }
+  91.5%             { opacity:.04; }
+  93%               { opacity:.90; }
+}
+</style>
