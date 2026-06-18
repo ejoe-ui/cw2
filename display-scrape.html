@@ -12482,3 +12482,15 @@ async function loadAll(){
 <style id="scrape-pass146-sbulb2-nudge">
 #scrape-sbulb-2 { top: 87.66% !important; left: 13.97% !important; }
 </style>
+<!-- PASS 147 — Smaller bulb: yellow color, never fully dark (min opacity 0.18) -->
+<style id="scrape-pass147-sbulb2-yellow">
+#scrape-sbulb-2 {
+  background: radial-gradient(circle, #fff080 0%, #d4b800 45%, #5c4e00 100%) !important;
+  box-shadow: 0 0 3px 1px #e8d000, 0 0 7px 3px #b09000, 0 0 12px 4px #4a3c00 !important;
+  animation: scrapeS2YellowBlink 4s ease-in-out infinite !important;
+}
+@keyframes scrapeS2YellowBlink {
+  0%, 100% { opacity: 0.88; }
+  50%       { opacity: 0.18; }
+}
+</style>
