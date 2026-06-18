@@ -11837,6 +11837,7 @@ async function loadAll(){
       row.innerHTML =
         '<span class="sbl-label">' + (isCurrent ? '▶ ' : '') + p.label + '</span>' +
         '<span class="sbl-arrow">' + fmt12(p.start) + '</span>' +
+        '<span class="sbl-sep" style="font-family:var(--font-crt);font-size:clamp(12px,1.1cqw,20px);color:var(--amber-dim);opacity:.5;margin:0 .3em;">›</span>' +
         '<span class="sbl-time">' + fmt12(p.end) + '</span>';
       bellPanel.appendChild(row);
     });
