@@ -12453,3 +12453,32 @@ async function loadAll(){
     : setTimeout(start,1200);
 })();
 </script>
+<!-- PASS 154 — Sport days readability + lower bar text size bump -->
+<style id="cw2-pass154-sizing">
+
+/* ── Sport Days: bigger text + breathing room ── */
+#sd-cards .sd-icon {
+  width:  clamp(28px, 2.3vw, 46px) !important;
+  height: clamp(28px, 2.3vw, 46px) !important;
+}
+#sd-cards .sd-title {
+  font-size: clamp(9px, 0.78vw, 14px) !important;
+  line-height: 1.15 !important;
+  -webkit-line-clamp: 2 !important;
+  margin-top: 4% !important;
+}
+#sd-cards .sd-date {
+  font-size: clamp(8px, 0.62vw, 11px) !important;
+  margin-top: 5% !important;
+}
+#sd-cards .sd-days {
+  font-size: clamp(9px, 0.72vw, 13px) !important;
+  margin-top: 3% !important;
+}
+
+/* ── Lower bar: bigger text across all three sections ── */
+.cw2-lb-lbl  { font-size: clamp(7px,  0.62cqw, 11px) !important; }
+.cw2-lb-main { font-size: clamp(12px, 1.15cqw, 21px) !important; }
+.cw2-lb-sub  { font-size: clamp(7px,  0.60cqw, 11px) !important; }
+
+</style>
