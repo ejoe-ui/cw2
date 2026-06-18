@@ -11088,7 +11088,7 @@ async function loadAll(){
 
   function chooseIdle(now){
     if(now < idle.next) return;
-    idle.next = now + 2600 + Math.random()*3600;
+    idle.next = now + 1200 + Math.random()*2000;
     idle.x = (Math.random()*2-1) * 4.5;
     idle.y = (Math.random()*2-1) * 2.5;
   }
@@ -11108,8 +11108,8 @@ async function loadAll(){
       target.y = idle.y;
     }
     // Slow follow, never instant.
-    current.x += (target.x-current.x)*0.055;
-    current.y += (target.y-current.y)*0.055;
+    current.x += (target.x-current.x)*0.12;
+    current.y += (target.y-current.y)*0.12;
     el.style.setProperty('--scrape-eye-x', current.x.toFixed(2)+'px');
     el.style.setProperty('--scrape-eye-y', current.y.toFixed(2)+'px');
     requestAnimationFrame(tick);
