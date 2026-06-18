@@ -12200,3 +12200,112 @@ async function loadAll(){
   setInterval(sync, 5000);
 })();
 </script>
+<!-- ============================================================
+     PASS 135 — Status Bulb Reposition + Sizing + Honor Roll Cache
+     
+     Fixes:
+       1. sbulb-1 and sbulb-2 positions corrected to actual rivet holes
+          in chassis image: x≈12.1% / 14.8%, y≈88.7% / 88.3%
+          (Previous Pass 134 used 1.7%/4.4% — wrong search area)
+       2. sbulb-1 made larger; remains the pass indicator (green/amber/red)
+       3. sbulb-2 same size; changed to always-amber slow blink during
+          school hours (dotMode !== 'off'); never mirrors pass status
+       4. Honor roll innerHTML cache — prevents animation reset on every
+          30-minute refresh when names haven't changed
+     Do NOT alter any other positioning or animations.
+============================================================ -->
+
+<style id="scrape-pass135-sbulb-v2">
+/* ─── Bulb 1: larger pass indicator — new correct position ─── */
+#scrape-sbulb-1 {
+  left:  12.1% !important;
+  top:   88.7% !important;
+  width:  1.4cqw !important;
+  height: 2.4cqh !important;
+}
+
+/* ─── Bulb 2: same size, always-amber slow blink ─── */
+#scrape-sbulb-2 {
+  left:  14.8% !important;
+  top:   88.3% !important;
+  width:  0.65cqw !important;
+  height: 1.15cqh !important;
+  /* Lock to amber regardless of sb-g / sb-a / sb-r classes */
+  background: radial-gradient(circle,#e89040 0%,#9a5010 45%,#3d1e00 100%) !important;
+  box-shadow: 0 0 3px 1px #c07020, 0 0 7px 3px #804a10, 0 0 12px 4px #3d1e00 !important;
+  animation: scrapeS2SlowBlink 4s ease-in-out infinite !important;
+}
+@keyframes scrapeS2SlowBlink {
+  0%, 100% { opacity: 0.82; }
+  50%      { opacity: 0.06; }
+}
+</style>
+
+<script id="scrape-pass135-sbulb-sync">
+(function(){
+  var b1 = document.getElementById('scrape-sbulb-1');
+  var b2 = document.getElementById('scrape-sbulb-2');
+
+  function sync() {
+    var pd0 = document.getElementById('pd0');
+    if (!pd0) return;
+    var c = pd0.classList;
+    var m = c.contains('g') ? 'g' : c.contains('a') ? 'a' : c.contains('r') ? 'r' : 'off';
+
+    /* Bulb 1 — mirrors pass status color */
+    if (b1) {
+      b1.classList.remove('sb-g','sb-a','sb-r');
+      if (m !== 'off') b1.classList.add('sb-' + m);
+    }
+
+    /* Bulb 2 — amber blink on during school day, off on break */
+    if (b2) {
+      if (m === 'off') {
+        b2.style.opacity = '0';
+        b2.style.animationPlayState = 'paused';
+      } else {
+        b2.style.opacity = '';
+        b2.style.animationPlayState = 'running';
+      }
+    }
+  }
+
+  setTimeout(sync, 2000);
+  setInterval(sync, 5000);
+})();
+</script>
+
+<script id="scrape-pass135-honor-cache">
+/* Honor roll: only rewrite innerHTML when names actually change.
+   Prevents the ticker animation from restarting on every 30-min poll. */
+(function(){
+  var _cached = null;
+  window.renderHonorRoll = async function(){
+    var honor = document.getElementById('honor');
+    var inner = document.getElementById('honor-inner');
+    if (!honor || !inner) return;
+    if (window.SETTINGS && SETTINGS.show_honor_roll === false) {
+      honor.style.display = 'none'; _cached = null; return;
+    }
+    var rows = await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
+    if (!rows || !rows.length) { honor.style.display = 'none'; _cached = null; return; }
+    rows = rows.filter(function(r){ return !(window.cwBlocked && cwBlocked(r.name)); });
+    if (!rows.length) { honor.style.display = 'none'; _cached = null; return; }
+    var html = rows.map(function(r){
+      return '<span class="hn">'+r.name+'</span><span class="hs">★</span>';
+    }).join('');
+    var newContent = html + html;
+    if (newContent !== _cached) {
+      _cached = newContent;
+      inner.innerHTML = newContent;
+      /* Restart animation cleanly only when content actually changed */
+      inner.style.animation = 'none';
+      inner.getBoundingClientRect(); /* flush */
+      inner.style.animation = '';
+    }
+    honor.style.display = 'flex';
+  };
+  /* Fire once after other passes have registered their own timeouts */
+  setTimeout(function(){ if (window.renderHonorRoll) window.renderHonorRoll(); }, 300);
+})();
+</script>
