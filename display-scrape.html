@@ -12653,3 +12653,60 @@ body.cw2-night #scrape-live-eyes .scrape-eye.right {
   init();
 })();
 </script>
+<!-- PASS 152 — Time-driven eye state
+     Awake:  05:40 – 22:00  → normal eyes (overrides eyes-sleepy CSS)
+     Sleep:  22:00 – 05:40  → small dots
+     Broadcast mode: hands off
+-->
+<script id="scrape-pass151-eye-consolidation">
+(function(){
+  function init(){
+    var rig = document.getElementById('scrape-live-eyes');
+    if(!rig){ setTimeout(init,600); return; }
+    var eyes = Array.from(rig.querySelectorAll('.scrape-eye'));
+    if(!eyes.length){ setTimeout(init,600); return; }
+
+    function isSleepTime(){
+      var now = new Date();
+      var m = now.getHours()*60 + now.getMinutes();
+      return m >= 22*60 || m < 5*60+40;   /* 22:00 → 05:40 */
+    }
+
+    function applyDots(){
+      var t = 'translate(calc(var(--scrape-eye-x,0px) + var(--scrape-eye-idle-x,0px)),' +
+              'calc(var(--scrape-eye-y,0px) + var(--scrape-eye-idle-y,0px))) scale(0.28)';
+      eyes.forEach(function(e){
+        e.style.setProperty('transform',  t,                               'important');
+        e.style.setProperty('opacity',    '0.38',                          'important');
+        e.style.setProperty('box-shadow', '0 0 3px rgba(80,200,50,.08)',   'important');
+        e.style.setProperty('transition', 'transform 1.5s ease, opacity 1.5s ease', 'important');
+      });
+    }
+
+    function applyAwake(){
+      /* Remove eyes-sleepy so existing idle CSS takes over cleanly.
+         MutationObserver will re-fire if decideMode() re-adds it — 
+         we'll just remove it again before the next paint. */
+      eyes.forEach(function(e){
+        e.style.removeProperty('transform');
+        e.style.removeProperty('opacity');
+        e.style.removeProperty('box-shadow');
+        e.style.removeProperty('transition');
+      });
+      if(rig.classList.contains('eyes-sleepy')){
+        rig.classList.remove('eyes-sleepy');
+      }
+    }
+
+    function update(){
+      if(rig.classList.contains('eyes-broadcast')) return;
+      isSleepTime() ? applyDots() : applyAwake();
+    }
+
+    new MutationObserver(update).observe(rig,{ attributes:true, attributeFilter:['class'] });
+    setInterval(update, 60000);
+    update();
+  }
+  init();
+})();
+</script>
