@@ -12309,3 +12309,38 @@ async function loadAll(){
   setTimeout(function(){ if (window.renderHonorRoll) window.renderHonorRoll(); }, 300);
 })();
 </script>
+<!-- ============================================================
+     PASS 136 — Bulb position nudge + Honor roll left-edge fix
+
+     Bulbs: moved left ~1.2% and up ~3% from Pass 135
+     Honor roll: Pass 81 added calc(11.9% + 9ch) which pushed the
+       container ~65px right, leaving dead space after "HONOR ROLL"
+       text. This overrides it back to 11.9% and reduces the lbl
+       spacer so names start right at the end of the chassis plate
+       (chassis HONOR ROLL text ends at x=15.1% of image = 15.1%
+       of stage; container at 11.9% + spacer 3.8% = 15.1%).
+============================================================ -->
+
+<style id="scrape-pass136-bulb-nudge">
+#scrape-sbulb-1 {
+  left: 10.9% !important;
+  top:  85.5% !important;
+}
+#scrape-sbulb-2 {
+  left: 13.5% !important;
+  top:  85.2% !important;
+}
+</style>
+
+<style id="scrape-pass136-honor-left">
+/* Undo Pass 81's 9ch right-shift; names now start at chassis plate edge */
+#honor {
+  left:  11.9% !important;
+  width: 84.9% !important;
+}
+#honor-lbl {
+  width:     3.8% !important;
+  min-width: 3.8% !important;
+  flex:      0 0 3.8% !important;
+}
+</style>
