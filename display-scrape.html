@@ -11582,3 +11582,420 @@ async function loadAll(){
   }
 })();
 </script>
+
+<style>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E PASS 122 — Center Screen Rewrite
+   Modes: objectives → bell schedule → standby → broadcast
+══════════════════════════════════════════════════════ */
+
+/* ── STANDBY IMAGE MODE ── */
+.crt-screen.standby-mode .crt-content{ display:none !important; }
+#scrape-standby-img{
+  display:none;
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  object-fit:cover;
+  border-radius:4px;
+  z-index:4;
+  opacity:0;
+  transition:opacity 1.2s ease;
+}
+.crt-screen.standby-mode #scrape-standby-img{
+  display:block !important;
+  opacity:1 !important;
+}
+
+/* ── BELL SCHEDULE MODE ── */
+.crt-screen.bell-mode .crt-content{ display:none !important; }
+#scrape-bell-panel{
+  display:none;
+  position:absolute; inset:0;
+  padding:2.5% 4%;
+  flex-direction:column;
+  gap:0;
+  z-index:4;
+  overflow:hidden;
+}
+.crt-screen.bell-mode #scrape-bell-panel{ display:flex !important; }
+#scrape-bell-header{
+  font-family:var(--font-crt);
+  font-size:clamp(10px,1.1cqw,20px);
+  letter-spacing:.28em;
+  color:var(--crt-bright);
+  text-shadow:0 0 10px var(--crt-glow);
+  text-align:center;
+  padding-bottom:1.5%;
+  border-bottom:1px solid rgba(232,214,106,.18);
+  margin-bottom:1.5%;
+  flex-shrink:0;
+}
+.scrape-bell-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:.35% 0;
+  border-bottom:1px solid rgba(90,53,18,.22);
+  flex-shrink:0;
+}
+.scrape-bell-row.is-break{
+  opacity:.55;
+}
+.scrape-bell-row.is-current{
+  background:rgba(232,214,106,.07);
+  border-radius:2px;
+  padding-left:1%;
+  padding-right:1%;
+}
+.scrape-bell-row.is-current .sbl-label,
+.scrape-bell-row.is-current .sbl-time{
+  color:var(--crt-bright) !important;
+  text-shadow:0 0 8px var(--crt-glow) !important;
+}
+.sbl-label{
+  font-family:var(--font-crt);
+  font-size:clamp(9px,.95cqw,17px);
+  letter-spacing:.14em;
+  color:var(--crt-primary);
+  flex:1;
+}
+.sbl-arrow{
+  font-family:var(--font-crt);
+  font-size:clamp(7px,.7cqw,12px);
+  color:var(--amber-dim);
+  letter-spacing:.08em;
+  flex-shrink:0;
+  margin:0 1%;
+}
+.sbl-time{
+  font-family:var(--font-crt);
+  font-size:clamp(9px,.9cqw,16px);
+  letter-spacing:.1em;
+  color:var(--amber-lit);
+  flex-shrink:0;
+  text-align:right;
+}
+
+/* ── BROADCAST MODE ── */
+.crt-screen.broadcast-mode .crt-content{ display:none !important; }
+#scrape-broadcast-panel{
+  display:none;
+  position:absolute; inset:0;
+  padding:3% 5%;
+  flex-direction:column;
+  justify-content:center;
+  gap:0;
+  z-index:4;
+}
+.crt-screen.broadcast-mode #scrape-broadcast-panel{ display:flex !important; }
+#sbc-header{
+  font-family:var(--font-crt);
+  font-size:clamp(8px,.78cqw,13px);
+  letter-spacing:.32em;
+  color:var(--amber-dim);
+  margin-bottom:2%;
+  display:flex;
+  align-items:center;
+  gap:.5em;
+}
+#sbc-header::before{
+  content:'';
+  display:inline-block;
+  width:.55em; height:.55em;
+  border-radius:50%;
+  background:var(--crt-bright);
+  box-shadow:0 0 6px var(--crt-glow);
+  animation:sbcPulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes sbcPulse{
+  0%,100%{ opacity:1; }
+  50%{ opacity:.25; }
+}
+#sbc-headline{
+  font-family:var(--font-crt);
+  font-size:clamp(13px,1.28cqw,24px);
+  letter-spacing:.15em;
+  color:var(--crt-bright);
+  text-shadow:0 0 12px var(--crt-glow), 0 0 28px rgba(232,214,106,.12);
+  line-height:1.35;
+  margin-bottom:3%;
+  min-height:2.8em;
+}
+#sbc-body{
+  font-family:var(--font-crt);
+  font-size:clamp(10px,.95cqw,17px);
+  letter-spacing:.08em;
+  color:var(--crt-primary);
+  line-height:1.5;
+  opacity:.88;
+  min-height:3em;
+}
+#sbc-footer{
+  margin-top:3%;
+  font-family:var(--font-crt);
+  font-size:clamp(7px,.65cqw,11px);
+  letter-spacing:.22em;
+  color:var(--amber-dim);
+  opacity:.6;
+  text-align:right;
+}
+.sbc-cursor{
+  display:inline-block;
+  width:.55em; height:1em;
+  background:var(--crt-primary);
+  vertical-align:bottom;
+  margin-left:.1em;
+  animation:sbcCursorBlink .7s step-end infinite;
+}
+@keyframes sbcCursorBlink{
+  0%,100%{ opacity:1; } 50%{ opacity:0; }
+}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   SCRAP•E PASS 122 — Center Screen Controller
+   Priority: objectives → bell schedule → standby → broadcast
+══════════════════════════════════════════════════════ */
+(function(){
+
+  /* ── inject HTML into crt-screen ── */
+  var crtScreen = document.querySelector('.crt-screen');
+  if(!crtScreen) return;
+
+  // Standby image
+  var sImg = document.createElement('img');
+  sImg.id = 'scrape-standby-img';
+  sImg.src = 'assets/scrape-standby.png';
+  sImg.alt = 'SCRAP-E STAND BY';
+  crtScreen.appendChild(sImg);
+
+  // Bell panel
+  var bellPanel = document.createElement('div');
+  bellPanel.id = 'scrape-bell-panel';
+  bellPanel.innerHTML = '<div id="scrape-bell-header">BELL SCHEDULE</div>';
+  crtScreen.appendChild(bellPanel);
+
+  // Broadcast panel
+  var bcPanel = document.createElement('div');
+  bcPanel.id = 'scrape-broadcast-panel';
+  bcPanel.innerHTML =
+    '<div id="sbc-header">SCRAP•E SIGNAL INTERCEPT</div>' +
+    '<div id="sbc-headline"></div>' +
+    '<div id="sbc-body"></div>' +
+    '<div id="sbc-footer">SOURCE: GOOD NEWS NETWORK</div>';
+  crtScreen.appendChild(bcPanel);
+
+  /* ── helpers ── */
+  var MODES = ['standby-mode','bell-mode','broadcast-mode','objective-mode','no-class'];
+  function setMode(mode){
+    MODES.forEach(function(m){ crtScreen.classList.remove(m); });
+    if(mode) crtScreen.classList.add(mode);
+  }
+
+  function fmt12(t){
+    var p=t.split(':'),h=parseInt(p[0]),m=p[1];
+    var ampm=h>=12?'PM':'AM';
+    h=h%12||12;
+    return h+':'+m+' '+ampm;
+  }
+
+  /* ── bell schedule renderer ── */
+  function renderBellPanel(){
+    var sched = (typeof getSchedule==='function') ? getSchedule() : null;
+    if(!sched){ setMode(null); return; }
+    var nm = (typeof nowMins==='function') ? nowMins() : 0;
+    var tmins = (typeof toMins==='function') ? toMins : function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+
+    // schedule type label
+    var schedName = 'BELL SCHEDULE';
+    var schedLabels = {
+      regular:'REGULAR BELL', earlyRelease:'EARLY RELEASE',
+      blockWed:'BLOCK DAY', blockThu:'BLOCK DAY',
+      minimum:'MINIMUM DAY', foggy:'FOGGY SCHEDULE',
+      activity:'ACTIVITY DAY', codeDay:'CODE DAY',
+      foggyBlockWed:'FOGGY BLOCK', foggyBlockThu:'FOGGY BLOCK',
+      middayActivityWed:'MIDDAY ACTIVITY', middayActivityThu:'MIDDAY ACTIVITY'
+    };
+    if(window._cwSchedName && schedLabels[window._cwSchedName]){
+      schedName = schedLabels[window._cwSchedName];
+    }
+
+    var header = document.getElementById('scrape-bell-header');
+    if(header) header.textContent = schedName;
+
+    // remove old rows
+    var oldRows = bellPanel.querySelectorAll('.scrape-bell-row');
+    oldRows.forEach(function(r){ r.parentNode.removeChild(r); });
+
+    sched.periods.forEach(function(p){
+      var s = tmins(p.start), e = tmins(p.end);
+      var isCurrent = nm >= s && nm < e;
+      var row = document.createElement('div');
+      row.className = 'scrape-bell-row' + (p.break?' is-break':'') + (isCurrent?' is-current':'');
+      row.innerHTML =
+        '<span class="sbl-label">' + (isCurrent ? '▶ ' : '') + p.label + '</span>' +
+        '<span class="sbl-arrow">' + fmt12(p.start) + '</span>' +
+        '<span class="sbl-time">' + fmt12(p.end) + '</span>';
+      bellPanel.appendChild(row);
+    });
+
+    setMode('bell-mode');
+  }
+
+  /* ── broadcast / GNN ── */
+  var GNN_FEED = 'https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.goodnewsnetwork.org%2Ffeed%2F&api_key=yjqgpuirjxmmkocvqwxvtasuxxo7ycz5yf9x02b&count=10';
+  var GNN_STORIES = [];
+  var GNN_IDX = 0;
+  var GNN_TIMER = null;
+  var GNN_TYPEWRITER = null;
+
+  function loadGNN(){
+    fetch(GNN_FEED)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(d && d.items && d.items.length){
+          GNN_STORIES = d.items.filter(function(s){ return s.title && s.description; });
+          GNN_IDX = Math.floor(Math.random() * GNN_STORIES.length);
+        }
+      })
+      .catch(function(e){ console.warn('[CW2 Broadcast] GNN fetch failed',e); });
+  }
+
+  function stripHTML(s){
+    return s.replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#039;/g,"'").replace(/\s+/g,' ').trim();
+  }
+
+  function truncate(s, max){
+    if(s.length <= max) return s;
+    return s.slice(0, max).replace(/\s+\S*$/,'') + '…';
+  }
+
+  function typewrite(el, text, speed, done){
+    if(GNN_TYPEWRITER) clearInterval(GNN_TYPEWRITER);
+    el.innerHTML = '';
+    var i = 0;
+    GNN_TYPEWRITER = setInterval(function(){
+      if(i < text.length){
+        el.innerHTML = text.slice(0,i+1) + '<span class="sbc-cursor"></span>';
+        i++;
+      } else {
+        el.innerHTML = text + '<span class="sbc-cursor"></span>';
+        clearInterval(GNN_TYPEWRITER);
+        GNN_TYPEWRITER = null;
+        if(done) done();
+      }
+    }, speed);
+  }
+
+  function showBroadcastStory(){
+    if(!GNN_STORIES.length){
+      document.getElementById('sbc-headline').textContent = 'SCANNING FOR SIGNAL…';
+      document.getElementById('sbc-body').textContent = 'SCRAP•E IS SEARCHING THE AIRWAVES.';
+      setMode('broadcast-mode');
+      return;
+    }
+    var story = GNN_STORIES[GNN_IDX % GNN_STORIES.length];
+    GNN_IDX++;
+    var title = truncate(stripHTML(story.title || '').toUpperCase(), 120);
+    var body  = truncate(stripHTML(story.description || ''), 200);
+
+    var hdEl = document.getElementById('sbc-headline');
+    var bdEl = document.getElementById('sbc-body');
+    if(!hdEl || !bdEl) return;
+
+    hdEl.innerHTML = '';
+    bdEl.textContent = '';
+    setMode('broadcast-mode');
+
+    typewrite(hdEl, title, 28, function(){
+      setTimeout(function(){
+        typewrite(bdEl, body, 18, null);
+      }, 400);
+    });
+  }
+
+  function startBroadcast(){
+    loadGNN();
+    // show standby for 3s first
+    setMode('standby-mode');
+    setTimeout(function(){
+      showBroadcastStory();
+      if(GNN_TIMER) clearInterval(GNN_TIMER);
+      GNN_TIMER = setInterval(showBroadcastStory, 28000);
+    }, 3000);
+  }
+
+  function stopBroadcast(){
+    if(GNN_TIMER){ clearInterval(GNN_TIMER); GNN_TIMER = null; }
+    if(GNN_TYPEWRITER){ clearInterval(GNN_TYPEWRITER); GNN_TYPEWRITER = null; }
+  }
+
+  /* ── main controller: runs every 30s, decides which mode ── */
+  var _lastMode = null;
+
+  function p122Tick(){
+    var sched = (typeof getSchedule==='function') ? getSchedule() : null;
+    var nm    = (typeof nowMins==='function') ? nowMins() : 0;
+    var tmins = (typeof toMins==='function') ? toMins : function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+
+    // Already in objective-mode? Pass 49 owns that — don't override.
+    if(crtScreen.classList.contains('objective-mode')){
+      stopBroadcast();
+      _lastMode = 'objective';
+      return;
+    }
+
+    if(!sched){
+      // no schedule at all — broadcast
+      if(_lastMode !== 'broadcast') startBroadcast();
+      _lastMode = 'broadcast';
+      return;
+    }
+
+    // Check if we're in a class period or between periods
+    var inPeriod = false, beforeSchool = false, afterSchool = false;
+    var firstStart = tmins(sched.periods[0].start);
+    var lastEnd    = tmins(sched.periods[sched.periods.length-1].end);
+
+    sched.periods.forEach(function(p){
+      var s = tmins(p.start), e = tmins(p.end);
+      if(nm >= s && nm < e) inPeriod = true;
+    });
+
+    if(nm < firstStart)  beforeSchool = true;
+    if(nm >= lastEnd)    afterSchool  = true;
+
+    if(inPeriod){
+      // Pass 49 objective logic runs independently — just clear broadcast
+      stopBroadcast();
+      // If objective-mode not set by Pass 49, show bell as fallback
+      if(!crtScreen.classList.contains('objective-mode')){
+        if(_lastMode !== 'bell') renderBellPanel();
+        _lastMode = 'bell';
+      } else {
+        _lastMode = 'objective';
+      }
+    } else if(afterSchool || (beforeSchool && nm < firstStart - 60)){
+      // More than 60 min before school or after school → broadcast
+      if(_lastMode !== 'broadcast') startBroadcast();
+      _lastMode = 'broadcast';
+    } else {
+      // Passing period, brunch, lunch, or <60min before school → bell schedule
+      stopBroadcast();
+      if(_lastMode !== 'bell') renderBellPanel();
+      _lastMode = 'bell';
+    }
+  }
+
+  // Run after existing init has a chance to load schedules/objectives
+  setTimeout(function(){
+    p122Tick();
+    setInterval(p122Tick, 30000);
+    // Also re-fetch GNN every 10 min for fresh stories
+    setInterval(loadGNN, 600000);
+  }, 2500);
+
+})();
+</script>
