@@ -11089,8 +11089,8 @@ async function loadAll(){
   function chooseIdle(now){
     if(now < idle.next) return;
     idle.next = now + 2600 + Math.random()*3600;
-    idle.x = (Math.random()*2-1) * 1.15;
-    idle.y = (Math.random()*2-1) * 0.85;
+    idle.x = (Math.random()*2-1) * 4.5;
+    idle.y = (Math.random()*2-1) * 2.5;
   }
 
   function tick(now){
@@ -11101,8 +11101,8 @@ async function loadAll(){
     if(recentlyMouse && r.width && r.height){
       var cx=r.left + r.width/2;
       var cy=r.top + r.height/2;
-      target.x = clamp((mouse.x - cx) / 72, -3.8, 3.8);
-      target.y = clamp((mouse.y - cy) / 88, -2.6, 2.6);
+      target.x = clamp((mouse.x - cx) / 45, -9, 9);
+      target.y = clamp((mouse.y - cy) / 65, -3, 6);
     }else{
       target.x = idle.x;
       target.y = idle.y;
@@ -12336,3 +12336,22 @@ async function loadAll(){
 
 })();
 </script>
+
+<!-- ============================================================
+     PASS 126 — Eye rig: lower position, eyes closer together
+     - top: 61.42% → 63.2% (lower on face, avoids "off the top" feel)
+     - left/right 22% → 29% (eyes visually closer together)
+     ============================================================ -->
+<style id="scrape-pass126-eye-position-closer">
+#scrape-live-eyes{
+  top:63.2% !important;
+}
+#scrape-live-eyes .scrape-eye.left{
+  left:29% !important;
+  right:auto !important;
+}
+#scrape-live-eyes .scrape-eye.right{
+  right:29% !important;
+  left:auto !important;
+}
+</style>
