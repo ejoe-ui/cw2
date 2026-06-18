@@ -11553,3 +11553,36 @@ async function loadAll(){
 /* Blink scaleY applied per-eye via animation (can't mix translate+rotate+scaleY easily)
    so we use a wrapper approach: animate opacity only, rotate stays on the element */
 </style>
+
+<script>
+/* ── Pass 121 · Google Drive Photo Bay loader ──────────────────────────────
+   Fetches image URLs from Apps Script web app and feeds them to the existing
+   loadPhotoBayFromDriveList() function defined in Pass 52.
+   Falls back silently — local placeholders remain if fetch fails.
+*/
+(function(){
+  var DRIVE_ENDPOINT = 'https://script.google.com/a/macros/rjusd.org/s/AKfycbw9QRVwFq6gzq77OtRRur_evFZwZQbNV6L09D9vdvP29izzxc7ULUJk5vTDb7oKo62r/exec';
+  var RETRY_MS = 30000; // retry every 30s if fetch fails
+
+  function loadPhotos(){
+    fetch(DRIVE_ENDPOINT)
+      .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+      .then(function(data){
+        var urls = (data && Array.isArray(data.photos)) ? data.photos : [];
+        if(urls.length && window.loadPhotoBayFromDriveList){
+          window.loadPhotoBayFromDriveList(urls);
+        }
+      })
+      .catch(function(e){
+        console.warn('[CW2 Photo Bay] Drive fetch failed, retrying in '+RETRY_MS+'ms —', e.message);
+        setTimeout(loadPhotos, RETRY_MS);
+      });
+  }
+
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', loadPhotos);
+  } else {
+    loadPhotos();
+  }
+})();
+</script>
