@@ -12080,3 +12080,18 @@ async function loadAll(){
   setInterval(tick, 1000);
 })();
 </script>
+<!-- PASS 131 — reparent chassis pips into #stage -->
+<script id="scrape-pass131-pip-reparent">
+(function(){
+  function fix(){
+    var stage = document.getElementById('stage');
+    if(!stage) return;
+    for(var i=1;i<=5;i++){
+      var p = document.getElementById('chassis-pip-'+i);
+      if(p && p.parentElement !== stage) stage.appendChild(p);
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
+  else fix();
+})();
+</script>
