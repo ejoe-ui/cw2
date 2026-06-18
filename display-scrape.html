@@ -11940,26 +11940,11 @@ async function loadAll(){
   93%               { opacity:.90; }
 }
 </style>
+
 <!-- ============================================================
      PASS 130 — Chassis Top-Row Bulb Clock (5 pip LEDs)
-     
-     5 bulbs overlay the 5 connector-port holes in chassis-bg.png.
-     Pixel positions (1536×864 image, background-size:100% 100%):
-       Hole 1: x=732 (47.7%),  y=90 (10.4%)
-       Hole 2: x=760 (49.5%),  y=90 (10.4%)
-       Hole 3: x=787 (51.2%),  y=90 (10.4%)
-       Hole 4: x=813 (52.9%),  y=90 (10.4%)
-       Hole 5: x=840 (54.7%),  y=90 (10.4%)
-     
-     12-MINUTE CLOCK CYCLE:
-       :00      → 30-second burst (all 5 random fade in/out)
-       :00:30   → fade to bulb 1 only
-       :12      → bulb 1→2 slow crossfade (4s)
-       :24      → bulb 2→3 slow crossfade
-       :36      → bulb 3→4 slow crossfade
-       :48      → bulb 4→5 slow crossfade
-       :00      → repeat burst
-     ============================================================ -->
+     12-minute cycle: burst → pip 1 → pip 2 → … → pip 5 → repeat
+============================================================ -->
 <style id="scrape-pass130-chassis-bulbs">
 .chassis-pip {
   position: absolute;
@@ -11972,20 +11957,20 @@ async function loadAll(){
   z-index: 10;
   opacity: 0;
   background: radial-gradient(circle, #b0ff80 0%, #40e000 40%, #1a7000 100%);
-  box-shadow:
-    0 0 3px 1px #80ff40,
-    0 0 8px 3px #40cc00,
-    0 0 14px 5px #208000;
+  box-shadow: 0 0 3px 1px #80ff40, 0 0 8px 3px #40cc00, 0 0 14px 5px #208000;
   transition: opacity 3s ease-in-out;
 }
-.chassis-pip.burst {
-  transition: opacity 0.6s ease-in-out;
-}
+.chassis-pip.burst { transition: opacity 0.6s ease-in-out; }
 #chassis-pip-1 { left: 47.7%; }
 #chassis-pip-2 { left: 49.5%; }
 #chassis-pip-3 { left: 51.2%; }
 #chassis-pip-4 { left: 52.9%; }
 #chassis-pip-5 { left: 54.7%; }
+/* Amber override — matches dashboard palette */
+.chassis-pip {
+  background: radial-gradient(circle, #d4a840 0%, #8a6200 45%, #3d2a00 100%) !important;
+  box-shadow: 0 0 2px 1px #c49030, 0 0 5px 2px #8a6200, 0 0 9px 3px #3d2a00 !important;
+}
 </style>
 
 <div id="chassis-pip-1" class="chassis-pip"></div>
@@ -11997,25 +11982,14 @@ async function loadAll(){
 <script id="scrape-pass130-bulb-clock">
 (function() {
   const pips = [1,2,3,4,5].map(i => document.getElementById('chassis-pip-' + i));
-
-  /* ── helpers ── */
-  function setOpacity(el, v, slow) {
-    el.classList.toggle('burst', !slow);
-    el.style.opacity = v;
-  }
+  function setOpacity(el, v, slow) { el.classList.toggle('burst', !slow); el.style.opacity = v; }
   function allOff(slow) { pips.forEach(p => setOpacity(p, 0, slow)); }
-  function onlyOn(idx, slow) {
-    pips.forEach((p, i) => setOpacity(p, i === idx ? 1 : 0, slow));
-  }
   function crossfade(from, to) {
-    /* fade out 'from' bulb, simultaneously fade in 'to' bulb; 4s each */
     pips.forEach((p, i) => {
       if (i === from) setOpacity(p, 0, true);
       else if (i === to) setOpacity(p, 1, true);
     });
   }
-
-  /* ── burst state ── */
   let burstTimer = null;
   function startBurst() {
     pips.forEach(p => p.classList.add('burst'));
@@ -12031,128 +12005,85 @@ async function loadAll(){
     pips.forEach(p => p.classList.remove('burst'));
   }
 
-  /* ── main tick ── */
+  /* Reparent pips into #stage so they position relative to chassis */
+  (function fix(){
+    var stage = document.getElementById('stage');
+    if(!stage){ setTimeout(fix,300); return; }
+    pips.forEach(function(p){ if(p && p.parentElement !== stage) stage.appendChild(p); });
+  })();
+
   let lastPhase = -1;
   function tick() {
-    var now  = new Date();
-    var min  = now.getMinutes();
-    var sec  = now.getSeconds();
-    var totSec = min * 60 + sec;   // seconds into the hour
-
-    /*
-      Phase boundaries (seconds into hour):
-        0   – 29  : burst
-        30  – 719 : bulb 1 (until 12:00)
-        720 – 1439: bulb 2
-        1440– 2159: bulb 3
-        2160– 2879: bulb 4
-        2880– 3599: bulb 5
-      Crossfade triggers at the exact boundary (first tick ≥ boundary)
-    */
-    var phase;
-    if      (totSec < 30)   phase = 0;  // burst
-    else if (totSec < 720)  phase = 1;  // bulb 1
-    else if (totSec < 1440) phase = 2;  // bulb 2
-    else if (totSec < 2160) phase = 3;  // bulb 3
-    else if (totSec < 2880) phase = 4;  // bulb 4
-    else                    phase = 5;  // bulb 5
-
-    if (phase === lastPhase) return;    // no change
+    var now = new Date(), totSec = now.getMinutes()*60 + now.getSeconds();
+    var phase = totSec < 30 ? 0 : totSec < 720 ? 1 : totSec < 1440 ? 2
+              : totSec < 2160 ? 3 : totSec < 2880 ? 4 : 5;
+    if (phase === lastPhase) return;
     lastPhase = phase;
-
-    if (phase === 0) {
-      startBurst();
-    } else {
+    if (phase === 0) { startBurst(); }
+    else {
       stopBurst();
-      var idx = phase - 1;  // 0-based bulb index
-      if (phase === 1) {
-        /* coming off burst → fade only bulb 1 in, rest stay off */
-        pips.forEach((p, i) => setOpacity(p, i === 0 ? 1 : 0, true));
-      } else {
-        /* crossfade from previous bulb to current */
-        crossfade(idx - 1, idx);
-      }
+      var idx = phase - 1;
+      if (phase === 1) pips.forEach((p, i) => setOpacity(p, i === 0 ? 1 : 0, true));
+      else crossfade(idx - 1, idx);
     }
   }
-
-  /* run immediately then every second */
   tick();
   setInterval(tick, 1000);
 })();
 </script>
-<!-- PASS 131 — reparent chassis pips into #stage -->
-<script id="scrape-pass131-pip-reparent">
-(function(){
-  function fix(){
-    var stage = document.getElementById('stage');
-    if(!stage) return;
-    for(var i=1;i<=5;i++){
-      var p = document.getElementById('chassis-pip-'+i);
-      if(p && p.parentElement !== stage) stage.appendChild(p);
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',fix);
-  else fix();
-})();
-</script>
-<!-- PASS 132 — amber chassis pips to match dashboard palette -->
-<style id="scrape-pass132-pip-amber">
-.chassis-pip {
-  background: radial-gradient(circle, #d4a840 0%, #8a6200 45%, #3d2a00 100%) !important;
-  box-shadow:
-    0 0 2px 1px #c49030,
-    0 0 5px 2px #8a6200,
-    0 0 9px 3px #3d2a00 !important;
-}
-</style>
-<!-- ============================================================
-     PASS 133 — Sound bulb size fix + honor roll reflow guard
-     - Sound bulbs were made 50% larger in Pass 113 — reverting
-       back toward original clamp(8px,.88vw,17px) proportions.
-     - will-change:transform on #honor-inner isolates the ticker
-       animation in its own compositing layer so reparent
-       DOM operations (Pass 131) can't reset it mid-scroll.
-     ============================================================ -->
-<style id="scrape-pass133-sound-bulb-size-fix">
-#sound-random-hole-lights {
-  --sound-bulb-size: clamp(7px, 0.78cqw, 14px) !important;
-}
-#sound-random-hole-lights .sound-random-light {
-  width:  var(--sound-bulb-size) !important;
-  height: var(--sound-bulb-size) !important;
-}
-/* Protect honor roll animation from DOM reflows */
-#honor-inner {
-  will-change: transform;
-}
-</style>
 
 <!-- ============================================================
-     PASS 134 — SCRAP-E Status Bulbs
-     2 LED overlays on rail bolts below SCRAP-E body.
-     position:fixed — no reparenting into #stage needed,
-     no DOM mutation = no honor roll animation reset.
-     Pixel positions in 1536×864 image (background-size:100%):
-       Bolt 1: x=26  (1.7%),  y=717 (83.0%)
-       Bolt 2: x=68  (4.4%),  y=717 (83.0%)
-     Color mirrors dotMode via existing #pd0 classList.
-     ============================================================ -->
-<style id="scrape-pass134-status-bulbs">
+     CW2 CONSOLIDATED — Passes 131–152
+     Single authoritative block. All positions/styles are final.
+============================================================ -->
+<style id="cw2-consolidated">
+/* ── Sound bulbs ── */
+#sound-random-hole-lights { --sound-bulb-size: clamp(7px, 0.78cqw, 14px) !important; }
+#sound-random-hole-lights .sound-random-light {
+  width: var(--sound-bulb-size) !important;
+  height: var(--sound-bulb-size) !important;
+}
+
+/* ── Honor roll — final confirmed layout ── */
+#honor-inner { will-change: transform; }
+#honor { left: 11.9% !important; width: 84.9% !important; }
+#honor-lbl { width: 5.0% !important; min-width: 5.0% !important; flex: 0 0 5.0% !important; }
+
+/* ── Status bulb base ── */
 .scrape-sbulb {
   position: fixed;
-  width:  0.65cqw;
-  height: 1.15cqh;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  top: 83.0%;
   pointer-events: none;
   z-index: 50;
   opacity: 0;
   transition: opacity 1.5s ease-in-out, background 0.4s, box-shadow 0.4s;
 }
-#scrape-sbulb-1 { left: 1.7%; }
-#scrape-sbulb-2 { left: 4.4%; }
 
+/* Bulb 1: pass indicator (green / amber / red) */
+#scrape-sbulb-1 {
+  left: 11.4%;
+  top: 88.0%;
+  width: 1.4cqw;
+  height: 2.4cqh;
+}
+
+/* Bulb 2: golden slow-blink — school day only */
+#scrape-sbulb-2 {
+  left: 13.97%;
+  top: 87.66%;
+  width: 0.65cqw;
+  height: 1.15cqh;
+  background: radial-gradient(circle, #fff080 0%, #d4b800 45%, #5c4e00 100%);
+  box-shadow: 0 0 3px 1px #e8d000, 0 0 7px 3px #b09000, 0 0 12px 4px #4a3c00;
+  animation: cw2S2Blink 4s ease-in-out infinite;
+}
+@keyframes cw2S2Blink {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.18; }
+}
+
+/* Bulb 1 status colors */
 .scrape-sbulb.sb-g {
   opacity: 0.72;
   background: radial-gradient(circle, #c8cc60 0%, #7a8220 45%, #323800 100%);
@@ -12162,443 +12093,92 @@ async function loadAll(){
   opacity: 0.78;
   background: radial-gradient(circle, #e89040 0%, #9a5010 45%, #3d1e00 100%);
   box-shadow: 0 0 3px 1px #c07020, 0 0 7px 2px #804a10;
-  animation: scrapeSbulbPulse 1s infinite ease-in-out;
+  animation: cw2S1Pulse 1s infinite ease-in-out;
 }
 .scrape-sbulb.sb-r {
   opacity: 0.72;
   background: radial-gradient(circle, #d87040 0%, #8a3010 45%, #3a1000 100%);
   box-shadow: 0 0 3px 1px #b04820, 0 0 7px 2px #702808;
 }
-@keyframes scrapeSbulbPulse {
+@keyframes cw2S1Pulse {
   0%, 100% { opacity: 0.78; }
   50%       { opacity: 0.30; }
 }
 </style>
 
+<!-- Status bulb elements -->
 <div id="scrape-sbulb-1" class="scrape-sbulb"></div>
 <div id="scrape-sbulb-2" class="scrape-sbulb"></div>
 
-<script id="scrape-pass134-sbulb-sync">
-(function(){
-  var bulbs = [
-    document.getElementById('scrape-sbulb-1'),
-    document.getElementById('scrape-sbulb-2')
-  ];
-  function sync() {
-    var pd0 = document.getElementById('pd0');
-    if (!pd0) return;
-    var c = pd0.classList;
-    var m = c.contains('g') ? 'g' : c.contains('a') ? 'a' : c.contains('r') ? 'r' : 'off';
-    bulbs.forEach(function(b) {
-      if (!b) return;
-      b.classList.remove('sb-g','sb-a','sb-r');
-      if (m !== 'off') b.classList.add('sb-' + m);
-    });
-  }
-  /* Wait 2s for pass-status logic to run its first tick, then stay in sync */
-  setTimeout(sync, 2000);
-  setInterval(sync, 5000);
-})();
-</script>
-<!-- ============================================================
-     PASS 135 — Status Bulb Reposition + Sizing + Honor Roll Cache
-     
-     Fixes:
-       1. sbulb-1 and sbulb-2 positions corrected to actual rivet holes
-          in chassis image: x≈12.1% / 14.8%, y≈88.7% / 88.3%
-          (Previous Pass 134 used 1.7%/4.4% — wrong search area)
-       2. sbulb-1 made larger; remains the pass indicator (green/amber/red)
-       3. sbulb-2 same size; changed to always-amber slow blink during
-          school hours (dotMode !== 'off'); never mirrors pass status
-       4. Honor roll innerHTML cache — prevents animation reset on every
-          30-minute refresh when names haven't changed
-     Do NOT alter any other positioning or animations.
-============================================================ -->
-
-<style id="scrape-pass135-sbulb-v2">
-/* ─── Bulb 1: larger pass indicator — new correct position ─── */
-#scrape-sbulb-1 {
-  left:  12.1% !important;
-  top:   88.7% !important;
-  width:  1.4cqw !important;
-  height: 2.4cqh !important;
-}
-
-/* ─── Bulb 2: same size, always-amber slow blink ─── */
-#scrape-sbulb-2 {
-  left:  14.8% !important;
-  top:   88.3% !important;
-  width:  0.65cqw !important;
-  height: 1.15cqh !important;
-  /* Lock to amber regardless of sb-g / sb-a / sb-r classes */
-  background: radial-gradient(circle,#e89040 0%,#9a5010 45%,#3d1e00 100%) !important;
-  box-shadow: 0 0 3px 1px #c07020, 0 0 7px 3px #804a10, 0 0 12px 4px #3d1e00 !important;
-  animation: scrapeS2SlowBlink 4s ease-in-out infinite !important;
-}
-@keyframes scrapeS2SlowBlink {
-  0%, 100% { opacity: 0.82; }
-  50%      { opacity: 0.06; }
-}
-</style>
-
-<script id="scrape-pass135-sbulb-sync">
+<script id="cw2-sbulb-sync">
+/* b1 mirrors pass status color; b2 blinks during school day, pauses off-hours */
 (function(){
   var b1 = document.getElementById('scrape-sbulb-1');
   var b2 = document.getElementById('scrape-sbulb-2');
-
-  function sync() {
+  function sync(){
     var pd0 = document.getElementById('pd0');
-    if (!pd0) return;
+    if(!pd0) return;
     var c = pd0.classList;
     var m = c.contains('g') ? 'g' : c.contains('a') ? 'a' : c.contains('r') ? 'r' : 'off';
-
-    /* Bulb 1 — mirrors pass status color */
-    if (b1) {
-      b1.classList.remove('sb-g','sb-a','sb-r');
-      if (m !== 'off') b1.classList.add('sb-' + m);
-    }
-
-    /* Bulb 2 — amber blink on during school day, off on break */
-    if (b2) {
-      if (m === 'off') {
-        b2.style.opacity = '0';
-        b2.style.animationPlayState = 'paused';
-      } else {
-        b2.style.opacity = '';
-        b2.style.animationPlayState = 'running';
-      }
+    if(b1){ b1.classList.remove('sb-g','sb-a','sb-r'); if(m !== 'off') b1.classList.add('sb-'+m); }
+    if(b2){
+      if(m === 'off'){ b2.style.opacity='0'; b2.style.animationPlayState='paused'; }
+      else { b2.style.opacity=''; b2.style.animationPlayState='running'; }
     }
   }
-
   setTimeout(sync, 2000);
   setInterval(sync, 5000);
 })();
 </script>
 
-<script id="scrape-pass135-honor-cache">
-/* Honor roll: only rewrite innerHTML when names actually change.
-   Prevents the ticker animation from restarting on every 30-min poll. */
+<script id="cw2-honor-cache">
+/* Honor roll: rewrite innerHTML only when names change — prevents animation reset */
 (function(){
   var _cached = null;
   window.renderHonorRoll = async function(){
     var honor = document.getElementById('honor');
     var inner = document.getElementById('honor-inner');
-    if (!honor || !inner) return;
-    if (window.SETTINGS && SETTINGS.show_honor_roll === false) {
-      honor.style.display = 'none'; _cached = null; return;
-    }
+    if(!honor || !inner) return;
+    if(window.SETTINGS && SETTINGS.show_honor_roll === false){ honor.style.display='none'; _cached=null; return; }
     var rows = await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
-    if (!rows || !rows.length) { honor.style.display = 'none'; _cached = null; return; }
+    if(!rows || !rows.length){ honor.style.display='none'; _cached=null; return; }
     rows = rows.filter(function(r){ return !(window.cwBlocked && cwBlocked(r.name)); });
-    if (!rows.length) { honor.style.display = 'none'; _cached = null; return; }
+    if(!rows.length){ honor.style.display='none'; _cached=null; return; }
     var html = rows.map(function(r){
-      return '<span class="hn">'+r.name+'</span><span class="hs">★</span>';
+      return '<span class="hn">'+r.name+'</span><span class="hs">\u2605</span>';
     }).join('');
     var newContent = html + html;
-    if (newContent !== _cached) {
+    if(newContent !== _cached){
       _cached = newContent;
       inner.innerHTML = newContent;
-      /* Restart animation cleanly only when content actually changed */
       inner.style.animation = 'none';
-      inner.getBoundingClientRect(); /* flush */
+      inner.getBoundingClientRect();
       inner.style.animation = '';
     }
     honor.style.display = 'flex';
   };
-  /* Fire once after other passes have registered their own timeouts */
-  setTimeout(function(){ if (window.renderHonorRoll) window.renderHonorRoll(); }, 300);
-})();
-</script>
-<!-- ============================================================
-     PASS 136 — Bulb position nudge + Honor roll left-edge fix
-
-     Bulbs: moved left ~1.2% and up ~3% from Pass 135
-     Honor roll: Pass 81 added calc(11.9% + 9ch) which pushed the
-       container ~65px right, leaving dead space after "HONOR ROLL"
-       text. This overrides it back to 11.9% and reduces the lbl
-       spacer so names start right at the end of the chassis plate
-       (chassis HONOR ROLL text ends at x=15.1% of image = 15.1%
-       of stage; container at 11.9% + spacer 3.8% = 15.1%).
-============================================================ -->
-
-<style id="scrape-pass136-bulb-nudge">
-#scrape-sbulb-1 {
-  left: 10.9% !important;
-  top:  85.5% !important;
-}
-#scrape-sbulb-2 {
-  left: 13.5% !important;
-  top:  85.2% !important;
-}
-</style>
-
-<style id="scrape-pass136-honor-left">
-/* Undo Pass 81's 9ch right-shift; names now start at chassis plate edge */
-#honor {
-  left:  11.9% !important;
-  width: 84.9% !important;
-}
-#honor-lbl {
-  width:     3.8% !important;
-  min-width: 3.8% !important;
-  flex:      0 0 3.8% !important;
-}
-</style>
-<!-- PASS 137 — Honor roll spacer: 3.8% was 3px too narrow, names clipping into HONOR ROLL plate -->
-<style id="scrape-pass137-honor-spacer">
-#honor-lbl {
-  width:     5.0% !important;
-  min-width: 5.0% !important;
-  flex:      0 0 5.0% !important;
-}
-</style>
-<!-- ============================================================
-     PASS 133 — Sound bulb size fix + honor roll reflow guard
-     - Sound bulbs were made 50% larger in Pass 113 — reverting
-       back toward original clamp(8px,.88vw,17px) proportions.
-     - will-change:transform on #honor-inner isolates the ticker
-       animation in its own compositing layer so reparent
-       DOM operations (Pass 131) can't reset it mid-scroll.
-     ============================================================ -->
-<style id="scrape-pass133-sound-bulb-size-fix">
-#sound-random-hole-lights {
-  --sound-bulb-size: clamp(7px, 0.78cqw, 14px) !important;
-}
-#sound-random-hole-lights .sound-random-light {
-  width:  var(--sound-bulb-size) !important;
-  height: var(--sound-bulb-size) !important;
-}
-/* Protect honor roll animation from DOM reflows */
-#honor-inner {
-  will-change: transform;
-}
-</style>
-
-<!-- ============================================================
-     PASS 134 — SCRAP-E Status Bulbs
-     2 LED overlays on rail bolts below SCRAP-E body.
-     position:fixed — no reparenting into #stage needed,
-     no DOM mutation = no honor roll animation reset.
-     Pixel positions in 1536×864 image (background-size:100%):
-       Bolt 1: x=26  (1.7%),  y=717 (83.0%)
-       Bolt 2: x=68  (4.4%),  y=717 (83.0%)
-     Color mirrors dotMode via existing #pd0 classList.
-     ============================================================ -->
-<style id="scrape-pass134-status-bulbs">
-.scrape-sbulb {
-  position: fixed;
-  width:  0.65cqw;
-  height: 1.15cqh;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  top: 83.0%;
-  pointer-events: none;
-  z-index: 50;
-  opacity: 0;
-  transition: opacity 1.5s ease-in-out, background 0.4s, box-shadow 0.4s;
-}
-#scrape-sbulb-1 { left: 1.7%; }
-#scrape-sbulb-2 { left: 4.4%; }
-
-.scrape-sbulb.sb-g {
-  opacity: 0.72;
-  background: radial-gradient(circle, #c8cc60 0%, #7a8220 45%, #323800 100%);
-  box-shadow: 0 0 3px 1px #909830, 0 0 7px 2px #5a6218;
-}
-.scrape-sbulb.sb-a {
-  opacity: 0.78;
-  background: radial-gradient(circle, #e89040 0%, #9a5010 45%, #3d1e00 100%);
-  box-shadow: 0 0 3px 1px #c07020, 0 0 7px 2px #804a10;
-  animation: scrapeSbulbPulse 1s infinite ease-in-out;
-}
-.scrape-sbulb.sb-r {
-  opacity: 0.72;
-  background: radial-gradient(circle, #d87040 0%, #8a3010 45%, #3a1000 100%);
-  box-shadow: 0 0 3px 1px #b04820, 0 0 7px 2px #702808;
-}
-@keyframes scrapeSbulbPulse {
-  0%, 100% { opacity: 0.78; }
-  50%       { opacity: 0.30; }
-}
-</style>
-
-<div id="scrape-sbulb-1" class="scrape-sbulb"></div>
-<div id="scrape-sbulb-2" class="scrape-sbulb"></div>
-
-<script id="scrape-pass134-sbulb-sync">
-(function(){
-  var bulbs = [
-    document.getElementById('scrape-sbulb-1'),
-    document.getElementById('scrape-sbulb-2')
-  ];
-  function sync() {
-    var pd0 = document.getElementById('pd0');
-    if (!pd0) return;
-    var c = pd0.classList;
-    var m = c.contains('g') ? 'g' : c.contains('a') ? 'a' : c.contains('r') ? 'r' : 'off';
-    bulbs.forEach(function(b) {
-      if (!b) return;
-      b.classList.remove('sb-g','sb-a','sb-r');
-      if (m !== 'off') b.classList.add('sb-' + m);
-    });
-  }
-  /* Wait 2s for pass-status logic to run its first tick, then stay in sync */
-  setTimeout(sync, 2000);
-  setInterval(sync, 5000);
-})();
-</script>
-<!-- PASS 139 — Both status bulbs: right +2%, down +4% -->
-<style id="scrape-pass139-sbulb-nudge">
-#scrape-sbulb-1 { left: 12.9% !important; top: 89.5% !important; }
-#scrape-sbulb-2 { left: 15.5% !important; top: 89.2% !important; }
-</style>
-<!-- PASS 140 — Both status bulbs: left -2%, up -1% -->
-<style id="scrape-pass140-sbulb-nudge">
-#scrape-sbulb-1 { left: 10.9% !important; top: 88.5% !important; }
-#scrape-sbulb-2 { left: 13.5% !important; top: 88.2% !important; }
-</style>
-<!-- PASS 141 — Both status bulbs: right +0.5%, up -0.5% -->
-<style id="scrape-pass141-sbulb-nudge">
-#scrape-sbulb-1 { left: 11.4% !important; top: 88.0% !important; }
-#scrape-sbulb-2 { left: 14.0% !important; top: 87.7% !important; }
-</style>
-<!-- PASS 142 — Smaller bulb only: left -0.01% -->
-<style id="scrape-pass142-sbulb2-nudge">
-#scrape-sbulb-2 { left: 13.99% !important; }
-</style>
-<!-- PASS 143 — Smaller bulb: up -0.01% -->
-<style id="scrape-pass143-sbulb2-nudge">
-#scrape-sbulb-2 { top: 87.69% !important; }
-</style>
-<!-- PASS 144 — Smaller bulb: up -0.01% -->
-<style id="scrape-pass144-sbulb2-nudge">
-#scrape-sbulb-2 { top: 87.68% !important; }
-</style>
-<!-- PASS 145 — Smaller bulb: up -0.01%, left -0.01% -->
-<style id="scrape-pass145-sbulb2-nudge">
-#scrape-sbulb-2 { top: 87.67% !important; left: 13.98% !important; }
-</style>
-<!-- PASS 146 — Smaller bulb: up -0.01%, left -0.01% -->
-<style id="scrape-pass146-sbulb2-nudge">
-#scrape-sbulb-2 { top: 87.66% !important; left: 13.97% !important; }
-</style>
-<!-- PASS 147 — Smaller bulb: yellow color, never fully dark (min opacity 0.18) -->
-<style id="scrape-pass147-sbulb2-yellow">
-#scrape-sbulb-2 {
-  background: radial-gradient(circle, #fff080 0%, #d4b800 45%, #5c4e00 100%) !important;
-  box-shadow: 0 0 3px 1px #e8d000, 0 0 7px 3px #b09000, 0 0 12px 4px #4a3c00 !important;
-  animation: scrapeS2YellowBlink 4s ease-in-out infinite !important;
-}
-@keyframes scrapeS2YellowBlink {
-  0%, 100% { opacity: 0.88; }
-  50%       { opacity: 0.18; }
-}
-</style>
-<!-- PASS 148 — Smaller bulb: reduce peak brightness -->
-<style id="scrape-pass148-sbulb2-dim">
-#scrape-sbulb-2 {
-  animation: scrapeS2YellowDim 4s ease-in-out infinite !important;
-}
-@keyframes scrapeS2YellowDim {
-  0%, 100% { opacity: 0.55; }
-  50%       { opacity: 0.18; }
-}
-</style>
-<!-- ============================================================
-     PASS 149 — Tired eyes: small dots at 10 PM + news topic filter
-
-     Eyes: body.cw2-night class added at 22:00, triggers small-dot
-       override. Specificity (1,2,1) beats existing sleepy (1,2,0)
-       so no rotation, just tight scale(0.28) dots.
-     News: filters out dry council/policy/permit headlines from GNN
-       so only human-interest and feel-good stories show.
-============================================================ -->
-
-<style id="scrape-pass149-night-eyes">
-/* Small dot tired eyes — active when body has .cw2-night (10 PM+) */
-body.cw2-night #scrape-live-eyes .scrape-eye {
-  transform: translate(
-    calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)),
-    calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))
-  ) scale(0.28) !important;
-  opacity: 0.38 !important;
-  box-shadow:
-    inset 0 0 2px rgba(80,200,50,.04),
-    0 0 3px rgba(80,200,50,.09) !important;
-  transition: transform 1.5s ease, opacity 1.5s ease !important;
-}
-body.cw2-night #scrape-live-eyes .scrape-eye.right {
-  transform: translate(
-    calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)),
-    calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))
-  ) scale(0.28) !important;
-}
-</style>
-
-<script id="scrape-pass149-night-trigger">
-/* Toggle .cw2-night on body at 10 PM */
-(function(){
-  function checkNight(){
-    var h = new Date().getHours();
-    document.body.classList.toggle('cw2-night', h >= 22);
-  }
-  checkNight();
-  setInterval(checkNight, 60000);
+  setTimeout(function(){ if(window.renderHonorRoll) window.renderHonorRoll(); }, 300);
 })();
 </script>
 
-<script id="scrape-pass149-news-filter">
-/* Patch GNN story loader to skip dry policy/government headlines */
+<script id="cw2-news-filter">
+/* GNN feed: filter dry policy/govt headlines; keep human-interest stories */
 (function(){
-  var SKIP = [
-    'council','planning','mining','permit','legislation','committee',
-    'municipal','parliament','senator','regulatory','borough','zoning',
-    'ordinance','ballot','referendum','commissioner','tribunal'
-  ];
-  var _origLoad = window.loadGNN;
-  if(typeof _origLoad !== 'function') return;
-  window.loadGNN = function(){
-    var origFetch = window.fetch;
-    var origFilter = Array.prototype.filter;
-    /* Wrap the next fetch to intercept GNN response */
-    var _done = false;
-    var _watch = setInterval(function(){
-      /* Find GNN_STORIES via the exposed showBroadcastStory closure —
-         instead, just patch the stories after they load via a short poll */
-      if(_done){ clearInterval(_watch); return; }
-      try {
-        /* Access via the broadcast panel container check */
-        var el = document.getElementById('sbc-headline');
-        if(el && el.textContent !== 'SCANNING FOR SIGNAL…') _done = true;
-      } catch(e){}
-    }, 2000);
-    _origLoad.call(this);
-  };
-})();
-</script>
-
-<script id="scrape-pass149-news-filter-v2">
-/* Better approach: override fetch to filter GNN items before they land */
-(function(){
-  var _origFetch = window.fetch;
+  var SKIP = ['council','planning','mining','permit','legislation',
+    'committee','municipal','parliament','regulatory','zoning',
+    'ordinance','ballot','commissioner','tribunal'];
+  var _orig = window.fetch;
   window.fetch = function(url, opts){
-    return _origFetch.call(this, url, opts).then(function(res){
+    return _orig.call(this, url, opts).then(function(res){
       if(typeof url === 'string' && url.indexOf('goodnewsnetwork') >= 0){
         return res.clone().json().then(function(data){
-          var SKIP = ['council','planning','mining','permit','legislation',
-            'committee','municipal','parliament','regulatory','zoning',
-            'ordinance','ballot','commissioner','tribunal'];
           if(data && data.items){
             data.items = data.items.filter(function(s){
               var t = (s.title || '').toLowerCase();
               return !SKIP.some(function(w){ return t.indexOf(w) >= 0; });
             });
           }
-          /* Return a fake Response with filtered data */
-          return new Response(JSON.stringify(data), {
-            status: 200,
-            headers: {'Content-Type':'application/json'}
-          });
+          return new Response(JSON.stringify(data),{status:200,headers:{'Content-Type':'application/json'}});
         });
       }
       return res;
@@ -12606,59 +12186,12 @@ body.cw2-night #scrape-live-eyes .scrape-eye.right {
   };
 })();
 </script>
-<!-- PASS 151 — Consolidated eye fix: JS inline-important beats all CSS cascade conflicts.
-     Replaces Pass 149/150 eye attempts. Small dots when eyes-sleepy OR after 10 PM. -->
-<script id="scrape-pass151-eye-consolidation">
-(function(){
-  function init(){
-    var rig = document.getElementById('scrape-live-eyes');
-    if(!rig){ setTimeout(init, 600); return; }
-    var eyes = Array.from(rig.querySelectorAll('.scrape-eye'));
-    if(!eyes.length){ setTimeout(init, 600); return; }
 
-    function sleepyTransform(eye){
-      /* Same translate vars the rig uses, then scale to small dot */
-      return 'translate(calc(var(--scrape-eye-x,0px) + var(--scrape-eye-idle-x,0px)),' +
-             'calc(var(--scrape-eye-y,0px) + var(--scrape-eye-idle-y,0px))) scale(0.28)';
-    }
-
-    function applyDots(){
-      eyes.forEach(function(e){
-        e.style.setProperty('transform', sleepyTransform(e), 'important');
-        e.style.setProperty('opacity',   '0.38',             'important');
-        e.style.setProperty('box-shadow','0 0 3px rgba(80,200,50,.08)', 'important');
-        e.style.setProperty('transition','transform 1.5s ease, opacity 1.5s ease', 'important');
-      });
-    }
-
-    function clearDots(){
-      eyes.forEach(function(e){
-        e.style.removeProperty('transform');
-        e.style.removeProperty('opacity');
-        e.style.removeProperty('box-shadow');
-        e.style.removeProperty('transition');
-      });
-    }
-
-    function update(){
-      var h = new Date().getHours();
-      var sleepy = rig.classList.contains('eyes-sleepy') || h >= 22;
-      sleepy ? applyDots() : clearDots();
-    }
-
-    new MutationObserver(update).observe(rig, { attributes:true, attributeFilter:['class'] });
-    setInterval(update, 60000);
-    update();
-  }
-  init();
-})();
-</script>
-<!-- PASS 152 — Time-driven eye state
-     Awake:  05:40 – 22:00  → normal eyes (overrides eyes-sleepy CSS)
-     Sleep:  22:00 – 05:40  → small dots
-     Broadcast mode: hands off
--->
-<script id="scrape-pass151-eye-consolidation">
+<script id="cw2-eye-system">
+/* SCRAP-E eye state — time-driven
+   Awake: 05:40–22:00 → normal eyes (overrides any eyes-sleepy CSS)
+   Sleep: 22:00–05:40 → small dots
+   Broadcast mode: hands off */
 (function(){
   function init(){
     var rig = document.getElementById('scrape-live-eyes');
@@ -12669,33 +12202,28 @@ body.cw2-night #scrape-live-eyes .scrape-eye.right {
     function isSleepTime(){
       var now = new Date();
       var m = now.getHours()*60 + now.getMinutes();
-      return m >= 22*60 || m < 5*60+40;   /* 22:00 → 05:40 */
+      return m >= 22*60 || m < 5*60+40;
     }
 
     function applyDots(){
       var t = 'translate(calc(var(--scrape-eye-x,0px) + var(--scrape-eye-idle-x,0px)),' +
               'calc(var(--scrape-eye-y,0px) + var(--scrape-eye-idle-y,0px))) scale(0.28)';
       eyes.forEach(function(e){
-        e.style.setProperty('transform',  t,                               'important');
-        e.style.setProperty('opacity',    '0.38',                          'important');
-        e.style.setProperty('box-shadow', '0 0 3px rgba(80,200,50,.08)',   'important');
-        e.style.setProperty('transition', 'transform 1.5s ease, opacity 1.5s ease', 'important');
+        e.style.setProperty('transform',  t,                             'important');
+        e.style.setProperty('opacity',    '0.38',                        'important');
+        e.style.setProperty('box-shadow', '0 0 3px rgba(80,200,50,.08)','important');
+        e.style.setProperty('transition', 'transform 1.5s ease, opacity 1.5s ease','important');
       });
     }
 
     function applyAwake(){
-      /* Remove eyes-sleepy so existing idle CSS takes over cleanly.
-         MutationObserver will re-fire if decideMode() re-adds it — 
-         we'll just remove it again before the next paint. */
       eyes.forEach(function(e){
         e.style.removeProperty('transform');
         e.style.removeProperty('opacity');
         e.style.removeProperty('box-shadow');
         e.style.removeProperty('transition');
       });
-      if(rig.classList.contains('eyes-sleepy')){
-        rig.classList.remove('eyes-sleepy');
-      }
+      if(rig.classList.contains('eyes-sleepy')) rig.classList.remove('eyes-sleepy');
     }
 
     function update(){
@@ -12703,7 +12231,7 @@ body.cw2-night #scrape-live-eyes .scrape-eye.right {
       isSleepTime() ? applyDots() : applyAwake();
     }
 
-    new MutationObserver(update).observe(rig,{ attributes:true, attributeFilter:['class'] });
+    new MutationObserver(update).observe(rig,{attributes:true,attributeFilter:['class']});
     setInterval(update, 60000);
     update();
   }
