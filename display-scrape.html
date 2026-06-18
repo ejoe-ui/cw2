@@ -4845,11 +4845,7 @@ async function loadAll(){
    For Google Drive share links, use a direct image URL or your backend/Apps Script endpoint.
 */
 (function(){
-  var PHOTO_BAY_IMAGES = window.PHOTO_BAY_IMAGES || [
-    'assets/photos/photo-1.JPG',
-    'assets/photos/photo-2.JPG',
-    'assets/photos/photo-3.JPG'
-  ];
+  var PHOTO_BAY_IMAGES = window.PHOTO_BAY_IMAGES || [];
   var PHOTO_BAY_INTERVAL_MS = window.PHOTO_BAY_INTERVAL_MS || 10000;
   var idx = 0;
   var active = 0;
@@ -11561,7 +11557,7 @@ async function loadAll(){
    Falls back silently — local placeholders remain if fetch fails.
 */
 (function(){
-  var DRIVE_ENDPOINT = 'https://script.google.com/a/macros/rjusd.org/s/AKfycbw9QRVwFq6gzq77OtRRur_evFZwZQbNV6L09D9vdvP29izzxc7ULUJk5vTDb7oKo62r/exec';
+  var DRIVE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwFbF2ssCZFxwYYf2ziZBA7gQ9ZEpITFGL5W5clMuYaquxWiAxlh1Kqicc60Ztn68ts/exec';
   var RETRY_MS = 30000; // retry every 30s if fetch fails
 
   function loadPhotos(){
