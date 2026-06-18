@@ -12482,3 +12482,33 @@ async function loadAll(){
 .cw2-lb-sub  { font-size: clamp(7px,  0.60cqw, 11px) !important; }
 
 </style>
+<!-- PASS 155 — Sport days card layout reset: flex column, even spacing -->
+<style id="cw2-pass155-sdcard-fix">
+#sd-cards .sd-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5% !important;
+  padding: 6% 4% !important;
+  grid-template-rows: unset !important;
+}
+#sd-cards .sd-icon {
+  transform: none !important;
+  margin: 0 !important;
+  align-self: center !important;
+}
+#sd-cards .sd-title {
+  transform: none !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+#sd-cards .sd-date {
+  transform: none !important;
+  margin: 0 !important;
+}
+#sd-cards .sd-days {
+  transform: none !important;
+  margin: 0 !important;
+}
+</style>
