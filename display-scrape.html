@@ -12504,3 +12504,105 @@ async function loadAll(){
   50%       { opacity: 0.18; }
 }
 </style>
+<!-- ============================================================
+     PASS 149 — Tired eyes: small dots at 10 PM + news topic filter
+
+     Eyes: body.cw2-night class added at 22:00, triggers small-dot
+       override. Specificity (1,2,1) beats existing sleepy (1,2,0)
+       so no rotation, just tight scale(0.28) dots.
+     News: filters out dry council/policy/permit headlines from GNN
+       so only human-interest and feel-good stories show.
+============================================================ -->
+
+<style id="scrape-pass149-night-eyes">
+/* Small dot tired eyes — active when body has .cw2-night (10 PM+) */
+body.cw2-night #scrape-live-eyes .scrape-eye {
+  transform: translate(
+    calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)),
+    calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))
+  ) scale(0.28) !important;
+  opacity: 0.38 !important;
+  box-shadow:
+    inset 0 0 2px rgba(80,200,50,.04),
+    0 0 3px rgba(80,200,50,.09) !important;
+  transition: transform 1.5s ease, opacity 1.5s ease !important;
+}
+body.cw2-night #scrape-live-eyes .scrape-eye.right {
+  transform: translate(
+    calc(var(--scrape-eye-x) + var(--scrape-eye-idle-x)),
+    calc(var(--scrape-eye-y) + var(--scrape-eye-idle-y))
+  ) scale(0.28) !important;
+}
+</style>
+
+<script id="scrape-pass149-night-trigger">
+/* Toggle .cw2-night on body at 10 PM */
+(function(){
+  function checkNight(){
+    var h = new Date().getHours();
+    document.body.classList.toggle('cw2-night', h >= 22);
+  }
+  checkNight();
+  setInterval(checkNight, 60000);
+})();
+</script>
+
+<script id="scrape-pass149-news-filter">
+/* Patch GNN story loader to skip dry policy/government headlines */
+(function(){
+  var SKIP = [
+    'council','planning','mining','permit','legislation','committee',
+    'municipal','parliament','senator','regulatory','borough','zoning',
+    'ordinance','ballot','referendum','commissioner','tribunal'
+  ];
+  var _origLoad = window.loadGNN;
+  if(typeof _origLoad !== 'function') return;
+  window.loadGNN = function(){
+    var origFetch = window.fetch;
+    var origFilter = Array.prototype.filter;
+    /* Wrap the next fetch to intercept GNN response */
+    var _done = false;
+    var _watch = setInterval(function(){
+      /* Find GNN_STORIES via the exposed showBroadcastStory closure —
+         instead, just patch the stories after they load via a short poll */
+      if(_done){ clearInterval(_watch); return; }
+      try {
+        /* Access via the broadcast panel container check */
+        var el = document.getElementById('sbc-headline');
+        if(el && el.textContent !== 'SCANNING FOR SIGNAL…') _done = true;
+      } catch(e){}
+    }, 2000);
+    _origLoad.call(this);
+  };
+})();
+</script>
+
+<script id="scrape-pass149-news-filter-v2">
+/* Better approach: override fetch to filter GNN items before they land */
+(function(){
+  var _origFetch = window.fetch;
+  window.fetch = function(url, opts){
+    return _origFetch.call(this, url, opts).then(function(res){
+      if(typeof url === 'string' && url.indexOf('goodnewsnetwork') >= 0){
+        return res.clone().json().then(function(data){
+          var SKIP = ['council','planning','mining','permit','legislation',
+            'committee','municipal','parliament','regulatory','zoning',
+            'ordinance','ballot','commissioner','tribunal'];
+          if(data && data.items){
+            data.items = data.items.filter(function(s){
+              var t = (s.title || '').toLowerCase();
+              return !SKIP.some(function(w){ return t.indexOf(w) >= 0; });
+            });
+          }
+          /* Return a fake Response with filtered data */
+          return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: {'Content-Type':'application/json'}
+          });
+        });
+      }
+      return res;
+    });
+  };
+})();
+</script>
