@@ -12355,3 +12355,55 @@ async function loadAll(){
   left:auto !important;
 }
 </style>
+
+<!-- ============================================================
+     PASS 128 — Eye blink fix
+     Old: opacity .92→.32 (not dark enough), 69ms closed (invisible)
+     New: opacity .92→.04 (nearly black), 200ms hold, double-blink,
+          10s cycle (was 13.8s). Redefining keyframes overrides old.
+     ============================================================ -->
+<style id="scrape-pass128-blink-fix">
+
+/* Override Pass 120's too-subtle blink */
+#scrape-live-eyes .scrape-eye{
+  animation:scrapePass128Blink 10s infinite linear !important;
+}
+
+@keyframes scrapePass128Blink{
+  /* Open — hold for ~8.7s */
+  0%, 87%, 95%, 100%{
+    opacity:.92;
+    filter:saturate(1.15) brightness(.94);
+  }
+  /* First close — snap shut */
+  87.5%{
+    opacity:.04;
+    filter:saturate(.15) brightness(.06);
+  }
+  /* Hold closed ~200ms */
+  89%{
+    opacity:.04;
+    filter:saturate(.15) brightness(.06);
+  }
+  /* Partial reopen */
+  89.8%{
+    opacity:.58;
+    filter:saturate(.80) brightness(.68);
+  }
+  /* Second close — double-blink */
+  90.5%{
+    opacity:.04;
+    filter:saturate(.15) brightness(.06);
+  }
+  /* Hold second close ~100ms */
+  91.5%{
+    opacity:.04;
+    filter:saturate(.15) brightness(.06);
+  }
+  /* Reopen and settle */
+  93%{
+    opacity:.85;
+    filter:saturate(1.10) brightness(.90);
+  }
+}
+</style>
