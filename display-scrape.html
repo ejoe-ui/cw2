@@ -12029,3 +12029,53 @@ async function loadAll(){
   gap:.2% !important;
 }
 </style>
+
+<style>
+/* ── Pass 124 · Bell Schedule bigger, spaced, separator fix ── */
+#scrape-bell-panel{
+  padding:2.5% 5% !important;
+  justify-content:space-evenly !important;
+  gap:0 !important;
+}
+#scrape-bell-header{
+  font-size:clamp(15px,1.65cqw,30px) !important;
+  margin-bottom:0 !important;
+  padding-bottom:1.5% !important;
+  flex-shrink:0 !important;
+}
+.scrape-bell-row{
+  flex:1 !important;
+  padding:.4% 0 !important;
+}
+.sbl-label{
+  font-size:clamp(16px,1.7cqw,32px) !important;
+  letter-spacing:.18em !important;
+  font-weight:bold !important;
+}
+.sbl-arrow{
+  font-size:clamp(13px,1.2cqw,22px) !important;
+  opacity:.9 !important;
+}
+.sbl-time{
+  font-size:clamp(15px,1.5cqw,28px) !important;
+  letter-spacing:.1em !important;
+}
+</style>
+
+<script>
+/* ── Pass 124 · patch bell rows with separator after render ── */
+(function(){
+  function fixBellSeparators(){
+    var rows = document.querySelectorAll('.scrape-bell-row');
+    if(!rows.length) return;
+    rows.forEach(function(row){
+      var timeEl = row.querySelector('.sbl-time');
+      if(!timeEl || timeEl.dataset.fixed) return;
+      timeEl.innerHTML = '<span style="opacity:.45;margin:0 .4em;">›</span>' + timeEl.textContent.trim();
+      timeEl.dataset.fixed = '1';
+    });
+  }
+  setTimeout(fixBellSeparators, 4000);
+  setInterval(fixBellSeparators, 35000);
+})();
+</script>
