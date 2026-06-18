@@ -12606,3 +12606,50 @@ body.cw2-night #scrape-live-eyes .scrape-eye.right {
   };
 })();
 </script>
+<!-- PASS 151 — Consolidated eye fix: JS inline-important beats all CSS cascade conflicts.
+     Replaces Pass 149/150 eye attempts. Small dots when eyes-sleepy OR after 10 PM. -->
+<script id="scrape-pass151-eye-consolidation">
+(function(){
+  function init(){
+    var rig = document.getElementById('scrape-live-eyes');
+    if(!rig){ setTimeout(init, 600); return; }
+    var eyes = Array.from(rig.querySelectorAll('.scrape-eye'));
+    if(!eyes.length){ setTimeout(init, 600); return; }
+
+    function sleepyTransform(eye){
+      /* Same translate vars the rig uses, then scale to small dot */
+      return 'translate(calc(var(--scrape-eye-x,0px) + var(--scrape-eye-idle-x,0px)),' +
+             'calc(var(--scrape-eye-y,0px) + var(--scrape-eye-idle-y,0px))) scale(0.28)';
+    }
+
+    function applyDots(){
+      eyes.forEach(function(e){
+        e.style.setProperty('transform', sleepyTransform(e), 'important');
+        e.style.setProperty('opacity',   '0.38',             'important');
+        e.style.setProperty('box-shadow','0 0 3px rgba(80,200,50,.08)', 'important');
+        e.style.setProperty('transition','transform 1.5s ease, opacity 1.5s ease', 'important');
+      });
+    }
+
+    function clearDots(){
+      eyes.forEach(function(e){
+        e.style.removeProperty('transform');
+        e.style.removeProperty('opacity');
+        e.style.removeProperty('box-shadow');
+        e.style.removeProperty('transition');
+      });
+    }
+
+    function update(){
+      var h = new Date().getHours();
+      var sleepy = rig.classList.contains('eyes-sleepy') || h >= 22;
+      sleepy ? applyDots() : clearDots();
+    }
+
+    new MutationObserver(update).observe(rig, { attributes:true, attributeFilter:['class'] });
+    setInterval(update, 60000);
+    update();
+  }
+  init();
+})();
+</script>
