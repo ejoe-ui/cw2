@@ -357,7 +357,7 @@ body{display:flex;align-items:center;justify-content:center;}
   border:1px solid var(--rust);border-radius:4px;
   border-top:2px solid var(--rust-lt);
   padding:0.5cqh 0.4cqw 0.6cqh;
-  display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:0.15cqh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.15cqh;
   text-align:center;
   box-shadow:inset 0 0 18px rgba(210,130,10,0.10),inset 0 1px 0 rgba(200,150,50,0.07),0 2px 6px rgba(0,0,0,0.5);
   position:relative;flex:1;min-width:0;
@@ -373,14 +373,14 @@ body{display:flex;align-items:center;justify-content:center;}
 }
 .sd-icon svg{width:100%;height:100%;stroke-width:1.2;}
 .sd-title{
-  font-family:var(--font-crt);font-size:clamp(8px,0.8cqw,13px);
+  font-family:var(--font-crt);font-size:clamp(11px,1.1cqw,17px);
   letter-spacing:0.04em;color:var(--crt-primary);text-transform:uppercase;
   line-height:1.18;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
   flex:1;
 }
-.sd-date{font-family:var(--font-crt);font-size:clamp(7px,0.64cqw,11px);letter-spacing:0.04em;color:var(--scrape-burnt);}
+.sd-date{font-family:var(--font-crt);font-size:clamp(9px,0.8cqw,13px);letter-spacing:0.04em;color:var(--scrape-burnt);}
 .sd-days{
-  font-family:var(--font-crt);font-size:clamp(9px,0.88cqw,15px);letter-spacing:0.05em;
+  font-family:var(--font-crt);font-size:clamp(12px,1.1cqw,18px);letter-spacing:0.05em;
   color:var(--crt-bright);text-shadow:0 0 8px var(--crt-glow),0 0 16px rgba(232,214,106,0.2);
   background:var(--metal);border:1px solid var(--rust);border-radius:2px;padding:1px 6px;
   flex-shrink:0;
@@ -2709,7 +2709,7 @@ html, body { background:#050302 !important; }
 
 /* Special Days: move the content higher in each small cutout and make it more readable. */
 #special-days{
-  top:75.35% !important;
+  top:70.35% !important;
   height:14.4% !important;
 }
 #sd-cards{
@@ -4893,6 +4893,452 @@ async function loadAll(){
   });
 })();
 </script>
+
+
+
+<style id="cw2-pass153-lower-bar">
+/* Override glass to 3-column grid */
+#lower-crt .lower-crt-glass {
+  display: grid !important;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+.cw2-lb-div {
+  background: linear-gradient(to bottom,
+    transparent 0%, rgba(180,140,60,.3) 30%,
+    rgba(180,140,60,.3) 70%, transparent 100%);
+  width: 1px;
+  align-self: stretch;
+}
+.cw2-lb-sec {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 2% 4%;
+  overflow: hidden;
+}
+.cw2-lb-lbl {
+  font-family: var(--font-crt, monospace);
+  font-size: clamp(6px, 0.50cqw, 9px);
+  letter-spacing: .18em;
+  color: var(--amber-dim, #6a5a30);
+  margin-bottom: 1%;
+}
+.cw2-lb-main {
+  font-family: var(--font-crt, monospace);
+  font-size: clamp(9px, 0.9cqw, 16px);
+  letter-spacing: .07em;
+  color: var(--crt-primary, #c8a840);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cw2-lb-sub {
+  font-family: var(--font-crt, monospace);
+  font-size: clamp(6px, 0.48cqw, 9px);
+  letter-spacing: .12em;
+  color: var(--amber-dim, #6a5a30);
+  margin-top: 1%;
+  white-space: nowrap;
+}
+/* Pass section */
+#cw2-lb-pass { transition: background 0.6s ease; }
+#cw2-lb-pass.ps-g { background: rgba(50,150,30,.08); }
+#cw2-lb-pass.ps-a { background: rgba(190,150,20,.08); }
+#cw2-lb-pass.ps-r { background: rgba(190,40,20,.08);  }
+.cw2-lb-row { display:flex; align-items:center; gap:.4cqw; }
+.cw2-lb-led {
+  width: clamp(6px,.70cqw,12px);
+  height: clamp(10px,1.20cqh,20px);
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background .5s, box-shadow .5s;
+  background: radial-gradient(circle,#505050 0%,#282828 50%,#0a0a0a 100%);
+}
+#cw2-lb-pass.ps-g .cw2-lb-led {
+  background: radial-gradient(circle,#b0ff70 0%,#40cc00 50%,#1a5800 100%);
+  box-shadow: 0 0 4px 1px #60ee20, 0 0 9px 3px #308010;
+}
+#cw2-lb-pass.ps-a .cw2-lb-led {
+  background: radial-gradient(circle,#ffe878 0%,#d4a000 50%,#584000 100%);
+  box-shadow: 0 0 4px 1px #ffd020, 0 0 9px 3px #906a00;
+  animation: cw2LedPulse 2s ease-in-out infinite;
+}
+#cw2-lb-pass.ps-r .cw2-lb-led {
+  background: radial-gradient(circle,#ff9070 0%,#cc3010 50%,#580800 100%);
+  box-shadow: 0 0 4px 1px #ff4020, 0 0 9px 3px #901020;
+}
+@keyframes cw2LedPulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
+</style>
+
+<script id="cw2-pass153-lower-bar-init">
+/* Build the 3-section inner HTML */
+(function(){
+  function build(){
+    var glass = document.querySelector('#lower-crt .lower-crt-glass');
+    if(!glass){ setTimeout(build,500); return; }
+    glass.innerHTML =
+      '<div class="cw2-lb-sec" id="cw2-lb-period">'
+      + '<div class="cw2-lb-lbl" id="cw2lb-pl">NOW</div>'
+      + '<div class="cw2-lb-main" id="cw2lb-pm">—</div>'
+      + '<div class="cw2-lb-sub"  id="cw2lb-ps">—</div>'
+      +'</div>'
+      +'<div class="cw2-lb-div"></div>'
+      +'<div class="cw2-lb-sec" id="cw2-lb-time">'
+      + '<div class="cw2-lb-lbl" id="cw2lb-tl">TIME</div>'
+      + '<div class="cw2-lb-main" id="cw2lb-tm">—</div>'
+      + '<div class="cw2-lb-sub"  id="cw2lb-ts">—</div>'
+      +'</div>'
+      +'<div class="cw2-lb-div"></div>'
+      +'<div class="cw2-lb-sec" id="cw2-lb-pass">'
+      + '<div class="cw2-lb-lbl">PASSES</div>'
+      + '<div class="cw2-lb-row">'
+      +   '<div class="cw2-lb-led" id="cw2lb-led"></div>'
+      +   '<div class="cw2-lb-main" id="cw2lb-xm">—</div>'
+      + '</div>'
+      + '<div class="cw2-lb-sub" id="cw2lb-xs">—</div>'
+      +'</div>';
+    glass.classList.remove('lower-crt-map');
+  }
+  document.readyState==='loading'
+    ? document.addEventListener('DOMContentLoaded',build)
+    : build();
+})();
+</script>
+
+<script id="cw2-pass153-lower-bar-update">
+(function(){
+  var _toMins = function(t){
+    if(typeof toMins==='function') return toMins(t);
+    var p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]||0);
+  };
+  function fmt(m){
+    var h=Math.floor(m/60),mn=m%60,ap=h>=12?'PM':'AM';
+    h=h%12||12;
+    return h+':'+(mn<10?'0':'')+mn+' '+ap;
+  }
+  function setPass(state,main,sub){
+    var el=document.getElementById('cw2-lb-pass');
+    if(!el)return;
+    el.classList.remove('ps-g','ps-a','ps-r');
+    if(state)el.classList.add(state);
+    var m=document.getElementById('cw2lb-xm'),s=document.getElementById('cw2lb-xs');
+    if(m)m.textContent=main;
+    if(s)s.textContent=sub;
+  }
+  function set(plbl,pmain,psub,tlbl,tmain,tsub){
+    var g=function(id){return document.getElementById(id);};
+    var e=g('cw2lb-pl');if(e)e.textContent=plbl;
+    e=g('cw2lb-pm');if(e)e.textContent=pmain;
+    e=g('cw2lb-ps');if(e)e.textContent=psub;
+    e=g('cw2lb-tl');if(e)e.textContent=tlbl;
+    e=g('cw2lb-tm');if(e)e.textContent=tmain;
+    e=g('cw2lb-ts');if(e)e.textContent=tsub;
+  }
+
+  function update(){
+    if(!document.getElementById('cw2lb-pm')) return;
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    var nm=(typeof nowMins==='function')?nowMins():new Date().getHours()*60+new Date().getMinutes();
+    var ns=(typeof nowSecs==='function')?nowSecs():nm*60+new Date().getSeconds();
+
+    if(!sched){
+      set('STATUS','NO SCHEDULE','—','—','—','—');
+      setPass('','NO CLASS','—'); return;
+    }
+
+    var periods=sched.periods, inP=null, nextP=null;
+    for(var i=0;i<periods.length;i++){
+      var p=periods[i],ps=_toMins(p.start),pe=_toMins(p.end);
+      if(nm>=ps&&nm<pe){inP=p;break;}
+      if(nm<ps&&!nextP)nextP=p;
+    }
+
+    if(inP){
+      var left    = _toMins(inP.end)-nm;
+      var leftSec = _toMins(inP.end)*60-ns;
+      var sinSec  = ns-_toMins(inP.start)*60;
+      var name    = (inP.label||'PERIOD').toUpperCase();
+      var endT    = fmt(_toMins(inP.end));
+      var startT  = fmt(_toMins(inP.start));
+
+      set('NOW', name, startT+' – '+endT,
+          inP.break?'BREAK ENDS':'TIME LEFT',
+          left+' MIN', 'ENDS '+endT);
+
+      if(inP.break){
+        setPass('','NO CLASS','break time');
+      } else if(sinSec<900){
+        setPass('ps-r','HOLD PASSES','FIRST 15 MIN');
+      } else if(leftSec<=900){
+        setPass('ps-r','HOLD PASSES','LAST 15 MIN');
+      } else if(leftSec<=1200){
+        setPass('ps-a','LAST CALL',Math.ceil((leftSec-900)/60)+' MIN TO HOLD');
+      } else {
+        setPass('ps-g','PASSES OK',Math.round((leftSec-900)/60)+' MIN LEFT');
+      }
+
+    } else if(nextP){
+      var mtn=_toMins(nextP.start)-nm;
+      var nName=(nextP.label||'NEXT').toUpperCase();
+      var nStart=fmt(_toMins(nextP.start));
+      if(nm<_toMins(periods[0].start)){
+        set('FIRST UP',nName,'STARTS '+nStart,'FIRST BELL',mtn+' MIN','AT '+nStart);
+        setPass('','NOT YET','school starts soon');
+      } else {
+        set('NEXT UP',nName,'STARTS '+nStart,'PASSING',mtn+' MIN','UNTIL BELL');
+        setPass('ps-g','PASSING','passes OK');
+      }
+    } else {
+      set('STATUS','SCHOOL OVER','see you tomorrow','NEXT CLASS','TOMORROW','—');
+      setPass('','CLOSED','no class');
+    }
+  }
+
+  function start(){
+    if(typeof getSchedule==='undefined'){setTimeout(start,500);return;}
+    update();
+    setInterval(update,15000);
+  }
+  document.readyState==='loading'
+    ? document.addEventListener('DOMContentLoaded',start)
+    : setTimeout(start,1200);
+})();
+</script>
+
+<style id="cw2-pass154-sizing">
+
+/* ── Sport Days: bigger text + breathing room ── */
+#sd-cards .sd-icon {
+  width:  clamp(28px, 2.3vw, 46px) !important;
+  height: clamp(28px, 2.3vw, 46px) !important;
+}
+#sd-cards .sd-title {
+  font-size: clamp(9px, 0.78vw, 14px) !important;
+  line-height: 1.15 !important;
+  -webkit-line-clamp: 2 !important;
+  margin-top: 4% !important;
+}
+#sd-cards .sd-date {
+  font-size: clamp(8px, 0.62vw, 11px) !important;
+  margin-top: 5% !important;
+}
+#sd-cards .sd-days {
+  font-size: clamp(9px, 0.72vw, 13px) !important;
+  margin-top: 3% !important;
+}
+
+/* ── Lower bar: bigger text across all three sections ── */
+.cw2-lb-lbl  { font-size: clamp(7px,  0.62cqw, 11px) !important; }
+.cw2-lb-main { font-size: clamp(12px, 1.15cqw, 21px) !important; }
+.cw2-lb-sub  { font-size: clamp(7px,  0.60cqw, 11px) !important; }
+
+</style>
+
+<style id="cw2-pass155-sdcard-fix">
+#sd-cards .sd-card {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5% !important;
+  padding: 6% 4% !important;
+  grid-template-rows: unset !important;
+}
+#sd-cards .sd-icon {
+  transform: none !important;
+  margin: 0 !important;
+  align-self: center !important;
+}
+#sd-cards .sd-title {
+  transform: none !important;
+  margin: 0 !important;
+  text-align: center !important;
+}
+#sd-cards .sd-date {
+  transform: none !important;
+  margin: 0 !important;
+}
+#sd-cards .sd-days {
+  transform: none !important;
+  margin: 0 !important;
+}
+</style>
+
+<style id="cw2-pass156-sdtitle">
+#sd-cards .sd-title {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: #e8a020 !important;
+  font-size: clamp(9px, 0.78vw, 14px) !important;
+  text-align: center !important;
+  line-height: 1.2 !important;
+  white-space: normal !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+  max-width: 100% !important;
+}
+#sd-cards .sd-card {
+  overflow: visible !important;
+}
+</style>
+
+<style id="cw2-pass157-no-icons">
+#sd-cards .sd-icon {
+  display: none !important;
+}
+</style>
+
+<style id="cw2-pass158-honor-lbl-z">
+#honor-lbl {
+  position: relative !important;
+  z-index: 5 !important;
+  flex-shrink: 0 !important;
+}
+#honor-track {
+  position: relative !important;
+  z-index: 1 !important;
+}
+</style>
+
+<style id="cw2-pass159-sdcard-center">
+#sd-cards .sd-card {
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 6% !important;
+}
+#sd-cards .sd-title,
+#sd-cards .sd-date,
+#sd-cards .sd-days {
+  text-align: center !important;
+  width: 100% !important;
+}
+</style>
+
+<style id="cw2-pass160-sdcard-surgical">
+#sd-cards .sd-card {
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 4% !important;
+  padding: 8% 6% !important;
+  overflow: hidden !important;
+}
+#sd-cards .sd-title {
+  font-size: clamp(10px, 0.85vw, 15px) !important;
+  text-align: center !important;
+  width: 100% !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  line-height: 1.3 !important;
+}
+#sd-cards .sd-date {
+  font-size: clamp(8px, 0.65vw, 12px) !important;
+  text-align: center !important;
+}
+#sd-cards .sd-days {
+  font-size: clamp(10px, 0.80vw, 14px) !important;
+  font-weight: bold !important;
+  text-align: center !important;
+}
+</style>
+
+<style id="cw2-pass161-sdcard-up">
+#sd-cards .sd-card {
+  padding-top: 3% !important;
+  padding-bottom: 13% !important;
+  justify-content: flex-start !important;
+}
+</style>
+
+<style id="cw2-pass162-sdcards-up">
+#sd-cards {
+  margin-top: -5% !important;
+}
+#special-days {
+  padding-top: 0 !important;
+  align-items: flex-start !important;
+}
+</style>
+
+<style id="cw2-pass163-sdcards-position">
+#special-days {
+  top: 73.15% !important;
+}
+</style>
+
+<style id="cw2-pass164-sdcards-transform">
+#special-days {
+  transform: translateY(-43px) !important;
+}
+</style>
+
+<style id="cw2-pass165-sd-final">
+#special-days {
+  transform: translateY(-80px) !important;
+}
+#sd-cards {
+  align-items: stretch !important;
+}
+#sd-cards .sd-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 5% !important;
+}
+#sd-cards .sd-title {
+  font-size: clamp(11px, 0.95vw, 17px) !important;
+  text-align: center !important;
+  line-height: 1.3 !important;
+  width: 100% !important;
+  word-break: break-word !important;
+}
+#sd-cards .sd-date {
+  font-size: clamp(9px, 0.72vw, 13px) !important;
+  text-align: center !important;
+}
+#sd-cards .sd-days {
+  font-size: clamp(13px, 1.05vw, 19px) !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+</style>
+
+<style id="cw2-pass166-sd-specificity">
+body #special-days {
+  transform: translateY(-80px) !important;
+}
+body #sd-cards > .sd-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 5% !important;
+}
+body #sd-cards > .sd-card > .sd-title {
+  font-size: clamp(11px, 0.95vw, 17px) !important;
+  text-align: center !important;
+  width: 100% !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+}
+body #sd-cards > .sd-card > .sd-date {
+  font-size: clamp(9px, 0.72vw, 13px) !important;
+  text-align: center !important;
+}
+body #sd-cards > .sd-card > .sd-days {
+  font-size: clamp(13px, 1.05vw, 19px) !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+</style>
 
 </body>
 </html>
@@ -12238,431 +12684,3 @@ async function loadAll(){
   init();
 })();
 </script>
-<!-- PASS 153 — Lower CRT 3-section redesign
-     Period | Time Left | Pass Status (green/amber/red LED)
--->
-<style id="cw2-pass153-lower-bar">
-/* Override glass to 3-column grid */
-#lower-crt .lower-crt-glass {
-  display: grid !important;
-  grid-template-columns: 1fr 1px 1fr 1px 1fr !important;
-  padding: 0 !important;
-  gap: 0 !important;
-  align-items: stretch !important;
-  overflow: hidden !important;
-}
-.cw2-lb-div {
-  background: linear-gradient(to bottom,
-    transparent 0%, rgba(180,140,60,.3) 30%,
-    rgba(180,140,60,.3) 70%, transparent 100%);
-  width: 1px;
-  align-self: stretch;
-}
-.cw2-lb-sec {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 2% 4%;
-  overflow: hidden;
-}
-.cw2-lb-lbl {
-  font-family: var(--font-crt, monospace);
-  font-size: clamp(6px, 0.50cqw, 9px);
-  letter-spacing: .18em;
-  color: var(--amber-dim, #6a5a30);
-  margin-bottom: 1%;
-}
-.cw2-lb-main {
-  font-family: var(--font-crt, monospace);
-  font-size: clamp(9px, 0.9cqw, 16px);
-  letter-spacing: .07em;
-  color: var(--crt-primary, #c8a840);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cw2-lb-sub {
-  font-family: var(--font-crt, monospace);
-  font-size: clamp(6px, 0.48cqw, 9px);
-  letter-spacing: .12em;
-  color: var(--amber-dim, #6a5a30);
-  margin-top: 1%;
-  white-space: nowrap;
-}
-/* Pass section */
-#cw2-lb-pass { transition: background 0.6s ease; }
-#cw2-lb-pass.ps-g { background: rgba(50,150,30,.08); }
-#cw2-lb-pass.ps-a { background: rgba(190,150,20,.08); }
-#cw2-lb-pass.ps-r { background: rgba(190,40,20,.08);  }
-.cw2-lb-row { display:flex; align-items:center; gap:.4cqw; }
-.cw2-lb-led {
-  width: clamp(6px,.70cqw,12px);
-  height: clamp(10px,1.20cqh,20px);
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: background .5s, box-shadow .5s;
-  background: radial-gradient(circle,#505050 0%,#282828 50%,#0a0a0a 100%);
-}
-#cw2-lb-pass.ps-g .cw2-lb-led {
-  background: radial-gradient(circle,#b0ff70 0%,#40cc00 50%,#1a5800 100%);
-  box-shadow: 0 0 4px 1px #60ee20, 0 0 9px 3px #308010;
-}
-#cw2-lb-pass.ps-a .cw2-lb-led {
-  background: radial-gradient(circle,#ffe878 0%,#d4a000 50%,#584000 100%);
-  box-shadow: 0 0 4px 1px #ffd020, 0 0 9px 3px #906a00;
-  animation: cw2LedPulse 2s ease-in-out infinite;
-}
-#cw2-lb-pass.ps-r .cw2-lb-led {
-  background: radial-gradient(circle,#ff9070 0%,#cc3010 50%,#580800 100%);
-  box-shadow: 0 0 4px 1px #ff4020, 0 0 9px 3px #901020;
-}
-@keyframes cw2LedPulse { 0%,100%{opacity:1;} 50%{opacity:.55;} }
-</style>
-
-<script id="cw2-pass153-lower-bar-init">
-/* Build the 3-section inner HTML */
-(function(){
-  function build(){
-    var glass = document.querySelector('#lower-crt .lower-crt-glass');
-    if(!glass){ setTimeout(build,500); return; }
-    glass.innerHTML =
-      '<div class="cw2-lb-sec" id="cw2-lb-period">'
-      + '<div class="cw2-lb-lbl" id="cw2lb-pl">NOW</div>'
-      + '<div class="cw2-lb-main" id="cw2lb-pm">—</div>'
-      + '<div class="cw2-lb-sub"  id="cw2lb-ps">—</div>'
-      +'</div>'
-      +'<div class="cw2-lb-div"></div>'
-      +'<div class="cw2-lb-sec" id="cw2-lb-time">'
-      + '<div class="cw2-lb-lbl" id="cw2lb-tl">TIME</div>'
-      + '<div class="cw2-lb-main" id="cw2lb-tm">—</div>'
-      + '<div class="cw2-lb-sub"  id="cw2lb-ts">—</div>'
-      +'</div>'
-      +'<div class="cw2-lb-div"></div>'
-      +'<div class="cw2-lb-sec" id="cw2-lb-pass">'
-      + '<div class="cw2-lb-lbl">PASSES</div>'
-      + '<div class="cw2-lb-row">'
-      +   '<div class="cw2-lb-led" id="cw2lb-led"></div>'
-      +   '<div class="cw2-lb-main" id="cw2lb-xm">—</div>'
-      + '</div>'
-      + '<div class="cw2-lb-sub" id="cw2lb-xs">—</div>'
-      +'</div>';
-    glass.classList.remove('lower-crt-map');
-  }
-  document.readyState==='loading'
-    ? document.addEventListener('DOMContentLoaded',build)
-    : build();
-})();
-</script>
-
-<script id="cw2-pass153-lower-bar-update">
-(function(){
-  var _toMins = function(t){
-    if(typeof toMins==='function') return toMins(t);
-    var p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]||0);
-  };
-  function fmt(m){
-    var h=Math.floor(m/60),mn=m%60,ap=h>=12?'PM':'AM';
-    h=h%12||12;
-    return h+':'+(mn<10?'0':'')+mn+' '+ap;
-  }
-  function setPass(state,main,sub){
-    var el=document.getElementById('cw2-lb-pass');
-    if(!el)return;
-    el.classList.remove('ps-g','ps-a','ps-r');
-    if(state)el.classList.add(state);
-    var m=document.getElementById('cw2lb-xm'),s=document.getElementById('cw2lb-xs');
-    if(m)m.textContent=main;
-    if(s)s.textContent=sub;
-  }
-  function set(plbl,pmain,psub,tlbl,tmain,tsub){
-    var g=function(id){return document.getElementById(id);};
-    var e=g('cw2lb-pl');if(e)e.textContent=plbl;
-    e=g('cw2lb-pm');if(e)e.textContent=pmain;
-    e=g('cw2lb-ps');if(e)e.textContent=psub;
-    e=g('cw2lb-tl');if(e)e.textContent=tlbl;
-    e=g('cw2lb-tm');if(e)e.textContent=tmain;
-    e=g('cw2lb-ts');if(e)e.textContent=tsub;
-  }
-
-  function update(){
-    if(!document.getElementById('cw2lb-pm')) return;
-    var sched=(typeof getSchedule==='function')?getSchedule():null;
-    var nm=(typeof nowMins==='function')?nowMins():new Date().getHours()*60+new Date().getMinutes();
-    var ns=(typeof nowSecs==='function')?nowSecs():nm*60+new Date().getSeconds();
-
-    if(!sched){
-      set('STATUS','NO SCHEDULE','—','—','—','—');
-      setPass('','NO CLASS','—'); return;
-    }
-
-    var periods=sched.periods, inP=null, nextP=null;
-    for(var i=0;i<periods.length;i++){
-      var p=periods[i],ps=_toMins(p.start),pe=_toMins(p.end);
-      if(nm>=ps&&nm<pe){inP=p;break;}
-      if(nm<ps&&!nextP)nextP=p;
-    }
-
-    if(inP){
-      var left    = _toMins(inP.end)-nm;
-      var leftSec = _toMins(inP.end)*60-ns;
-      var sinSec  = ns-_toMins(inP.start)*60;
-      var name    = (inP.label||'PERIOD').toUpperCase();
-      var endT    = fmt(_toMins(inP.end));
-      var startT  = fmt(_toMins(inP.start));
-
-      set('NOW', name, startT+' – '+endT,
-          inP.break?'BREAK ENDS':'TIME LEFT',
-          left+' MIN', 'ENDS '+endT);
-
-      if(inP.break){
-        setPass('','NO CLASS','break time');
-      } else if(sinSec<900){
-        setPass('ps-r','HOLD PASSES','FIRST 15 MIN');
-      } else if(leftSec<=900){
-        setPass('ps-r','HOLD PASSES','LAST 15 MIN');
-      } else if(leftSec<=1200){
-        setPass('ps-a','LAST CALL',Math.ceil((leftSec-900)/60)+' MIN TO HOLD');
-      } else {
-        setPass('ps-g','PASSES OK',Math.round((leftSec-900)/60)+' MIN LEFT');
-      }
-
-    } else if(nextP){
-      var mtn=_toMins(nextP.start)-nm;
-      var nName=(nextP.label||'NEXT').toUpperCase();
-      var nStart=fmt(_toMins(nextP.start));
-      if(nm<_toMins(periods[0].start)){
-        set('FIRST UP',nName,'STARTS '+nStart,'FIRST BELL',mtn+' MIN','AT '+nStart);
-        setPass('','NOT YET','school starts soon');
-      } else {
-        set('NEXT UP',nName,'STARTS '+nStart,'PASSING',mtn+' MIN','UNTIL BELL');
-        setPass('ps-g','PASSING','passes OK');
-      }
-    } else {
-      set('STATUS','SCHOOL OVER','see you tomorrow','NEXT CLASS','TOMORROW','—');
-      setPass('','CLOSED','no class');
-    }
-  }
-
-  function start(){
-    if(typeof getSchedule==='undefined'){setTimeout(start,500);return;}
-    update();
-    setInterval(update,15000);
-  }
-  document.readyState==='loading'
-    ? document.addEventListener('DOMContentLoaded',start)
-    : setTimeout(start,1200);
-})();
-</script>
-<!-- PASS 154 — Sport days readability + lower bar text size bump -->
-<style id="cw2-pass154-sizing">
-
-/* ── Sport Days: bigger text + breathing room ── */
-#sd-cards .sd-icon {
-  width:  clamp(28px, 2.3vw, 46px) !important;
-  height: clamp(28px, 2.3vw, 46px) !important;
-}
-#sd-cards .sd-title {
-  font-size: clamp(9px, 0.78vw, 14px) !important;
-  line-height: 1.15 !important;
-  -webkit-line-clamp: 2 !important;
-  margin-top: 4% !important;
-}
-#sd-cards .sd-date {
-  font-size: clamp(8px, 0.62vw, 11px) !important;
-  margin-top: 5% !important;
-}
-#sd-cards .sd-days {
-  font-size: clamp(9px, 0.72vw, 13px) !important;
-  margin-top: 3% !important;
-}
-
-/* ── Lower bar: bigger text across all three sections ── */
-.cw2-lb-lbl  { font-size: clamp(7px,  0.62cqw, 11px) !important; }
-.cw2-lb-main { font-size: clamp(12px, 1.15cqw, 21px) !important; }
-.cw2-lb-sub  { font-size: clamp(7px,  0.60cqw, 11px) !important; }
-
-</style>
-<!-- PASS 155 — Sport days card layout reset: flex column, even spacing -->
-<style id="cw2-pass155-sdcard-fix">
-#sd-cards .sd-card {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 5% !important;
-  padding: 6% 4% !important;
-  grid-template-rows: unset !important;
-}
-#sd-cards .sd-icon {
-  transform: none !important;
-  margin: 0 !important;
-  align-self: center !important;
-}
-#sd-cards .sd-title {
-  transform: none !important;
-  margin: 0 !important;
-  text-align: center !important;
-}
-#sd-cards .sd-date {
-  transform: none !important;
-  margin: 0 !important;
-}
-#sd-cards .sd-days {
-  transform: none !important;
-  margin: 0 !important;
-}
-</style>
-<!-- PASS 156 — force sd-title visible -->
-<style id="cw2-pass156-sdtitle">
-#sd-cards .sd-title {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  color: #e8a020 !important;
-  font-size: clamp(9px, 0.78vw, 14px) !important;
-  text-align: center !important;
-  line-height: 1.2 !important;
-  white-space: normal !important;
-  flex-shrink: 0 !important;
-  overflow: visible !important;
-  max-width: 100% !important;
-}
-#sd-cards .sd-card {
-  overflow: visible !important;
-}
-</style>
-<!-- PASS 159 — center sd-card content -->
-<style id="cw2-pass159-sdcard-center">
-#sd-cards .sd-card {
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-  gap: 6% !important;
-}
-#sd-cards .sd-title,
-#sd-cards .sd-date,
-#sd-cards .sd-days {
-  text-align: center !important;
-  width: 100% !important;
-}
-</style>
-<!-- PASS 160 — sd-card surgical centering -->
-<style id="cw2-pass160-sdcard-surgical">
-#sd-cards .sd-card {
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 4% !important;
-  padding: 8% 6% !important;
-  overflow: hidden !important;
-}
-#sd-cards .sd-title {
-  font-size: clamp(10px, 0.85vw, 15px) !important;
-  text-align: center !important;
-  width: 100% !important;
-  white-space: normal !important;
-  word-break: break-word !important;
-  line-height: 1.3 !important;
-}
-#sd-cards .sd-date {
-  font-size: clamp(8px, 0.65vw, 12px) !important;
-  text-align: center !important;
-}
-#sd-cards .sd-days {
-  font-size: clamp(10px, 0.80vw, 14px) !important;
-  font-weight: bold !important;
-  text-align: center !important;
-}
-</style>
-<!-- PASS 161 — shift sd-card content up 5% -->
-<style id="cw2-pass161-sdcard-up">
-#sd-cards .sd-card {
-  padding-top: 3% !important;
-  padding-bottom: 13% !important;
-  justify-content: flex-start !important;
-}
-</style>
-<!-- PASS 162 — push sd-cards row up -->
-<style id="cw2-pass162-sdcards-up">
-#sd-cards {
-  margin-top: -5% !important;
-}
-#special-days {
-  padding-top: 0 !important;
-  align-items: flex-start !important;
-}
-</style>
-<!-- PASS 163 — move special-days up 5% -->
-<style id="cw2-pass163-sdcards-position">
-#special-days {
-  top: 73.15% !important;
-}
-</style>
-<!-- PASS 164 — move special-days up via transform -->
-<style id="cw2-pass164-sdcards-transform">
-#special-days {
-  transform: translateY(-43px) !important;
-}
-</style>
-<!-- PASS 165 — sport days: move up, bigger fonts, centered -->
-<style id="cw2-pass165-sd-final">
-#special-days {
-  transform: translateY(-80px) !important;
-}
-#sd-cards {
-  align-items: stretch !important;
-}
-#sd-cards .sd-card {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-  gap: 5% !important;
-}
-#sd-cards .sd-title {
-  font-size: clamp(11px, 0.95vw, 17px) !important;
-  text-align: center !important;
-  line-height: 1.3 !important;
-  width: 100% !important;
-  word-break: break-word !important;
-}
-#sd-cards .sd-date {
-  font-size: clamp(9px, 0.72vw, 13px) !important;
-  text-align: center !important;
-}
-#sd-cards .sd-days {
-  font-size: clamp(13px, 1.05vw, 19px) !important;
-  text-align: center !important;
-  font-weight: bold !important;
-}
-</style>
-<!-- PASS 166 — sd-card content: force with higher specificity -->
-<style id="cw2-pass166-sd-specificity">
-body #special-days {
-  transform: translateY(-80px) !important;
-}
-body #sd-cards > .sd-card {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-  gap: 5% !important;
-}
-body #sd-cards > .sd-card > .sd-title {
-  font-size: clamp(11px, 0.95vw, 17px) !important;
-  text-align: center !important;
-  width: 100% !important;
-  line-height: 1.3 !important;
-  word-break: break-word !important;
-}
-body #sd-cards > .sd-card > .sd-date {
-  font-size: clamp(9px, 0.72vw, 13px) !important;
-  text-align: center !important;
-}
-body #sd-cards > .sd-card > .sd-days {
-  font-size: clamp(13px, 1.05vw, 19px) !important;
-  text-align: center !important;
-  font-weight: bold !important;
-}
-</style>
