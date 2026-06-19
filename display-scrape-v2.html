@@ -1497,18 +1497,47 @@ async function renderHonorRoll(){
     }
     var firstStart=tm(sched.periods[0].start);
     var lastEnd=tm(sched.periods[sched.periods.length-1].end);
-    var inPeriod=sched.periods.some(function(p){ return nm>=tm(p.start)&&nm<tm(p.end); });
+
+    // Find which period we're currently in (if any)
+    var curPeriod=null;
+    sched.periods.forEach(function(p){ if(nm>=tm(p.start)&&nm<tm(p.end)) curPeriod=p; });
+    var inPeriod=(curPeriod!==null);
+    var isBreak=(inPeriod && !!curPeriod.brk);  // brunch or lunch
+
+    // During a break, find when the next class period starts
+    var nextClassStart=null;
+    if(isBreak){
+      for(var i=0;i<sched.periods.length;i++){
+        var ps=tm(sched.periods[i].start);
+        if(!sched.periods[i].brk && ps>nm){ nextClassStart=ps; break; }
+      }
+    }
+
     var afterSchool=(nm>=lastEnd);
     var longBefore=(nm<firstStart-60);
-    if(inPeriod){
-      // Class in session — show bell schedule (rotate with objectives in future)
+
+    if(inPeriod && !isBreak){
+      // Class in session → bell schedule (future: rotate with objectives)
       _clearOff(); _stopNews();
       if(_last!=='bell'){ _renderBell(); _last='bell'; }
+
+    } else if(isBreak){
+      // Brunch or lunch — show news; switch to bell 2 min before next class
+      var nearEnd=(nextClassStart!==null && (nextClassStart-nm)<=2);
+      if(nearEnd){
+        _clearOff(); _stopNews();
+        if(_last!=='bell'){ _renderBell(); _last='bell'; }
+      } else {
+        _clearOff();
+        if(_last!=='news'){ _startNews(); _last='news'; }
+      }
+
     } else if(afterSchool||longBefore){
-      // Off hours — standby → data → news loop
+      // Off hours → standby → data → news loop
       if(_last!=='off'){ _startOffSequence(); _last='off'; }
+
     } else {
-      // Passing, brunch, lunch, or approaching school — bell schedule
+      // Passing period or <60 min before school → bell schedule
       _clearOff(); _stopNews();
       if(_last!=='bell'){ _renderBell(); _last='bell'; }
     }
