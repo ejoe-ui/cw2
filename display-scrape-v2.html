@@ -338,10 +338,10 @@ html, body {
   padding: 4px 8px; gap: 2px;
 }
 #st-mins-num {
-  font-family: var(--font-crt); font-size: 46px;
+  font-family: var(--font-crt); font-size: 38px;
   color: var(--cw-highlight); line-height: 1;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 16px rgba(240,208,96,0.5);
+  text-shadow: 0 0 14px rgba(240,208,96,0.5);
 }
 #st-mins-lbl {
   font-family: var(--font-mono); font-size: 11px;
@@ -352,6 +352,8 @@ html, body {
 /* 1-minute warning flash */
 @keyframes minWarn { 0%,100%{opacity:1} 50%{opacity:0.15} }
 .flashing { animation: minWarn 1.4s ease-in-out infinite; }
+/* Active pip gentle pulse */
+@keyframes pipPulse { 0%,100%{opacity:0.78} 50%{opacity:0.48} }
 /* RIGHT — pass policy */
 #st-right {
   flex: 0 0 188px; display: flex; flex-direction: column;
@@ -524,8 +526,8 @@ html, body {
 /* scanlines — barely-there, just texture */
 #p-photo::before {
   content: '';
-  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .28;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,.6) 0px, rgba(0,0,0,.6) 1px, transparent 1px, transparent 6px);
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .13;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.7) 0px, rgba(0,0,0,.7) 1px, transparent 1px, transparent 10px);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1786,8 +1788,17 @@ setInterval(function(){ updateSoundBulbs(Math.floor(Math.random()*3)); },1200);
   }
 
   function showPip(idx){
-    /* slow crossfade: active → full, all others → dim */
-    pips.forEach(function(p,i){ setOp(p, i===idx ? 1 : DIM); });
+    /* crossfade: active gets gentle pulse, others go dim */
+    pips.forEach(function(p,i){
+      if(!p) return;
+      if(i===idx){
+        p.style.opacity='';  /* let animation control */
+        p.style.animation='pipPulse 2.8s ease-in-out infinite';
+      } else {
+        p.style.animation='none';
+        setOp(p, DIM);
+      }
+    });
   }
 
   var lastPhase=-1;
