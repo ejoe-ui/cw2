@@ -812,10 +812,10 @@ html, body {
 @keyframes bdayRainbow { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
 
 #bulb-big {
-  width: 20px; height: 20px;
+  width: 26px; height: 26px;
   /* initial amber — JS overrides once pass policy is known */
   background: radial-gradient(circle at 38% 38%, #ffe090, var(--cw-amber) 55%, #c07020);
-  box-shadow: 0 0 6px rgba(200,168,64,0.45), 0 0 12px rgba(200,168,64,0.18);
+  box-shadow: 0 0 8px rgba(200,168,64,0.50), 0 0 16px rgba(200,168,64,0.20);
   animation: bodyMuted 5s ease-in-out infinite;
 }
 #bulb-small {
@@ -1821,11 +1821,53 @@ async function renderHonorRoll(){
   };
 })();
 
-/* SCRAP-E EYES — blink + subtle look-around */
-var eyeBlinkT=null, eyeLookT=null;
+/* SCRAP-E EYES — blink + random look-around + mouse tracking
+   Mouse moves → pupils follow cursor subtly (max 5px).
+   Mouse idle 2s → resume random movements.                    */
+var eyeBlinkT=null, eyeLookT=null, mouseIdleT=null;
+var eyeTracking=false;
+
 function startEyes(){
-  scheduleBlink(); scheduleLook();
+  scheduleBlink();
+  scheduleLook();
+
+  document.addEventListener('mousemove', function(e){
+    /* switch to tracking mode */
+    if(!eyeTracking){
+      eyeTracking=true;
+      clearTimeout(eyeLookT); eyeLookT=null;
+    }
+    trackEyesToMouse(e.clientX, e.clientY);
+    /* restart idle timer */
+    clearTimeout(mouseIdleT);
+    mouseIdleT=setTimeout(function(){
+      eyeTracking=false;
+      scheduleLook(); /* hand back to random */
+    }, 2000);
+  });
 }
+
+function trackEyesToMouse(mx, my){
+  var eyesEl=document.getElementById('p-eyes');
+  if(!eyesEl) return;
+  var r=eyesEl.getBoundingClientRect();
+  var cx=r.left+r.width/2, cy=r.top+r.height/2;
+  var dx=mx-cx, dy=my-cy;
+  var dist=Math.sqrt(dx*dx+dy*dy)||1;
+  var pull=Math.min(1, dist/260); /* ramps up over 260px from center */
+  var MAX=5;
+  var nx=(dx/dist)*pull*MAX, ny=(dy/dist)*pull*MAX;
+  setPupils(nx.toFixed(1), ny.toFixed(1));
+}
+
+function setPupils(dx, dy){
+  var pl=document.getElementById('pupil-left');
+  var pr=document.getElementById('pupil-right');
+  var t='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
+  if(pl) pl.style.transform=t;
+  if(pr) pr.style.transform=t;
+}
+
 function scheduleBlink(){
   var left=document.getElementById('eye-left');
   var right=document.getElementById('eye-right');
@@ -1838,14 +1880,11 @@ function scheduleBlink(){
   }
   eyeBlinkT=setTimeout(scheduleBlink, 2800+Math.random()*3200);
 }
+
 function scheduleLook(){
-  var pl=document.getElementById('pupil-left');
-  var pr=document.getElementById('pupil-right');
-  if(pl&&pr){
-    var dx=(Math.random()*2-1)*5, dy=(Math.random()*2-1)*3;
-    pl.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
-    pr.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
-  }
+  if(eyeTracking) return; /* mouse has control — don't interrupt */
+  var dx=(Math.random()*2-1)*5, dy=(Math.random()*2-1)*3;
+  setPupils(dx.toFixed(1), dy.toFixed(1));
   eyeLookT=setTimeout(scheduleLook, 1800+Math.random()*2400);
 }
 
@@ -1969,11 +2008,18 @@ function scheduleLook(){
     return 'rgba(200,168,64,0.85)';
   }
 
+  /* centreOut(i,n): maps bar index to frequency bin so bass is in
+     the middle and treble fans out to both edges symmetrically.   */
+  function centreOut(i,n){
+    var half=Math.floor(n/2);
+    return i<half ? (half-1-i) : (i-half);
+  }
+
   function drawBars(ctx,data,sens){
     var W=canvas.width, H=canvas.height, n=data.length;
     var bw=Math.floor((W-(n-1)*2)/n);
     for(var i=0;i<n;i++){
-      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
       var h=Math.max(2,Math.round(v*H));
       var x=i*(bw+2);
       ctx.fillStyle=barCol(v);
@@ -1985,11 +2031,10 @@ function scheduleLook(){
   }
 
   function drawWave(ctx,data){
+    /* wave stays time-domain — full left-to-right is correct here */
     var W=canvas.width, H=canvas.height, mid=H/2;
-    /* center line */
     ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.1)'; ctx.lineWidth=1;
     ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
-    /* wave */
     ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.8)'; ctx.lineWidth=1.8;
     var sw=W/data.length;
     for(var i=0;i<data.length;i++){
@@ -1997,7 +2042,6 @@ function scheduleLook(){
       i===0?ctx.moveTo(0,y):ctx.lineTo(i*sw,y);
     }
     ctx.stroke();
-    /* filled area under wave */
     ctx.lineTo(W,mid); ctx.lineTo(0,mid); ctx.closePath();
     ctx.fillStyle='rgba(200,168,64,0.06)'; ctx.fill();
   }
@@ -2006,7 +2050,7 @@ function scheduleLook(){
     var W=canvas.width, H=canvas.height, n=data.length;
     var bw=Math.floor((W-(n-1)*2)/n);
     for(var i=0;i<n;i++){
-      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
       var cx=i*(bw+2)+bw/2, r=Math.max(2,bw/2);
       var cy=H-Math.max(r,v*H);
       var grd=ctx.createRadialGradient(cx,cy,0,cx,cy,r*2.5);
@@ -2017,10 +2061,11 @@ function scheduleLook(){
   }
 
   function drawMirror(ctx,data,sens){
+    /* vertical mirror (top+bottom) also benefits from centre-out horizontally */
     var W=canvas.width, H=canvas.height, mid=H/2, n=data.length;
     var bw=Math.floor((W-(n-1)*2)/n);
     for(var i=0;i<n;i++){
-      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
       var h=Math.max(2,Math.round(v*mid*0.96));
       var x=i*(bw+2);
       ctx.fillStyle=barCol(v);
@@ -2050,9 +2095,11 @@ function scheduleLook(){
       ctx.clearRect(0,0,canvas.width,canvas.height);
       var W=canvas.width, H=canvas.height, n=22;
       var bw=Math.floor((W-(n-1)*2)/n);
+      var t=Date.now()/900;
       for(var i=0;i<n;i++){
-        var t=Date.now()/900;
-        var v=Math.abs(Math.sin(t+i*0.55))*0.58+Math.random()*0.10;
+        /* centre-out: bass swell in middle, treble at edges */
+        var bin=centreOut(i,n);
+        var v=Math.abs(Math.sin(t+bin*0.55))*0.58+Math.random()*0.10;
         var h=Math.max(3,Math.round(v*H*0.85));
         ctx.fillStyle='rgba(200,168,64,'+(0.22+v*0.38)+')';
         ctx.fillRect(i*(bw+2),H-h,bw,h);
