@@ -5341,31 +5341,36 @@ body #sd-cards > .sd-card > .sd-days {
 </style>
 
 
-<!-- Pass 167: center cards + bigger visible titles + fix overflow clipping -->
-<style id="cw2-pass167-final2">
-/* Center cards in the dark box (y=600-770, box h≈170, card h≈91 → center at translateY(-5px)) */
+<!-- Pass 167: center cards + cancel per-card translateY that clips titles -->
+<style id="cw2-pass167-final3">
+/* Shift the whole group down slightly to align with dark box centers */
 body #special-days {
   transform: translateY(-5px) !important;
 }
-/* Remove overflow clipping so titles aren't cut */
+
+/* CRITICAL FIX: each .sd-card has translateY(-20.7px) from older passes.
+   This pushes the title ABOVE #sd-cards overflow:hidden → titles clip and vanish.
+   Cancel it here, then re-center content inside the card. */
+body #sd-cards {
+  overflow: visible !important;
+}
 body #sd-cards > .sd-card {
+  transform: none !important;
   overflow: visible !important;
   justify-content: center !important;
   align-items: center !important;
   padding: 4% 6% !important;
-  gap: 3% !important;
+  gap: 4% !important;
 }
-/* Title: bigger font, no clipping */
 body #sd-cards > .sd-card > .sd-title {
   overflow: visible !important;
+  height: auto !important;
   font-size: clamp(9px, 0.78vw, 13px) !important;
   text-align: center !important;
   line-height: 1.35 !important;
   white-space: normal !important;
   word-break: break-word !important;
   width: 100% !important;
-  min-height: 0 !important;
-  height: auto !important;
   color: var(--crt-primary, #c8a840) !important;
 }
 body #sd-cards > .sd-card > .sd-date {
