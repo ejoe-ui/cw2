@@ -5341,35 +5341,43 @@ body #sd-cards > .sd-card > .sd-days {
 </style>
 
 
-<!-- Pass 167: center cards in dark boxes + fix vertical centering within cards -->
-<style id="cw2-pass167-centered">
-/* translateY(-5px): puts 91px card center at y=685 = center of 170px dark box (y=600-770) */
+<!-- Pass 167: center cards + bigger visible titles + fix overflow clipping -->
+<style id="cw2-pass167-final2">
+/* Center cards in the dark box (y=600-770, box h≈170, card h≈91 → center at translateY(-5px)) */
 body #special-days {
   transform: translateY(-5px) !important;
 }
-/* Center text within each card, override Pass 161 flex-start */
+/* Remove overflow clipping so titles aren't cut */
 body #sd-cards > .sd-card {
+  overflow: visible !important;
   justify-content: center !important;
   align-items: center !important;
-  padding: 5% 6% !important;
-  gap: 4% !important;
+  padding: 4% 6% !important;
+  gap: 3% !important;
 }
+/* Title: bigger font, no clipping */
 body #sd-cards > .sd-card > .sd-title {
-  font-size: clamp(10px, 0.85vw, 14px) !important;
+  overflow: visible !important;
+  font-size: clamp(9px, 0.78vw, 13px) !important;
   text-align: center !important;
-  line-height: 1.2 !important;
+  line-height: 1.35 !important;
   white-space: normal !important;
   word-break: break-word !important;
   width: 100% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  color: var(--crt-primary, #c8a840) !important;
 }
 body #sd-cards > .sd-card > .sd-date {
-  font-size: clamp(8px, 0.65vw, 11px) !important;
+  font-size: clamp(7px, 0.60vw, 10px) !important;
   text-align: center !important;
+  opacity: 0.8 !important;
 }
 body #sd-cards > .sd-card > .sd-days {
-  font-size: clamp(12px, 0.92vw, 17px) !important;
+  font-size: clamp(13px, 1.05vw, 18px) !important;
   font-weight: bold !important;
   text-align: center !important;
+  color: var(--crt-bright, #f0d060) !important;
 }
 </style>
 </body>
