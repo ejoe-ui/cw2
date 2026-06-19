@@ -5341,22 +5341,23 @@ body #sd-cards > .sd-card > .sd-days {
 </style>
 
 
-<!-- Pass 167: fine-tune position + fix centering blocked by Pass 161 -->
-<style id="cw2-pass167-final">
+<!-- Pass 167: center cards in dark boxes + fix vertical centering within cards -->
+<style id="cw2-pass167-centered">
+/* translateY(-5px): puts 91px card center at y=685 = center of 170px dark box (y=600-770) */
 body #special-days {
-  transform: translateY(-28px) !important;
+  transform: translateY(-5px) !important;
 }
-/* Override Pass 161 flex-start — center content in each card */
+/* Center text within each card, override Pass 161 flex-start */
 body #sd-cards > .sd-card {
   justify-content: center !important;
   align-items: center !important;
-  padding: 8% 4% !important;
-  gap: 6% !important;
+  padding: 5% 6% !important;
+  gap: 4% !important;
 }
 body #sd-cards > .sd-card > .sd-title {
   font-size: clamp(10px, 0.85vw, 14px) !important;
   text-align: center !important;
-  line-height: 1.25 !important;
+  line-height: 1.2 !important;
   white-space: normal !important;
   word-break: break-word !important;
   width: 100% !important;
@@ -5366,7 +5367,7 @@ body #sd-cards > .sd-card > .sd-date {
   text-align: center !important;
 }
 body #sd-cards > .sd-card > .sd-days {
-  font-size: clamp(11px, 0.90vw, 16px) !important;
+  font-size: clamp(12px, 0.92vw, 17px) !important;
   font-weight: bold !important;
   text-align: center !important;
 }
