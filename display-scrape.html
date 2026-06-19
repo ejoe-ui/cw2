@@ -5341,16 +5341,13 @@ body #sd-cards > .sd-card > .sd-days {
 </style>
 
 
-<!-- Pass 167: center cards + cancel per-card translateY that clips titles -->
-<style id="cw2-pass167-final3">
-/* Shift the whole group down slightly to align with dark box centers */
+<!-- Pass 167 + 168: fix sport day card titles via CSS + JS inline override -->
+<style id="cw2-pass167-final4">
+/* Unlock overflow at ALL three levels that were clipping the titles */
 body #special-days {
   transform: translateY(-5px) !important;
+  overflow: visible !important;
 }
-
-/* CRITICAL FIX: each .sd-card has translateY(-20.7px) from older passes.
-   This pushes the title ABOVE #sd-cards overflow:hidden → titles clip and vanish.
-   Cancel it here, then re-center content inside the card. */
 body #sd-cards {
   overflow: visible !important;
 }
@@ -5376,7 +5373,6 @@ body #sd-cards > .sd-card > .sd-title {
 body #sd-cards > .sd-card > .sd-date {
   font-size: clamp(7px, 0.60vw, 10px) !important;
   text-align: center !important;
-  opacity: 0.8 !important;
 }
 body #sd-cards > .sd-card > .sd-days {
   font-size: clamp(13px, 1.05vw, 18px) !important;
@@ -5385,6 +5381,59 @@ body #sd-cards > .sd-card > .sd-days {
   color: var(--crt-bright, #f0d060) !important;
 }
 </style>
+<script id="cw2-pass168-sd-inline-fix">
+/* JS override — sets inline styles which win over any CSS including !important
+   Uses MutationObserver + interval to survive card re-renders */
+(function() {
+  function fixSdCards() {
+    var special = document.getElementById('special-days');
+    if (special) { special.style.overflow = 'visible'; }
+
+    var sdCards = document.getElementById('sd-cards');
+    if (!sdCards) return;
+    sdCards.style.overflow = 'visible';
+
+    sdCards.querySelectorAll('.sd-card').forEach(function(card) {
+      card.style.transform = 'none';
+      card.style.overflow = 'visible';
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.justifyContent = 'center';
+      card.style.alignItems = 'center';
+
+      var title = card.querySelector('.sd-title');
+      if (title) {
+        title.style.overflow = 'visible';
+        title.style.height = 'auto';
+        title.style.textAlign = 'center';
+        title.style.whiteSpace = 'normal';
+        title.style.wordBreak = 'break-word';
+        title.style.width = '100%';
+      }
+      var date = card.querySelector('.sd-date');
+      if (date) { date.style.textAlign = 'center'; }
+      var days = card.querySelector('.sd-days');
+      if (days) { days.style.textAlign = 'center'; }
+    });
+  }
+
+  function init() {
+    fixSdCards();
+    var sdCards = document.getElementById('sd-cards');
+    if (sdCards) {
+      new MutationObserver(function() { setTimeout(fixSdCards, 30); })
+        .observe(sdCards, { childList: true, subtree: true });
+    }
+    setInterval(fixSdCards, 3000);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
 </body>
 </html>
 <style>
