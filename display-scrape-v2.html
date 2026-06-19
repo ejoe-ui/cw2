@@ -407,8 +407,28 @@ html, body {
   display: flex; flex-direction: column; gap: 8px;
 }
 #sound-bars {
-  flex: 1; display: flex; align-items: flex-end; gap: 4px;
+  flex: 1; position: relative; overflow: hidden;
 }
+#sound-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+}
+/* Sound meter interactive controls */
+#snd-toggle-btn, #snd-style-btn {
+  cursor: pointer; transition: color 0.2s;
+}
+#snd-toggle-btn:hover { color: var(--cw-highlight); }
+#snd-style-btn { color: var(--cw-dim); }
+#snd-style-btn:hover { color: var(--cw-highlight); }
+.snd-sep { color: var(--cw-dim); opacity: 0.5; margin: 0 5px; }
+.snd-ctrl {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-amber); letter-spacing: 0.1em;
+  cursor: pointer; margin-left: auto;
+  border: 1px solid rgba(200,168,64,0.28);
+  padding: 1px 7px; border-radius: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.snd-ctrl:hover { color: var(--cw-highlight); border-color: rgba(200,168,64,0.6); }
 .s-bar {
   flex: 1; border-radius: 2px 2px 0 0;
   background: rgba(200,168,64,0.15);
@@ -884,12 +904,17 @@ html, body {
 
     <!-- SOUND LEVEL -->
     <div class="panel" id="p-sound">
-      <div id="sound-bars"></div>
+      <div id="sound-bars"><canvas id="sound-canvas"></canvas></div>
       <div id="sound-readout">
         <div id="sound-db-num">—</div>
         <div id="sound-db-unit">dB</div>
+        <div id="snd-sens-btn" class="snd-ctrl" title="Cycle sensitivity">MED</div>
       </div>
-      <div id="sound-status-txt">METER OFF</div>
+      <div id="sound-status-txt">
+        <span id="snd-toggle-btn">METER OFF</span>
+        <span class="snd-sep">·</span>
+        <span id="snd-style-btn" title="Cycle style">BARS</span>
+      </div>
     </div>
 
     <!-- BIRTHDAYS -->
@@ -1824,36 +1849,229 @@ function scheduleLook(){
   eyeLookT=setTimeout(scheduleLook, 1800+Math.random()*2400);
 }
 
-/* SOUND LEVEL BARS (cosmetic — mic not wired; shows ambient animation) */
-(function initSoundBars(){
-  var bars=document.getElementById('sound-bars');
-  var n=18, html='';
-  for(var i=0;i<n;i++) html+='<div class="s-bar" id="sb'+i+'" style="height:4px"></div>';
-  bars.innerHTML=html;
-  /* gentle idle animation */
-  function tick(){
-    for(var i=0;i<n;i++){
-      var b=document.getElementById('sb'+i);
-      if(!b) continue;
-      var h=Math.round(4+Math.abs(Math.sin((Date.now()/800)+(i*0.6)))*24 + Math.random()*8);
-      b.style.height=h+'px';
-      b.className='s-bar'+(h>28?' hot':h>18?' lit':'');
+/* ═══════════════════════════════════════════════════════════
+   SOUND METER — real mic via Web Audio API
+   Controls (all clickable):
+     "METER OFF / ● LIVE"  → toggle mic on/off
+     Style label           → cycle viz (BARS / WAVE / DOTS / MIRROR)
+     MED/LOW/HIGH/MAX btn  → cycle sensitivity
+   Bulbs bsnd-1…4 light bottom→top with volume level.
+   Off-state: cosmetic animation for both bars and bulbs.
+   ═══════════════════════════════════════════════════════════ */
+(function initSoundMeter(){
+
+  /* ── State ─────────────────────────────────────────── */
+  var MIC_ON     = false;
+  var VIZ_IDX    = 0;
+  var SENS_IDX   = 1;
+  var VIZ_NAMES  = ['BARS','WAVE','DOTS','MIRROR'];
+  var SENS_NAMES = ['LOW','MED','HIGH','MAX'];
+  var SENS_VALS  = [0.55, 1.0, 1.9, 3.5]; // gain multipliers
+
+  var audioCtx=null, analyser=null, micStream=null;
+  var liveFrame=null, cosmeticTimer=null, cosmeticBulbTimer=null;
+
+  /* ── DOM refs ──────────────────────────────────────── */
+  var canvas     = document.getElementById('sound-canvas');
+  var toggleBtn  = document.getElementById('snd-toggle-btn');
+  var styleBtn   = document.getElementById('snd-style-btn');
+  var sensBtn    = document.getElementById('snd-sens-btn');
+  var dbNum      = document.getElementById('sound-db-num');
+
+  /* ── Controls ──────────────────────────────────────── */
+  if(toggleBtn) toggleBtn.addEventListener('click', toggleMic);
+  if(styleBtn)  styleBtn.addEventListener('click',  cycleStyle);
+  if(sensBtn)   sensBtn.addEventListener('click',   cycleSens);
+
+  function cycleStyle(){
+    VIZ_IDX=(VIZ_IDX+1)%VIZ_NAMES.length;
+    if(styleBtn) styleBtn.textContent=VIZ_NAMES[VIZ_IDX];
+  }
+  function cycleSens(){
+    SENS_IDX=(SENS_IDX+1)%SENS_NAMES.length;
+    if(sensBtn) sensBtn.textContent=SENS_NAMES[SENS_IDX];
+  }
+
+  /* ── Mic toggle ────────────────────────────────────── */
+  function toggleMic(){ MIC_ON ? stopMic() : startMic(); }
+
+  function startMic(){
+    navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(function(stream){
+      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;            // 64 freq bins
+      analyser.smoothingTimeConstant = 0.78;
+      audioCtx.createMediaStreamSource(stream).connect(analyser);
+      micStream = stream;
+      MIC_ON = true;
+      stopCosmetic();
+      if(toggleBtn){ toggleBtn.textContent='● LIVE'; toggleBtn.style.color='var(--cw-green)'; }
+      liveLoop();
+    }).catch(function(e){
+      if(toggleBtn){ toggleBtn.textContent='MIC DENIED'; toggleBtn.style.color='#c03020'; }
+      console.warn('Mic:', e);
+    });
+  }
+
+  function stopMic(){
+    MIC_ON = false;
+    if(liveFrame){ cancelAnimationFrame(liveFrame); liveFrame=null; }
+    if(micStream){ micStream.getTracks().forEach(function(t){t.stop();}); micStream=null; }
+    if(audioCtx) { audioCtx.close(); audioCtx=null; }
+    analyser = null;
+    if(dbNum) dbNum.textContent='—';
+    if(toggleBtn){ toggleBtn.textContent='METER OFF'; toggleBtn.style.color=''; }
+    setBulbs(0);
+    startCosmetic();
+  }
+
+  /* ── Live draw loop ─────────────────────────────────── */
+  function liveLoop(){
+    if(!MIC_ON||!analyser) return;
+    liveFrame = requestAnimationFrame(liveLoop);
+    var freqData = new Uint8Array(analyser.frequencyBinCount);
+    var timeData = new Uint8Array(analyser.fftSize);
+    analyser.getByteFrequencyData(freqData);
+    analyser.getByteTimeDomainData(timeData);
+    var sens = SENS_VALS[SENS_IDX];
+
+    /* dB + bulb level */
+    var sum=0;
+    for(var k=0;k<freqData.length;k++) sum+=freqData[k];
+    var norm = Math.min(1,(sum/freqData.length/255)*sens*1.6);
+    var db = norm>0.01 ? Math.round(-58+norm*68) : -60;
+    if(dbNum) dbNum.textContent = db>-58 ? db : '—';
+    setBulbs(norm<0.08?0:norm<0.28?1:norm<0.52?2:norm<0.76?3:4);
+
+    /* draw */
+    syncCanvas();
+    var ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    switch(VIZ_IDX){
+      case 0: drawBars(ctx,freqData,sens);   break;
+      case 1: drawWave(ctx,timeData);        break;
+      case 2: drawDots(ctx,freqData,sens);   break;
+      case 3: drawMirror(ctx,freqData,sens); break;
     }
   }
-  setInterval(tick,80);
-})();
 
-/* SOUND INDICATOR BULBS — follow bar animation */
-function updateSoundBulbs(level){
-  /* level 0-4, lights up from bottom */
-  for(var i=1;i<=4;i++){
-    var b=document.getElementById('bsnd-'+i);
-    if(!b) continue;
-    var on=level>=(5-i);
-    b.className='bulb bulb-sound'+(on?' lit':'');
+  /* ── Canvas sync ──────────────────────────────────── */
+  function syncCanvas(){
+    var el=canvas.parentElement;
+    var w=el.offsetWidth, h=el.offsetHeight;
+    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; }
   }
-}
-setInterval(function(){ updateSoundBulbs(Math.floor(Math.random()*3)); },1200);
+
+  /* ── Viz helpers ──────────────────────────────────── */
+  function barCol(v){
+    if(v>0.85) return 'rgba(255,96,64,0.92)';
+    if(v>0.58) return 'rgba(184,112,64,0.92)';
+    return 'rgba(200,168,64,0.85)';
+  }
+
+  function drawBars(ctx,data,sens){
+    var W=canvas.width, H=canvas.height, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var h=Math.max(2,Math.round(v*H));
+      var x=i*(bw+2);
+      ctx.fillStyle=barCol(v);
+      ctx.fillRect(x,H-h,bw,h);
+      /* peak cap */
+      ctx.fillStyle='rgba(240,208,96,0.65)';
+      ctx.fillRect(x,H-h-2,bw,2);
+    }
+  }
+
+  function drawWave(ctx,data){
+    var W=canvas.width, H=canvas.height, mid=H/2;
+    /* center line */
+    ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.1)'; ctx.lineWidth=1;
+    ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
+    /* wave */
+    ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.8)'; ctx.lineWidth=1.8;
+    var sw=W/data.length;
+    for(var i=0;i<data.length;i++){
+      var y=mid+(data[i]/128-1)*mid*0.88;
+      i===0?ctx.moveTo(0,y):ctx.lineTo(i*sw,y);
+    }
+    ctx.stroke();
+    /* filled area under wave */
+    ctx.lineTo(W,mid); ctx.lineTo(0,mid); ctx.closePath();
+    ctx.fillStyle='rgba(200,168,64,0.06)'; ctx.fill();
+  }
+
+  function drawDots(ctx,data,sens){
+    var W=canvas.width, H=canvas.height, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var cx=i*(bw+2)+bw/2, r=Math.max(2,bw/2);
+      var cy=H-Math.max(r,v*H);
+      var grd=ctx.createRadialGradient(cx,cy,0,cx,cy,r*2.5);
+      grd.addColorStop(0,barCol(v)); grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle=grd; ctx.fill();
+    }
+  }
+
+  function drawMirror(ctx,data,sens){
+    var W=canvas.width, H=canvas.height, mid=H/2, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[i]/255)*sens*1.4);
+      var h=Math.max(2,Math.round(v*mid*0.96));
+      var x=i*(bw+2);
+      ctx.fillStyle=barCol(v);
+      ctx.fillRect(x,mid-h,bw,h*2);
+    }
+  }
+
+  /* ── Bulbs ─────────────────────────────────────────── */
+  function setBulbs(level){
+    /* level 0-4, bsnd-1 is top, bsnd-4 is bottom — light from bottom up */
+    for(var i=1;i<=4;i++){
+      var b=document.getElementById('bsnd-'+i);
+      if(!b) continue;
+      var on=level>=(5-i);
+      var hot=(level>=4&&i<=2);
+      b.className='bulb bulb-sound'+(on?' lit':'')+(hot?' hot':'');
+    }
+  }
+
+  /* ── Cosmetic off-state animation ──────────────────── */
+  function startCosmetic(){
+    if(cosmeticTimer) return;
+    syncCanvas();
+    cosmeticTimer=setInterval(function(){
+      syncCanvas();
+      var ctx=canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      var W=canvas.width, H=canvas.height, n=22;
+      var bw=Math.floor((W-(n-1)*2)/n);
+      for(var i=0;i<n;i++){
+        var t=Date.now()/900;
+        var v=Math.abs(Math.sin(t+i*0.55))*0.58+Math.random()*0.10;
+        var h=Math.max(3,Math.round(v*H*0.85));
+        ctx.fillStyle='rgba(200,168,64,'+(0.22+v*0.38)+')';
+        ctx.fillRect(i*(bw+2),H-h,bw,h);
+      }
+    },80);
+    cosmeticBulbTimer=setInterval(function(){
+      setBulbs(Math.floor(Math.random()*2));
+    },1200);
+  }
+
+  function stopCosmetic(){
+    if(cosmeticTimer){clearInterval(cosmeticTimer);cosmeticTimer=null;}
+    if(cosmeticBulbTimer){clearInterval(cosmeticBulbTimer);cosmeticBulbTimer=null;}
+  }
+
+  /* ── Boot ──────────────────────────────────────────── */
+  startCosmetic();
+
+})();
 
 /* ─── CRT TOP BULB CLOCK ─────────────────────────────────────
    :00   → 40-second burst: all 5 randomly fade in/out (fast)
