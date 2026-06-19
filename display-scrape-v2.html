@@ -302,27 +302,88 @@ html, body {
 .crt-dl.ok { color: var(--cw-highlight); }
 .crt-dl.dim { color: var(--cw-dim); }
 
-/* STATUS / NEXT CLASS */
+/* STATUS — 3-zone strip */
 #p-status {
-  left: 673px; top: 633px; width: 616px; height: 90px;
-  padding: 0 24px;
-  display: flex; align-items: center; gap: 20px;
+  left: 673px; top: 627px; width: 616px; height: 90px;
+  padding: 0;
+  display: flex; align-items: stretch;
 }
-#status-badge {
-  font-family: var(--font-crt); font-size: 42px;
-  color: var(--cw-highlight); white-space: nowrap;
-  text-shadow: 0 0 14px rgba(240,208,96,0.5);
-  letter-spacing: 0.04em;
+/* Thin vertical dividers between zones */
+.st-div {
+  width: 1px; flex-shrink: 0;
+  background: linear-gradient(180deg, transparent, rgba(200,168,64,0.22), transparent);
+  margin: 10px 0;
 }
-#status-detail {
-  font-family: var(--font-mono); font-size: 15px;
+/* LEFT — period label + end time */
+#st-left {
+  flex: 0 0 188px; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 18px 0 20px;
+}
+#st-period {
+  font-family: var(--font-crt); font-size: 24px;
+  color: var(--cw-highlight); letter-spacing: 0.06em;
+  text-shadow: 0 0 10px rgba(240,208,96,0.4);
+  line-height: 1.1; white-space: nowrap;
+}
+#st-ends {
+  font-family: var(--font-mono); font-size: 12px;
   color: var(--cw-dim); letter-spacing: 0.1em;
-  text-transform: uppercase; line-height: 1.5;
+  text-transform: uppercase; margin-top: 4px;
+  white-space: nowrap;
 }
-#status-closed-txt {
-  font-family: var(--font-crt); font-size: 44px;
-  color: var(--cw-copper); letter-spacing: 0.18em;
-  text-shadow: 0 0 16px rgba(184,112,64,0.5);
+/* MIDDLE — large countdown */
+#st-mid {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 0 8px;
+}
+#st-mins-num {
+  font-family: var(--font-crt); font-size: 54px;
+  color: var(--cw-highlight); line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 18px rgba(240,208,96,0.5);
+}
+#st-mins-lbl {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); letter-spacing: 0.14em;
+  text-transform: uppercase; align-self: flex-end;
+  padding-bottom: 10px; white-space: nowrap;
+  line-height: 1.5;
+}
+/* RIGHT — pass policy */
+#st-right {
+  flex: 0 0 188px; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 20px 0 18px;
+  align-items: flex-end;
+}
+#st-pass-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; color: var(--cw-dim);
+  text-transform: uppercase; margin-bottom: 5px;
+}
+#st-pass-val {
+  display: flex; align-items: center; gap: 7px;
+}
+#st-pass-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  transition: background 0.6s, box-shadow 0.6s;
+}
+#st-pass-dot.open {
+  background: var(--cw-green);
+  box-shadow: 0 0 6px var(--cw-green), 0 0 12px var(--cw-green-glow);
+  animation: ledPulse 2.4s ease-in-out infinite;
+}
+#st-pass-dot.restricted {
+  background: var(--cw-copper);
+  box-shadow: 0 0 6px rgba(184,112,64,0.8);
+  animation: none;
+}
+#st-pass-dot.off {
+  background: rgba(200,168,64,0.18); box-shadow: none; animation: none;
+}
+#st-pass-txt {
+  font-family: var(--font-crt); font-size: 21px;
+  letter-spacing: 0.08em; color: var(--cw-amber-warm);
+  white-space: nowrap;
 }
 
 /* SOUND LEVEL */
@@ -758,10 +819,28 @@ html, body {
       </div>
     </div>
 
-    <!-- STATUS / NEXT CLASS -->
+    <!-- STATUS STRIP — period · countdown · pass policy -->
     <div class="panel" id="p-status">
-      <div id="status-badge">—</div>
-      <div id="status-detail"></div>
+      <!-- LEFT: period name + end time -->
+      <div id="st-left">
+        <div id="st-period">—</div>
+        <div id="st-ends">—</div>
+      </div>
+      <div class="st-div"></div>
+      <!-- MIDDLE: large minute countdown -->
+      <div id="st-mid">
+        <div id="st-mins-num">—</div>
+        <div id="st-mins-lbl">MIN LEFT</div>
+      </div>
+      <div class="st-div"></div>
+      <!-- RIGHT: pass policy -->
+      <div id="st-right">
+        <div id="st-pass-lbl">PASS POLICY</div>
+        <div id="st-pass-val">
+          <span id="st-pass-dot" class="off"></span>
+          <span id="st-pass-txt">—</span>
+        </div>
+      </div>
     </div>
 
     <!-- SOUND LEVEL -->
@@ -1231,32 +1310,59 @@ function renderEvents(){
   el.innerHTML=html;
 }
 
-/* STATUS / NEXT CLASS */
+/* STATUS STRIP — period · countdown · pass policy */
 function renderStatus(){
   var sched=getSchedule(), nm=nowMins();
-  var badge='', detail='';
-  if(!sched){
-    badge='CLOSED';
-    detail='SEE YOU TOMORROW';
-  } else {
-    var inP=null, nextP=null;
-    for(var i=0;i<sched.periods.length;i++){
-      var p=sched.periods[i], s=toMins(p.start), e=toMins(p.end);
-      if(nm>=s&&nm<e){ inP=p; break; }
-      if(nm<s&&!nextP) nextP=p;
-    }
-    if(inP){
-      if(inP.brk){ badge=inP.label.toUpperCase(); detail='ENDS '+inP.end; }
-      else { badge=inP.label; detail='ENDS '+inP.end; }
-    } else if(nextP){
-      if(nm<toMins(sched.periods[0].start)){ badge='PRE-BELL'; detail='FIRST BELL · '+sched.periods[0].start; }
-      else { badge='PASSING'; detail='NEXT: '+nextP.label+' · '+nextP.start; }
-    } else {
-      badge='DISMISSED'; detail='SCHOOL IS OUT';
-    }
+
+  /* helpers */
+  function xl(l){ return /^P(\d+)$/.test(l)?'PERIOD '+l.slice(1):l.toUpperCase(); }
+  function f12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return(h%12||12)+':'+m+(h>=12?' PM':' AM'); }
+  function set(periodTxt, endsTxt, minsNum, minsLbl, dotCls, passTxt){
+    document.getElementById('st-period').textContent  = periodTxt;
+    document.getElementById('st-ends').textContent    = endsTxt;
+    document.getElementById('st-mins-num').textContent= minsNum;
+    document.getElementById('st-mins-lbl').textContent= minsLbl;
+    var dot=document.getElementById('st-pass-dot');
+    dot.className=dotCls;
+    document.getElementById('st-pass-txt').textContent= passTxt;
   }
-  document.getElementById('status-badge').textContent=badge;
-  document.getElementById('status-detail').textContent=detail;
+
+  if(!sched){
+    set('NO SCHOOL','','','','off','CLOSED'); return;
+  }
+
+  var inP=null, nextP=null;
+  for(var i=0;i<sched.periods.length;i++){
+    var p=sched.periods[i], s=toMins(p.start), e=toMins(p.end);
+    if(nm>=s&&nm<e){ inP=p; break; }
+    if(nm<s&&!nextP) nextP=p;
+  }
+
+  if(inP){
+    var mLeft=toMins(inP.end)-nm;
+    if(inP.brk){
+      /* brunch / lunch */
+      set(xl(inP.label), 'ENDS '+f12(inP.end), String(mLeft), 'MIN LEFT','open','OPEN');
+    } else {
+      /* class period — restrict passes in first or last 10 min */
+      var restricted=(nm<toMins(inP.start)+10)||(mLeft<=10);
+      var dotC=restricted?'restricted':'open';
+      var passT=restricted?'RESTRICTED':'ALLOWED';
+      set(xl(inP.label), 'ENDS '+f12(inP.end), String(mLeft), 'MIN LEFT', dotC, passT);
+    }
+  } else if(nextP){
+    var mTo=toMins(nextP.start)-nm;
+    if(nm<toMins(sched.periods[0].start)){
+      /* before school */
+      set('PRE-BELL', 'FIRST BELL · '+f12(sched.periods[0].start), String(mTo), 'MIN TO BELL','open','OPEN');
+    } else {
+      /* passing period */
+      set('PASSING', xl(nextP.label)+' STARTS '+f12(nextP.start), String(mTo), 'MIN TO CLASS','open','OPEN');
+    }
+  } else {
+    /* dismissed */
+    set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED');
+  }
 }
 
 /* BIRTHDAYS */
