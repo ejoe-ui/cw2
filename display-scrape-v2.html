@@ -331,24 +331,27 @@ html, body {
   text-transform: uppercase; margin-top: 4px;
   white-space: nowrap;
 }
-/* MIDDLE — large countdown */
+/* MIDDLE — large countdown stacked */
 #st-mid {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  gap: 8px; padding: 0 8px;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 4px 8px; gap: 2px;
 }
 #st-mins-num {
-  font-family: var(--font-crt); font-size: 54px;
+  font-family: var(--font-crt); font-size: 46px;
   color: var(--cw-highlight); line-height: 1;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 18px rgba(240,208,96,0.5);
+  text-shadow: 0 0 16px rgba(240,208,96,0.5);
 }
 #st-mins-lbl {
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--cw-dim); letter-spacing: 0.14em;
-  text-transform: uppercase; align-self: flex-end;
-  padding-bottom: 10px; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); letter-spacing: 0.12em;
+  text-transform: uppercase; text-align: center;
   line-height: 1.5;
 }
+/* 1-minute warning flash */
+@keyframes minWarn { 0%,100%{opacity:1} 50%{opacity:0.15} }
+.flashing { animation: minWarn 1.4s ease-in-out infinite; }
 /* RIGHT — pass policy */
 #st-right {
   flex: 0 0 188px; display: flex; flex-direction: column;
@@ -372,13 +375,22 @@ html, body {
   box-shadow: 0 0 6px var(--cw-green), 0 0 12px var(--cw-green-glow);
   animation: ledPulse 2.4s ease-in-out infinite;
 }
+#st-pass-dot.warn {
+  background: #c8a020;
+  box-shadow: 0 0 6px rgba(200,160,32,0.9), 0 0 12px rgba(200,160,32,0.4);
+  animation: ledPulse 1.2s ease-in-out infinite;
+}
 #st-pass-dot.restricted {
-  background: var(--cw-copper);
-  box-shadow: 0 0 6px rgba(184,112,64,0.8);
+  background: #b83020;
+  box-shadow: 0 0 6px rgba(184,48,32,0.9), 0 0 12px rgba(184,48,32,0.4);
   animation: none;
 }
+#st-pass-dot.grey {
+  background: rgba(200,168,64,0.35);
+  box-shadow: none; animation: none;
+}
 #st-pass-dot.off {
-  background: rgba(200,168,64,0.18); box-shadow: none; animation: none;
+  background: rgba(200,168,64,0.15); box-shadow: none; animation: none;
 }
 #st-pass-txt {
   font-family: var(--font-crt); font-size: 21px;
@@ -1314,21 +1326,29 @@ function renderEvents(){
 function renderStatus(){
   var sched=getSchedule(), nm=nowMins();
 
-  /* helpers */
   function xl(l){ return /^P(\d+)$/.test(l)?'PERIOD '+l.slice(1):l.toUpperCase(); }
   function f12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return(h%12||12)+':'+m+(h>=12?' PM':' AM'); }
-  function set(periodTxt, endsTxt, minsNum, minsLbl, dotCls, passTxt){
-    document.getElementById('st-period').textContent  = periodTxt;
-    document.getElementById('st-ends').textContent    = endsTxt;
-    document.getElementById('st-mins-num').textContent= minsNum;
-    document.getElementById('st-mins-lbl').textContent= minsLbl;
-    var dot=document.getElementById('st-pass-dot');
-    dot.className=dotCls;
-    document.getElementById('st-pass-txt').textContent= passTxt;
+
+  function setFlash(on){
+    ['st-mins-num','st-mins-lbl'].forEach(function(id){
+      var e=document.getElementById(id);
+      if(e){ if(on) e.classList.add('flashing'); else e.classList.remove('flashing'); }
+    });
+  }
+
+  function set(periodTxt,endsTxt,minsNum,minsLblHtml,dotCls,passTxt,passTxtColor,flash){
+    document.getElementById('st-period').textContent   = periodTxt;
+    document.getElementById('st-ends').textContent     = endsTxt;
+    document.getElementById('st-mins-num').textContent = minsNum;
+    document.getElementById('st-mins-lbl').innerHTML   = minsLblHtml;
+    document.getElementById('st-pass-dot').className   = dotCls;
+    var pt=document.getElementById('st-pass-txt');
+    pt.textContent=passTxt; pt.style.color=passTxtColor;
+    setFlash(!!flash);
   }
 
   if(!sched){
-    set('NO SCHOOL','','','','off','CLOSED'); return;
+    set('NO SCHOOL','','','','off','CLOSED','var(--cw-dim)',false); return;
   }
 
   var inP=null, nextP=null;
@@ -1340,28 +1360,40 @@ function renderStatus(){
 
   if(inP){
     var mLeft=toMins(inP.end)-nm;
+    var flash=(mLeft<=1);
+    var lbl='MIN LEFT UNTIL<br>END OF '+xl(inP.label);
+
     if(inP.brk){
-      /* brunch / lunch */
-      set(xl(inP.label), 'ENDS '+f12(inP.end), String(mLeft), 'MIN LEFT','open','OPEN');
+      /* brunch or lunch — neutral grey, open */
+      set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,'grey','OPEN','var(--cw-dim)',flash);
     } else {
-      /* class period — restrict passes in first or last 10 min */
-      var restricted=(nm<toMins(inP.start)+10)||(mLeft<=10);
-      var dotC=restricted?'restricted':'open';
-      var passT=restricted?'RESTRICTED':'ALLOWED';
-      set(xl(inP.label), 'ENDS '+f12(inP.end), String(mLeft), 'MIN LEFT', dotC, passT);
+      /* class period — 4-state pass policy */
+      var firstFifteen=(nm<toMins(inP.start)+15);
+      var lastFifteen=(mLeft<=15);
+      var lastWarn=(mLeft>15&&mLeft<=20); /* yellow last-chance window */
+      var dotC,passT,passColor;
+      if(firstFifteen||lastFifteen){
+        dotC='restricted'; passT='RESTRICTED'; passColor='#c03828';
+      } else if(lastWarn){
+        dotC='warn'; passT='LAST CHANCE'; passColor='#c8a020';
+      } else {
+        dotC='open'; passT='ALLOWED'; passColor='var(--cw-green)';
+      }
+      set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,dotC,passT,passColor,flash);
     }
+
   } else if(nextP){
     var mTo=toMins(nextP.start)-nm;
     if(nm<toMins(sched.periods[0].start)){
-      /* before school */
-      set('PRE-BELL', 'FIRST BELL · '+f12(sched.periods[0].start), String(mTo), 'MIN TO BELL','open','OPEN');
+      set('PRE-BELL','FIRST BELL · '+f12(sched.periods[0].start),String(mTo),
+        'MIN UNTIL<br>FIRST BELL','grey','OPEN','var(--cw-dim)',false);
     } else {
-      /* passing period */
-      set('PASSING', xl(nextP.label)+' STARTS '+f12(nextP.start), String(mTo), 'MIN TO CLASS','open','OPEN');
+      set('PASSING',xl(nextP.label)+' STARTS '+f12(nextP.start),String(mTo),
+        'MIN UNTIL<br>'+xl(nextP.label)+' STARTS','grey','OPEN','var(--cw-dim)',false);
     }
+
   } else {
-    /* dismissed */
-    set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED');
+    set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED','var(--cw-dim)',false);
   }
 }
 
