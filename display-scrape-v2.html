@@ -650,12 +650,15 @@ html, body {
       <div class="scrap-eye right" id="eye-right"><div class="eye-pupil" id="pupil-right"></div></div>
     </div>
 
-    <!-- LIGHT BULBS: CRT top row (5) — x coords from PSD, y=93 -->
-    <div class="bulb bulb-crt" id="bcrt-1" style="left:732px;top:93px"></div>
-    <div class="bulb bulb-crt" id="bcrt-2" style="left:761px;top:93px"></div>
-    <div class="bulb bulb-crt" id="bcrt-3" style="left:787px;top:93px"></div>
-    <div class="bulb bulb-crt" id="bcrt-4" style="left:814px;top:93px"></div>
-    <div class="bulb bulb-crt" id="bcrt-5" style="left:841px;top:93px"></div>
+    <!-- LIGHT BULBS: CRT top row (5)
+         PSD coords × 1.25 = display coords
+         731×1.25=914  761×1.25=951  787×1.25=984  814×1.25=1018  841×1.25=1051
+         93×1.25=116 -->
+    <div class="bulb bulb-crt" id="bcrt-1" style="left:914px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-2" style="left:951px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-3" style="left:984px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-4" style="left:1018px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-5" style="left:1051px;top:116px"></div>
 
     <!-- LIGHT BULBS: Sound level indicators (4) -->
     <div class="bulb bulb-sound" id="bsnd-1" style="left:1806px;top:235px"></div>
