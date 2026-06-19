@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>Cowboy Wire · SCRAP-E · Room 27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+/* ── RESET ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── STEAMPUNK PALETTE ── */
+:root {
+  --cw-bg:          #0a0a08;
+  --cw-amber:       #c8a840;
+  --cw-highlight:   #f0d060;
+  --cw-dim:         #8a7a40;
+  --cw-copper:      #b87040;
+  --cw-rust:        #7a3a10;
+  --cw-green:       #00ff44;
+  --cw-green-dim:   #00cc33;
+  --cw-green-glow:  rgba(0,255,68,0.55);
+  --cw-panel:       rgba(4,4,2,0.88);
+  --font-crt:       'VT323', monospace;
+  --font-type:      'Special Elite', serif;
+  --font-mono:      'Share Tech Mono', monospace;
+}
+
+/* ── ROOT ── */
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ── STAGE: fixed 1920×1080, scales to fit window ── */
+#stage {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  overflow: hidden;
+}
+
+/* ── LAYER 1: BACKGROUND IMAGE ── */
+#layer-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: url('chassis-bg.png') 0 0 / 1920px 1080px no-repeat;
+}
+
+/* ── LAYER 2: CONTENT PANELS ── */
+#layer-panels {
+  position: absolute; inset: 0; z-index: 1;
+}
+
+/* ── LAYER 3: FOREGROUND OVERLAY ── */
+#layer-fg {
+  position: absolute; inset: 0; z-index: 10;
+  background: url('chassis-overlay.png') 0 0 / 1920px 1080px no-repeat;
+  pointer-events: none;
+}
+
+/* ── PANEL BASE ── */
+.panel {
+  position: absolute;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════
+   PANEL STYLES — one block per panel, no cascade
+   ══════════════════════════════════════════════════════ */
+
+/* HEADER */
+#p-header {
+  left: 190px; top: 26px; width: 349px; height: 86px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-type); font-size: 20px;
+  letter-spacing: 0.08em; color: var(--cw-amber);
+  text-align: center; text-transform: uppercase;
+  text-shadow: 0 0 12px rgba(200,168,64,0.4);
+  line-height: 1.3;
+}
+
+/* CLOCK */
+#p-clock {
+  left: 1679px; top: 41px; width: 158px; height: 68px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-crt); font-size: 40px;
+  letter-spacing: 0.06em; color: var(--cw-highlight);
+  text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.3);
+}
+
+/* EVENTS LIST */
+#p-events {
+  left: 223px; top: 133px; width: 405px; height: 625px;
+  padding: 14px 18px 14px 14px;
+  display: flex; flex-direction: column;
+}
+#events-list { display: flex; flex-direction: column; flex: 1; justify-content: space-around; }
+.ev-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(200,168,64,0.15);
+}
+.ev-item:last-child { border-bottom: none; }
+.ev-left { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
+.ev-days-num {
+  font-family: var(--font-crt); font-size: 34px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 10px rgba(240,208,96,0.5);
+}
+.ev-days-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--cw-dim);
+  text-transform: uppercase; line-height: 1;
+}
+.ev-right { flex: 1; min-width: 0; }
+.ev-title {
+  font-family: var(--font-mono); font-size: 15px;
+  letter-spacing: 0.04em; color: var(--cw-amber);
+  text-transform: uppercase; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ev-date {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--cw-dim); margin-top: 2px;
+  letter-spacing: 0.04em;
+}
+.ev-empty {
+  font-family: var(--font-mono); font-size: 14px;
+  color: rgba(200,168,64,0.3); letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 20px 0;
+}
+
+/* SCRAP-E SIGNAL INTERCEPT */
+#p-crt {
+  left: 688px; top: 154px; width: 590px; height: 440px;
+  padding: 18px 22px 14px 22px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+/* CRT scanlines */
+#p-crt::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 3px,
+    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+  );
+}
+/* CRT ambient glow */
+#p-crt::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,168,64,0.04), transparent 70%);
+}
+#crt-header {
+  display: flex; align-items: center; gap: 8px;
+  position: relative; z-index: 1;
+}
+#crt-led {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--cw-green);
+  box-shadow: 0 0 6px var(--cw-green), 0 0 12px var(--cw-green-glow);
+  animation: ledPulse 2.4s ease-in-out infinite;
+}
+@keyframes ledPulse { 0%,100%{opacity:1;box-shadow:0 0 6px var(--cw-green),0 0 12px var(--cw-green-glow)} 50%{opacity:0.5;box-shadow:0 0 3px var(--cw-green)} }
+#crt-label-text {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.26em; color: var(--cw-dim);
+  text-transform: uppercase;
+}
+#crt-divider {
+  height: 1px; background: linear-gradient(90deg, transparent, var(--cw-amber), transparent);
+  opacity: 0.3; position: relative; z-index: 1;
+}
+#crt-headline {
+  font-family: var(--font-type); font-size: 27px; line-height: 1.28;
+  color: var(--cw-highlight); letter-spacing: 0.02em;
+  min-height: 4em; position: relative; z-index: 1;
+}
+/* typewriter cursor */
+#crt-cursor {
+  display: inline-block; width: 2px; height: 1.1em;
+  background: var(--cw-highlight); vertical-align: text-bottom;
+  margin-left: 2px; animation: cursorBlink 0.8s step-end infinite;
+  position: relative; z-index: 1;
+}
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+#crt-body {
+  flex: 1; font-family: var(--font-mono); font-size: 15px; line-height: 1.5;
+  color: var(--cw-amber); overflow: hidden; position: relative; z-index: 1;
+  opacity: 0.9;
+}
+#crt-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  position: relative; z-index: 1;
+}
+#crt-source {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+  text-transform: uppercase;
+}
+#crt-counter {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); letter-spacing: 0.1em;
+}
+
+/* STATUS / NEXT CLASS */
+#p-status {
+  left: 673px; top: 633px; width: 616px; height: 90px;
+  padding: 0 24px;
+  display: flex; align-items: center; gap: 20px;
+}
+#status-badge {
+  font-family: var(--font-crt); font-size: 42px;
+  color: var(--cw-highlight); white-space: nowrap;
+  text-shadow: 0 0 14px rgba(240,208,96,0.5);
+  letter-spacing: 0.04em;
+}
+#status-detail {
+  font-family: var(--font-mono); font-size: 15px;
+  color: var(--cw-dim); letter-spacing: 0.1em;
+  text-transform: uppercase; line-height: 1.5;
+}
+#status-closed-txt {
+  font-family: var(--font-crt); font-size: 44px;
+  color: var(--cw-copper); letter-spacing: 0.18em;
+  text-shadow: 0 0 16px rgba(184,112,64,0.5);
+}
+
+/* SOUND LEVEL */
+#p-sound {
+  left: 1341px; top: 186px; width: 445px; height: 161px;
+  padding: 12px 20px 10px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#sound-bars {
+  flex: 1; display: flex; align-items: flex-end; gap: 4px;
+}
+.s-bar {
+  flex: 1; border-radius: 2px 2px 0 0;
+  background: rgba(200,168,64,0.15);
+  min-height: 4px;
+  transition: height 0.1s ease, background 0.12s ease;
+}
+.s-bar.lit  { background: var(--cw-amber); }
+.s-bar.hot  { background: var(--cw-copper); box-shadow: 0 0 6px rgba(184,112,64,0.5); }
+.s-bar.peak { background: #ff6040; box-shadow: 0 0 8px rgba(255,96,64,0.6); }
+#sound-readout {
+  display: flex; align-items: baseline; justify-content: flex-end; gap: 6px;
+}
+#sound-db-num {
+  font-family: var(--font-crt); font-size: 28px; color: var(--cw-amber);
+  line-height: 1;
+}
+#sound-db-unit {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+}
+#sound-status-txt {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.18em; color: var(--cw-dim);
+  text-transform: uppercase; text-align: right;
+}
+
+/* BIRTHDAYS */
+#p-birthdays {
+  left: 1341px; top: 409px; width: 409px; height: 154px;
+  padding: 10px 16px;
+  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+}
+.bd-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.bd-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--cw-amber);
+  box-shadow: 0 0 6px rgba(200,168,64,0.6);
+  flex-shrink: 0;
+}
+.bd-name {
+  flex: 1; min-width: 0;
+  font-family: var(--font-mono); font-size: 16px;
+  letter-spacing: 0.04em; color: var(--cw-amber);
+  text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bd-date {
+  font-family: var(--font-crt); font-size: 20px;
+  color: var(--cw-highlight); flex-shrink: 0;
+}
+.bd-empty {
+  font-family: var(--font-mono); font-size: 13px;
+  color: rgba(200,168,64,0.3); letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* WEATHER */
+#p-weather {
+  left: 1340px; top: 639px; width: 408px; height: 110px;
+  padding: 8px 16px;
+  display: flex; align-items: center; gap: 16px;
+}
+#wx-temp-big {
+  font-family: var(--font-crt); font-size: 56px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 14px rgba(240,208,96,0.4);
+  flex-shrink: 0;
+}
+#wx-mid { flex: 1; }
+#wx-cond-lbl {
+  font-family: var(--font-mono); font-size: 16px;
+  color: var(--cw-amber); text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#wx-feels-lbl {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+#wx-aqi-lbl {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.06em; margin-top: 3px;
+}
+#wx-fc { display: flex; gap: 10px; }
+.wx-day { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wx-day-name { font-family: var(--font-mono); font-size: 10px; color: var(--cw-dim); letter-spacing: 0.1em; }
+.wx-day-hi { font-family: var(--font-crt); font-size: 20px; color: var(--cw-amber); }
+.wx-day-lo { font-family: var(--font-mono); font-size: 11px; color: var(--cw-dim); }
+
+/* PHOTO SLIDESHOW */
+#p-photo {
+  left: 404px; top: 810px; width: 178px; height: 166px;
+  background: var(--cw-panel);
+}
+#p-photo img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: opacity 1.2s ease;
+}
+#p-photo img.fade { opacity: 0; }
+
+/* SPORT DAY SUB-CARDS */
+.sd-card {
+  position: absolute;
+  padding: 6px 8px 5px 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  gap: 3px; text-align: center;
+}
+#sd-1 { left: 624px;  top: 813px; width: 156px; height: 168px; }
+#sd-2 { left: 795px;  top: 811px; width: 160px; height: 166px; }
+#sd-3 { left: 969px;  top: 823px; width: 159px; height: 169px; }
+#sd-4 { left: 1146px; top: 814px; width: 166px; height: 169px; }
+.sd-top-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; width: 100%; margin-top: 2px;
+}
+.sd-icon { width: 36px; height: 36px; flex-shrink: 0; }
+.sd-icon svg { width: 100%; height: 100%; }
+.sd-countdown { display: flex; flex-direction: column; align-items: center; }
+.sd-days-num {
+  font-family: var(--font-crt); font-size: 38px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 10px rgba(240,208,96,0.5);
+}
+.sd-days-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; color: var(--cw-dim);
+  text-transform: uppercase; line-height: 1; margin-top: -2px;
+}
+.sd-divider { width: 80%; height: 1px; background: rgba(200,168,64,0.2); margin: 2px 0; }
+.sd-opponent {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--cw-amber); text-transform: uppercase;
+  letter-spacing: 0.03em; line-height: 1.15;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  width: 100%;
+}
+.sd-meta {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); line-height: 1.4; width: 100%;
+}
+.sd-ha {
+  display: inline-block; padding: 0 5px;
+  border: 1px solid rgba(200,168,64,0.35); border-radius: 2px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.1em; color: var(--cw-copper);
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.sd-empty {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(200,168,64,0.2); margin: auto;
+}
+
+/* WORDS OF WISDOM */
+#p-wisdom {
+  left: 1398px; top: 798px; width: 379px; height: 214px;
+  padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#wisdom-cat {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.22em; color: var(--cw-copper);
+  text-transform: uppercase;
+}
+#wisdom-text {
+  flex: 1; display: flex; align-items: center;
+  font-family: var(--font-type); font-size: 18px; line-height: 1.4;
+  color: #4a3010; /* dark brown, readable on wood grain */
+  font-style: italic;
+  transition: opacity 0.6s ease;
+}
+#wisdom-text.fade { opacity: 0; }
+
+/* HONOR ROLL TICKER */
+#p-honor {
+  left: 320px; top: 1010px; width: 1546px; height: 63px;
+  display: flex; align-items: center; overflow: hidden;
+}
+#honor-track {
+  flex: 1; overflow: hidden; height: 100%; position: relative;
+}
+#honor-inner {
+  display: inline-flex; align-items: center; height: 100%;
+  white-space: nowrap;
+  animation: ticker 380s linear infinite;
+}
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.hn-name {
+  font-family: var(--font-mono); font-size: 16px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--cw-amber); padding: 0 14px;
+}
+.hn-sep { color: var(--cw-copper); opacity: 0.6; }
+
+/* SCRAP-E EYES */
+#p-eyes {
+  left: 139px; top: 668px; width: 109px; height: 63px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; z-index: 2;
+}
+.scrap-eye {
+  width: 30px; height: 20px;
+  background: var(--cw-green);
+  border-radius: 5px;
+  position: relative;
+  transition: transform 0.3s ease;
+  box-shadow:
+    0 0 8px var(--cw-green),
+    0 0 18px var(--cw-green-glow),
+    0 0 32px rgba(0,255,68,0.25),
+    inset 0 0 8px rgba(0,255,68,0.4);
+  animation: eyeGlow 3.5s ease-in-out infinite;
+}
+.scrap-eye.right { animation-delay: 0.2s; }
+/* inner scanline on eye */
+.scrap-eye::after {
+  content: '';
+  position: absolute; left: 20%; right: 20%; top: 30%; bottom: 30%;
+  background: rgba(0,0,0,0.25); border-radius: 1px;
+}
+@keyframes eyeGlow {
+  0%,100% {
+    box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), 0 0 32px rgba(0,255,68,0.25), inset 0 0 8px rgba(0,255,68,0.4);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 12px var(--cw-green), 0 0 26px var(--cw-green-glow), 0 0 48px rgba(0,255,68,0.35), inset 0 0 12px rgba(0,255,68,0.55);
+    opacity: 0.92;
+  }
+}
+.scrap-eye.blink { transform: scaleY(0.08) !important; transition: transform 0.06s ease; }
+/* eye pupil dot */
+.eye-pupil {
+  position: absolute; width: 8px; height: 8px;
+  background: rgba(0,0,0,0.6); border-radius: 50%;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  transition: transform 0.4s cubic-bezier(.45,0,.3,1);
+}
+
+/* LIGHT BULBS */
+.bulb {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2; pointer-events: none;
+}
+.bulb-crt {
+  width: 10px; height: 10px;
+  background: var(--cw-amber);
+  box-shadow: 0 0 6px var(--cw-amber), 0 0 12px rgba(200,168,64,0.4);
+  animation: bulbFlicker 4s ease-in-out infinite;
+}
+.bulb-crt.off { background: rgba(200,168,64,0.18); box-shadow: none; animation: none; }
+@keyframes bulbFlicker {
+  0%,90%,100%{opacity:1}
+  91%{opacity:0.7} 93%{opacity:1} 95%{opacity:0.8} 97%{opacity:1}
+}
+.bulb-sound {
+  width: 8px; height: 8px;
+  background: rgba(200,168,64,0.18);
+  box-shadow: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.bulb-sound.lit {
+  background: var(--cw-amber);
+  box-shadow: 0 0 5px var(--cw-amber), 0 0 10px rgba(200,168,64,0.4);
+}
+.bulb-sound.hot {
+  background: var(--cw-copper);
+  box-shadow: 0 0 6px var(--cw-copper), 0 0 14px rgba(184,112,64,0.5);
+}
+#bulb-big {
+  width: 20px; height: 20px;
+  background: radial-gradient(circle at 38% 38%, #ffe090, var(--cw-amber) 55%, #c07020);
+  box-shadow: 0 0 10px var(--cw-amber), 0 0 22px rgba(200,168,64,0.45);
+  animation: bigBulb 5s ease-in-out infinite;
+}
+@keyframes bigBulb { 0%,100%{opacity:0.88} 50%{opacity:1} }
+#bulb-small {
+  width: 12px; height: 12px;
+  background: var(--cw-amber);
+  box-shadow: 0 0 7px var(--cw-amber), 0 0 14px rgba(200,168,64,0.4);
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- LAYER 1: BACKGROUND -->
+  <div id="layer-bg"></div>
+
+  <!-- LAYER 2: CONTENT PANELS -->
+  <div id="layer-panels">
+
+    <!-- HEADER -->
+    <div class="panel" id="p-header">RHS &middot; ROOM 27</div>
+
+    <!-- CLOCK -->
+    <div class="panel" id="p-clock">--:-- --</div>
+
+    <!-- EVENTS LIST -->
+    <div class="panel" id="p-events">
+      <div id="events-list"></div>
+    </div>
+
+    <!-- SCRAP-E SIGNAL INTERCEPT -->
+    <div class="panel" id="p-crt">
+      <div id="crt-header">
+        <div id="crt-led"></div>
+        <div id="crt-label-text">SCRAP-E SIGNAL INTERCEPT</div>
+      </div>
+      <div id="crt-divider"></div>
+      <div id="crt-headline"><span id="crt-hl-text">SCANNING TRANSMISSIONS...</span><span id="crt-cursor"></span></div>
+      <div id="crt-body" id="crt-body-text">Calibrating signal receiver. Stand by for incoming transmissions.</div>
+      <div id="crt-footer">
+        <div id="crt-source">SOURCE: —</div>
+        <div id="crt-counter">1 / 1</div>
+      </div>
+    </div>
+
+    <!-- STATUS / NEXT CLASS -->
+    <div class="panel" id="p-status">
+      <div id="status-badge">—</div>
+      <div id="status-detail"></div>
+    </div>
+
+    <!-- SOUND LEVEL -->
+    <div class="panel" id="p-sound">
+      <div id="sound-bars"></div>
+      <div id="sound-readout">
+        <div id="sound-db-num">—</div>
+        <div id="sound-db-unit">dB</div>
+      </div>
+      <div id="sound-status-txt">METER OFF</div>
+    </div>
+
+    <!-- BIRTHDAYS -->
+    <div class="panel" id="p-birthdays">
+      <div id="bday-list"></div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="panel" id="p-weather">
+      <div id="wx-temp-big">—°</div>
+      <div id="wx-mid">
+        <div id="wx-cond-lbl">—</div>
+        <div id="wx-feels-lbl">—</div>
+        <div id="wx-aqi-lbl">AQI —</div>
+      </div>
+      <div id="wx-fc"></div>
+    </div>
+
+    <!-- PHOTO SLIDESHOW -->
+    <div class="panel" id="p-photo">
+      <img id="photo-img" src="" alt="" style="opacity:0">
+    </div>
+
+    <!-- SPORT DAY SUB-CARDS -->
+    <div class="panel sd-card" id="sd-1"></div>
+    <div class="panel sd-card" id="sd-2"></div>
+    <div class="panel sd-card" id="sd-3"></div>
+    <div class="panel sd-card" id="sd-4"></div>
+
+    <!-- WORDS OF WISDOM -->
+    <div class="panel" id="p-wisdom">
+      <div id="wisdom-cat">—</div>
+      <div id="wisdom-text">—</div>
+    </div>
+
+    <!-- HONOR ROLL TICKER -->
+    <div class="panel" id="p-honor">
+      <div id="honor-track">
+        <div id="honor-inner"></div>
+      </div>
+    </div>
+
+    <!-- SCRAP-E EYES -->
+    <div class="panel" id="p-eyes">
+      <div class="scrap-eye left" id="eye-left"><div class="eye-pupil" id="pupil-left"></div></div>
+      <div class="scrap-eye right" id="eye-right"><div class="eye-pupil" id="pupil-right"></div></div>
+    </div>
+
+    <!-- LIGHT BULBS: CRT top row (5) -->
+    <div class="bulb bulb-crt" id="bcrt-1" style="left:991px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-2" style="left:951px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-3" style="left:984px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-4" style="left:1018px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-5" style="left:1051px;top:116px"></div>
+
+    <!-- LIGHT BULBS: Sound level indicators (4) -->
+    <div class="bulb bulb-sound" id="bsnd-1" style="left:1806px;top:235px"></div>
+    <div class="bulb bulb-sound" id="bsnd-2" style="left:1806px;top:261px"></div>
+    <div class="bulb bulb-sound" id="bsnd-3" style="left:1806px;top:288px"></div>
+    <div class="bulb bulb-sound" id="bsnd-4" style="left:1806px;top:313px"></div>
+
+    <!-- LIGHT BULBS: SCRAP-E body -->
+    <div class="bulb" id="bulb-big"   style="left:218px;top:955px"></div>
+    <div class="bulb" id="bulb-small" style="left:268px;top:945px"></div>
+
+  </div>
+
+  <!-- LAYER 3: FOREGROUND OVERLAY -->
+  <div id="layer-fg"></div>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   SCALE STAGE
+   ═══════════════════════════════════════════════════════════ */
+(function scaleStage(){
+  var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  var st = document.getElementById('stage');
+  st.style.transform = 'scale('+s+')';
+  st.style.left = Math.round((window.innerWidth  - 1920*s)/2)+'px';
+  st.style.top  = Math.round((window.innerHeight - 1080*s)/2)+'px';
+})();
+window.addEventListener('resize', function(){
+  var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  var st = document.getElementById('stage');
+  st.style.transform = 'scale('+s+')';
+  st.style.left = Math.round((window.innerWidth  - 1920*s)/2)+'px';
+  st.style.top  = Math.round((window.innerHeight - 1080*s)/2)+'px';
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DATA LAYER — ported from display-orb.html
+   ═══════════════════════════════════════════════════════════ */
+var SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+var CAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD96rQC0gMI_vOU1SXdxpvcHtIo4tnXH3w_xpHOY50HnrJtCxNPQcSkNbdBVUgPE9SZg/exec';
+var ROOM = '27';
+var SETTINGS = null, CLASSROOM = null;
+
+async function sbFetch(table, query){
+  try {
+    var res = await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+query,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    if(!res.ok) return null;
+    return res.json();
+  } catch(e){ return null; }
+}
+
+/* NO-MEDIA LIST */
+var CW_NO_MEDIA = {};
+function cwNorm(s){
+  s = (s==null?'':String(s));
+  if(s.normalize) s=s.normalize('NFKD').replace(/[̀-ͯ]/g,'');
+  return s.toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function cwBlocked(name){ return !!CW_NO_MEDIA[cwNorm(name)]; }
+async function loadNoMedia(){
+  var rows = await sbFetch('cw2_no_media','select=norm_name,first_name,last_name');
+  CW_NO_MEDIA = {};
+  (rows||[]).forEach(function(r){
+    if(r.norm_name) CW_NO_MEDIA[r.norm_name]=true;
+    var first=(r.first_name==null?'':String(r.first_name)).trim().split(/\s+/)[0]||'';
+    var k=cwNorm(first+' '+(r.last_name==null?'':r.last_name));
+    if(k) CW_NO_MEDIA[k]=true;
+  });
+}
+
+/* ROOM CONFIG */
+async function loadRoomConfig(){
+  var cls = await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');
+  var stg = await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=*');
+  CLASSROOM = (cls&&cls[0]) ? cls[0] : null;
+  SETTINGS  = (stg&&stg[0]) ? stg[0] : null;
+}
+
+/* SCHEDULES */
+var SCHEDULES = {
+  regular:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'09:02'},
+    {id:'2',label:'P2',start:'09:06',end:'09:56'},
+    {id:'brunch',label:'Brunch',start:'09:56',end:'10:11',brk:true},
+    {id:'3',label:'P3',start:'10:15',end:'11:05'},
+    {id:'4',label:'P4',start:'11:09',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'5',label:'P5',start:'12:37',end:'13:27'},
+    {id:'6',label:'P6',start:'13:31',end:'14:21'},
+    {id:'7',label:'P7',start:'14:25',end:'15:15'},
+  ]},
+  blockWed:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'09:57'},
+    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',brk:true},
+    {id:'3',label:'P3',start:'10:16',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'5',label:'P5',start:'12:37',end:'14:20'},
+    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  ]},
+  blockThu:{ periods:[
+    {id:'2',label:'P2',start:'08:10',end:'09:57'},
+    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',brk:true},
+    {id:'4',label:'P4',start:'10:16',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'6',label:'P6',start:'12:37',end:'14:20'},
+    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  ]},
+  minimum:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:46'},
+    {id:'2',label:'P2',start:'08:50',end:'09:23'},
+    {id:'3',label:'P3',start:'09:27',end:'10:00'},
+    {id:'4',label:'P4',start:'10:04',end:'10:37'},
+    {id:'brunch',label:'Lunch',start:'10:37',end:'11:10',brk:true},
+    {id:'5',label:'P5',start:'11:14',end:'11:47'},
+    {id:'6',label:'P6',start:'11:51',end:'12:24'},
+    {id:'7',label:'P7',start:'12:28',end:'13:01'},
+  ]},
+  earlyRelease:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:41'},
+    {id:'3',label:'P3',start:'09:45',end:'10:26'},
+    {id:'4',label:'P4',start:'10:30',end:'11:11'},
+    {id:'lunch',label:'Lunch',start:'11:11',end:'11:45',brk:true},
+    {id:'5',label:'P5',start:'11:49',end:'12:30'},
+    {id:'6',label:'P6',start:'12:34',end:'13:15'},
+    {id:'7',label:'P7',start:'13:19',end:'14:00'},
+  ]},
+  foggy:{ periods:[
+    {id:'1',label:'P1',start:'10:00',end:'10:44'},
+    {id:'2',label:'P2',start:'10:48',end:'11:28'},
+    {id:'3',label:'P3',start:'11:32',end:'12:12'},
+    {id:'lunch',label:'Lunch',start:'12:12',end:'12:49',brk:true},
+    {id:'4',label:'P4',start:'12:53',end:'13:33'},
+    {id:'5',label:'P5',start:'13:37',end:'14:17'},
+    {id:'6',label:'P6',start:'14:21',end:'15:01'},
+    {id:'7',label:'P7',start:'15:05',end:'15:45'},
+  ]},
+  activity:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:44'},
+    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',brk:true},
+    {id:'3',label:'P3',start:'10:03',end:'10:47'},
+    {id:'4',label:'P4',start:'10:51',end:'11:35'},
+    {id:'5',label:'P5',start:'11:39',end:'12:23'},
+    {id:'lunch',label:'Lunch',start:'12:23',end:'12:57',brk:true},
+    {id:'6',label:'P6',start:'13:01',end:'13:45'},
+    {id:'7',label:'P7',start:'13:49',end:'14:33'},
+    {id:'8',label:'P8 ACTIVITY',start:'14:37',end:'15:15'},
+  ]},
+  codeDay:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:44'},
+    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',brk:true},
+    {id:'3',label:'P3',start:'10:03',end:'10:47'},
+    {id:'4',label:'P4',start:'10:51',end:'11:35'},
+    {id:'rally',label:'Rally',start:'11:39',end:'12:17',brk:true},
+    {id:'lunch',label:'Lunch',start:'12:17',end:'12:51',brk:true},
+    {id:'5',label:'P5',start:'12:55',end:'13:39'},
+    {id:'6',label:'P6',start:'13:43',end:'14:27'},
+    {id:'7',label:'P7',start:'14:31',end:'15:15'},
+  ]},
+};
+var NO_SCHOOL = [
+  '2026-09-07','2026-11-11','2026-11-26','2026-11-27',
+  '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
+  '2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-18','2027-02-15',
+  '2027-04-05','2027-04-06','2027-04-07','2027-04-08','2027-04-09'
+];
+
+function toMins(t){ var p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+function nowMins(){ var n=new Date(); return n.getHours()*60+n.getMinutes(); }
+function dateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+async function loadOverrides(){
+  var rows = await sbFetch('cw2_schedule_override','or=(room.eq.'+ROOM+',room.eq.global)&select=*');
+  var map={}; (rows||[]).forEach(function(r){ map[r.room+'|'+r.date]=r; });
+  window._cwOverrides=map;
+}
+function getSchedule(){
+  var now=new Date(), ds=dateStr(now), dow=now.getDay();
+  if(dow===0||dow===6||NO_SCHOOL.includes(ds)) return null;
+  var ovr=window._cwOverrides||{};
+  var hit=ovr[ROOM+'|'+ds]||ovr['global|'+ds];
+  if(hit){ if(hit.custom_periods) return {periods:hit.custom_periods}; if(hit.schedule_type&&SCHEDULES[hit.schedule_type]) return SCHEDULES[hit.schedule_type]; }
+  var events=window._cwCalEvents||[];
+  var titles=events.filter(function(e){return e.start&&e.start.substring(0,10)===ds;}).map(function(e){return(e.title||'').toLowerCase();});
+  var has=function(kw){return titles.some(function(t){return t.includes(kw);});};
+  if(has('foggy')||has('late arrival')) return SCHEDULES.foggy;
+  if(has('minimum')) return SCHEDULES.minimum;
+  if(has('code day')) return SCHEDULES.codeDay;
+  if(has('activity')) return SCHEDULES.activity;
+  if(has('early release')) return SCHEDULES.earlyRelease;
+  if(has('block')) return dow===3?SCHEDULES.blockWed:SCHEDULES.blockThu;
+  if(dow===1) return SCHEDULES.earlyRelease;
+  if(dow===3) return SCHEDULES.blockWed;
+  if(dow===4) return SCHEDULES.blockThu;
+  return SCHEDULES.regular;
+}
+
+/* EVENTS */
+var CW_EVENTS = [];
+async function loadCwEvents(){
+  var ds=dateStr(new Date());
+  var rows=await sbFetch('cw2_events','active=eq.true&end_date=gte.'+ds+'&order=start_date.asc');
+  CW_EVENTS=rows||[];
+}
+async function loadCwCalendar(){
+  try{
+    var res=await fetch(CAL_SCRIPT_URL,{cache:'no-store'}); if(!res.ok) throw 0;
+    var data=await res.json(); if(data.status!=='ok'||!data.events) throw 0;
+    window._cwCalEvents=data.events.map(function(e){ var s=e.start||''; return {title:e.title||'',start:s,start_date:s.slice(0,10)}; });
+  } catch(e){ if(!window._cwCalEvents) window._cwCalEvents=[]; }
+}
+function daysBetween(a,b){ return Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/(24*60*60*1000)); }
+function monDay(ds){ var dt=new Date(ds+'T00:00:00'); var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return M[dt.getMonth()]+' '+dt.getDate(); }
+function getUpcomingEvents(ds){
+  var cutoff=new Date(ds+'T00:00:00'); cutoff.setDate(cutoff.getDate()+60); var cs=dateStr(cutoff);
+  var inW=function(d){return d&&d>=ds&&d<=cs;};
+  var curated=CW_EVENTS.filter(function(e){return inW(e.start_date);}).map(function(e){return{title:e.title,start_date:e.start_date};});
+  var feed=(window._cwCalEvents||[]).filter(function(e){return inW(e.start_date);}).map(function(e){return{title:e.title,start_date:e.start_date};});
+  var seen={}; var all=curated.concat(feed).filter(function(e){
+    if(!e.title||!e.title.trim()) return false;
+    var k=e.title.toUpperCase().trim()+'|'+e.start_date; if(seen[k]) return false; seen[k]=true; return true;
+  });
+  all.sort(function(a,b){return a.start_date<b.start_date?-1:a.start_date>b.start_date?1:0;});
+  return all;
+}
+
+/* BIRTHDAYS */
+var CW_BIRTHDAYS = [];
+async function loadBirthdays(){
+  var rows=await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&select=*');
+  CW_BIRTHDAYS=rows||[];
+}
+function bdaysUntil(month,day){
+  var n=new Date(), y=n.getFullYear(); var b=new Date(y,month-1,day); var t=new Date(y,n.getMonth(),n.getDate());
+  if(b<t) b.setFullYear(y+1); return Math.round((b-t)/86400000);
+}
+
+/* SPORT DAYS */
+var CW_SPORT_DAYS = [];
+async function loadSportDays(){
+  var ds=dateStr(new Date());
+  var rows=await sbFetch('cw2_sport_days','active=eq.true&date=gte.'+ds+'&order=date.asc&limit=4');
+  CW_SPORT_DAYS=rows||[];
+}
+
+/* SVG SPORT ICONS — all amber-tinted, 48×48 viewBox */
+var SPORT_ICONS = {
+  football: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="24" rx="18" ry="11" fill="#c8a840" opacity=".18" stroke="#c8a840" stroke-width="2"/><ellipse cx="24" cy="24" rx="18" ry="11" stroke="#c8a840" stroke-width="2.2" fill="none"/><line x1="24" y1="13.2" x2="24" y2="34.8" stroke="#c8a840" stroke-width="1.6"/><line x1="19" y1="21" x2="29" y2="21" stroke="#c8a840" stroke-width="1.4"/><line x1="19" y1="24" x2="29" y2="24" stroke="#c8a840" stroke-width="1.4"/><line x1="19" y1="27" x2="29" y2="27" stroke="#c8a840" stroke-width="1.4"/></svg>',
+
+  volleyball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M8.5 24 Q16 16 24 24 Q32 32 39.5 24" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M14 14 Q18 24 14 34" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M34 14 Q30 24 34 34" stroke="#c8a840" stroke-width="1.6" fill="none"/></svg>',
+
+  tennis: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="21" cy="20" rx="14" ry="14" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M10 10 Q21 20 10 30" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M32 10 Q21 20 32 30" stroke="#c8a840" stroke-width="1.6" fill="none"/><line x1="21" y1="34" x2="26" y2="42" stroke="#c8a840" stroke-width="2.8" stroke-linecap="round"/><line x1="26" y1="42" x2="36" y2="44" stroke="#c8a840" stroke-width="2.2" stroke-linecap="round"/></svg>',
+
+  cross_country: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 34 Q12 34 14 30 L20 18 Q22 14 26 14 L38 14" stroke="#c8a840" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M14 30 L14 42 Q14 44 16 44 L28 44 Q36 44 36 40 Q36 37 28 37 L20 37 L20 34" stroke="#c8a840" stroke-width="2" fill="#c8a840" fill-opacity=".12" stroke-linejoin="round"/><circle cx="26" cy="10" r="4" stroke="#c8a840" stroke-width="2" fill="none"/></svg>',
+
+  golf: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="28" y1="6" x2="20" y2="44" stroke="#c8a840" stroke-width="2.2" stroke-linecap="round"/><path d="M20 14 Q28 11 30 16 Q32 21 24 22" stroke="#c8a840" stroke-width="2" fill="#c8a840" fill-opacity=".15" stroke-linejoin="round"/><circle cx="22" cy="38" r="5" stroke="#c8a840" stroke-width="1.8" fill="#c8a840" fill-opacity=".15"/><circle cx="22" cy="38" r="1.5" fill="#c8a840" opacity=".5"/></svg>',
+
+  basketball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M8 24 Q16 18 24 24 Q32 30 40 24" stroke="#c8a840" stroke-width="1.6" fill="none"/><line x1="24" y1="8" x2="24" y2="40" stroke="#c8a840" stroke-width="1.6"/><path d="M15 9.5 Q12 20 15 38.5" stroke="#c8a840" stroke-width="1.4" fill="none"/><path d="M33 9.5 Q36 20 33 38.5" stroke="#c8a840" stroke-width="1.4" fill="none"/></svg>',
+
+  soccer: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><polygon points="24,14 28,17 27,22 21,22 20,17" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="12,21 15,18 19,20 18,25 13,25" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="36,21 33,18 29,20 30,25 35,25" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="16,31 13,27 18,26 21,29 19,33" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="32,31 35,27 30,26 27,29 29,33" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/></svg>',
+
+  baseball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M15 10 Q10 18 12 28 Q14 36 20 40" stroke="#c8a840" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M33 10 Q38 18 36 28 Q34 36 28 40" stroke="#c8a840" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M15 14 L18 16 M14 19 L17 20 M14 24 L17 25 M15 29 L18 30 M17 34 L20 35" stroke="#c8a840" stroke-width="1.2" stroke-linecap="round"/><path d="M33 14 L30 16 M34 19 L31 20 M34 24 L31 25 M33 29 L30 30 M31 34 L28 35" stroke="#c8a840" stroke-width="1.2" stroke-linecap="round"/></svg>',
+
+  softball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#d4b040" stroke-width="2.4" fill="#d4b040" fill-opacity=".14"/><path d="M15 10 Q10 18 12 28 Q14 36 20 40" stroke="#d4b040" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M33 10 Q38 18 36 28 Q34 36 28 40" stroke="#d4b040" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M15 14 L18 16 M14 19 L17 20 M14 24 L17 25 M15 29 L18 30 M17 34 L20 35" stroke="#d4b040" stroke-width="1.2" stroke-linecap="round"/><path d="M33 14 L30 16 M34 19 L31 20 M34 24 L31 25 M33 29 L30 30 M31 34 L28 35" stroke="#d4b040" stroke-width="1.2" stroke-linecap="round"/><circle cx="24" cy="24" r="3" fill="#d4b040" opacity=".4"/></svg>'
+};
+
+/* HONOR ROLL */
+async function loadHonorRoll(){
+  if(SETTINGS&&SETTINGS.show_honor_roll===false) return [];
+  var rows=await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
+  return (rows||[]).filter(function(r){return !cwBlocked(r.name);}).map(function(r){return r.name;});
+}
+
+/* INSPIRATION / WORDS OF WISDOM */
+var CW_INSPIRE=[], inspIdx=0, inspTimer=null;
+var INSP_LABELS={cowboy_code:'Cowboy Code',word_of_day:'Word of the Day',fun_facts:'Fun Fact',positive_thoughts:'Words of Wisdom',business:'Business Tip'};
+async function loadInspiration(){
+  var gc=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
+  if(gc.eve_inspiration===false){ CW_INSPIRE=[]; return; }
+  var DEFAULT_CATS=['fun_facts','positive_thoughts','cowboy_code','word_of_day'];
+  var savedCats=Array.isArray(gc.eve_inspiration_cats)?gc.eve_inspiration_cats:DEFAULT_CATS;
+  var want={}; savedCats.forEach(function(c){ want[c]=1; if(c==='wise_words') want.positive_thoughts=1; });
+  var rows=await sbFetch('cw2_screens','room=eq.global&enabled=eq.true&order=sort_order.asc');
+  var pool=[];
+  (rows||[]).forEach(function(r){
+    var cat=r.category||'cowboy_code';
+    if(!want[cat]) return;
+    var lines=Array.isArray(r.lines)?r.lines:JSON.parse(r.lines||'[]');
+    var text=lines.map(function(x){return(x==null?'':String(x)).trim();}).filter(Boolean).join(' ');
+    if(!text) return;
+    pool.push({cat:cat, label:(INSP_LABELS[cat]||cat), text:text});
+  });
+  for(var i=pool.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  CW_INSPIRE=pool; inspIdx=0;
+}
+
+/* WEATHER (open-meteo, keyless, Fresno CA) */
+var CW_WEATHER=null, CW_WEATHER_DAILY=null;
+var WEATHER_CODES={0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',
+  51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',
+  71:'Light Snow',73:'Snow',75:'Heavy Snow',77:'Snow',80:'Showers',81:'Showers',82:'Heavy Showers',
+  95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+async function loadWeather(){
+  try{
+    var url='https://api.open-meteo.com/v1/forecast?latitude=36.4327&longitude=-119.8668'+
+      '&current=temperature_2m,weather_code,apparent_temperature'+
+      '&daily=temperature_2m_max,temperature_2m_min,weather_code'+
+      '&temperature_unit=fahrenheit&timezone=America/Los_Angeles&forecast_days=4';
+    var res=await fetch(url); if(!res.ok) return;
+    var data=await res.json(); CW_WEATHER=data.current; CW_WEATHER_DAILY=data.daily;
+  }catch(e){ CW_WEATHER=null; }
+}
+
+/* NEWS — Good News Network via rss2json */
+var CW_NEWS=[], newsIdx=0;
+var NEWS_API_URL='https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.goodnewsnetwork.org%2Ffeed%2F&api_key=xrwlpjf13arrttfnqkikxznkdlehw9panrbbl94s&count=10';
+async function loadNews(){
+  try{
+    var res=await fetch(NEWS_API_URL); if(!res.ok) return;
+    var data=await res.json(); if(data.status!=='ok'||!data.items) return;
+    CW_NEWS=data.items.filter(function(it){return it.title&&it.title.trim();}).map(function(it){
+      return {
+        headline: it.title.trim(),
+        body: (it.description||'').replace(/<[^>]+>/g,'').trim().slice(0,220),
+        source: 'GOOD NEWS NETWORK'
+      };
+    });
+  }catch(e){ CW_NEWS=[]; }
+}
+
+/* AIR QUALITY — open-meteo AQI (keyless, Fresno CA) */
+var CW_AQI=null;
+async function loadAirQuality(){
+  try{
+    var url='https://air-quality-api.open-meteo.com/v1/air-quality?latitude=36.4327&longitude=-119.8668&current=us_aqi&timezone=America/Los_Angeles';
+    var res=await fetch(url); if(!res.ok) return;
+    var data=await res.json();
+    CW_AQI=(data.current&&data.current.us_aqi!=null)?Math.round(data.current.us_aqi):null;
+  }catch(e){ CW_AQI=null; }
+}
+function aqiLabel(v){
+  if(v==null) return '—';
+  if(v<=50)  return 'GOOD';
+  if(v<=100) return 'MODERATE';
+  if(v<=150) return 'SENSITIVE';
+  if(v<=200) return 'UNHEALTHY';
+  if(v<=300) return 'VERY UNHEALTHY';
+  return 'HAZARDOUS';
+}
+function aqiColor(v){
+  if(v==null) return 'var(--cw-dim)';
+  if(v<=50)  return '#60c060';
+  if(v<=100) return '#c8c040';
+  if(v<=150) return '#c87820';
+  if(v<=200) return '#c04020';
+  if(v<=300) return '#9030a0';
+  return '#8b0000';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER FUNCTIONS
+   ═══════════════════════════════════════════════════════════ */
+
+/* CLOCK */
+function renderClock(){
+  var n=new Date(), h=n.getHours(), m=String(n.getMinutes()).padStart(2,'0'), ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  document.getElementById('p-clock').textContent=h+':'+m+' '+ap;
+}
+
+/* EVENTS LIST */
+function renderEvents(){
+  var ds=dateStr(new Date());
+  var up=getUpcomingEvents(ds).slice(0,5);
+  var el=document.getElementById('events-list');
+  if(!up.length){ el.innerHTML='<div class="ev-empty">NO UPCOMING EVENTS</div>'; return; }
+  var html='';
+  up.forEach(function(e){
+    var d=daysBetween(e.start_date,ds);
+    var dnum=d===0?'TODAY':d===1?'1':String(d);
+    var dlbl=d===0?'':d===1?'DAY':'DAYS';
+    html+='<div class="ev-item">'+
+      '<div class="ev-left">'+
+        '<div class="ev-days-num">'+dnum+'</div>'+
+        (dlbl?'<div class="ev-days-lbl">'+dlbl+'</div>':'')+
+      '</div>'+
+      '<div class="ev-right">'+
+        '<div class="ev-title">'+(e.title||'').toUpperCase()+'</div>'+
+        '<div class="ev-date">'+monDay(e.start_date)+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+/* STATUS / NEXT CLASS */
+function renderStatus(){
+  var sched=getSchedule(), nm=nowMins();
+  var badge='', detail='';
+  if(!sched){
+    badge='CLOSED';
+    detail='SEE YOU TOMORROW';
+  } else {
+    var inP=null, nextP=null;
+    for(var i=0;i<sched.periods.length;i++){
+      var p=sched.periods[i], s=toMins(p.start), e=toMins(p.end);
+      if(nm>=s&&nm<e){ inP=p; break; }
+      if(nm<s&&!nextP) nextP=p;
+    }
+    if(inP){
+      if(inP.brk){ badge=inP.label.toUpperCase(); detail='ENDS '+inP.end; }
+      else { badge=inP.label; detail='ENDS '+inP.end; }
+    } else if(nextP){
+      if(nm<toMins(sched.periods[0].start)){ badge='PRE-BELL'; detail='FIRST BELL · '+sched.periods[0].start; }
+      else { badge='PASSING'; detail='NEXT: '+nextP.label+' · '+nextP.start; }
+    } else {
+      badge='DISMISSED'; detail='SCHOOL IS OUT';
+    }
+  }
+  document.getElementById('status-badge').textContent=badge;
+  document.getElementById('status-detail').textContent=detail;
+}
+
+/* BIRTHDAYS */
+function renderBirthdays(){
+  var n=new Date();
+  var upcoming=CW_BIRTHDAYS.map(function(r){
+    return {name:r.name, month:r.month, day:r.day, days:bdaysUntil(r.month,r.day)};
+  }).filter(function(r){return r.days<=30;}).sort(function(a,b){return a.days-b.days;}).slice(0,3);
+  var el=document.getElementById('bday-list');
+  if(!upcoming.length){ el.innerHTML='<div class="bd-empty">NO UPCOMING BIRTHDAYS</div>'; return; }
+  var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var html='';
+  upcoming.forEach(function(r){
+    html+='<div class="bd-row">'+
+      '<div class="bd-dot"></div>'+
+      '<div class="bd-name">'+(r.name||'').toUpperCase()+'</div>'+
+      '<div class="bd-date">'+M[r.month-1]+' '+r.day+'</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+/* WEATHER */
+function renderWeather(){
+  var p=document.getElementById('p-weather');
+  if(!CW_WEATHER){ p.style.display='none'; return; }
+  p.style.display='';
+  var temp=Math.round(CW_WEATHER.temperature_2m);
+  var feels=Math.round(CW_WEATHER.apparent_temperature);
+  var code=CW_WEATHER.weather_code;
+  document.getElementById('wx-temp-big').textContent=temp+'°';
+  document.getElementById('wx-cond-lbl').textContent=(WEATHER_CODES[code]||'—').toUpperCase();
+  document.getElementById('wx-feels-lbl').textContent='FEELS LIKE '+feels+'°';
+  var aqiEl=document.getElementById('wx-aqi-lbl');
+  if(aqiEl){
+    var al=aqiLabel(CW_AQI), ac=aqiColor(CW_AQI);
+    aqiEl.textContent='AQI '+(CW_AQI!=null?CW_AQI:'—')+' · '+al;
+    aqiEl.style.color=ac;
+  }
+  var dl=CW_WEATHER_DAILY, html='', dn=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  if(dl&&dl.time){
+    for(var i=0;i<dl.time.length&&i<3;i++){
+      var d=new Date(dl.time[i]+'T12:00:00');
+      var lab=i===0?'TODAY':dn[d.getDay()];
+      var hi=Math.round(dl.temperature_2m_max[i]), lo=Math.round(dl.temperature_2m_min[i]);
+      html+='<div class="wx-day">'+
+        '<div class="wx-day-name">'+lab+'</div>'+
+        '<div class="wx-day-hi">'+hi+'°</div>'+
+        '<div class="wx-day-lo">'+lo+'°</div>'+
+      '</div>';
+    }
+  }
+  document.getElementById('wx-fc').innerHTML=html;
+}
+
+/* SPORT DAYS */
+function renderSportDays(){
+  var ds=dateStr(new Date());
+  for(var i=1;i<=4;i++){
+    var card=document.getElementById('sd-'+i);
+    var ev=CW_SPORT_DAYS[i-1];
+    if(!ev){ card.innerHTML='<div class="sd-empty">NO GAME</div>'; continue; }
+    var d=daysBetween(ev.date, ds);
+    var dNum=d===0?'NOW':String(d);
+    var dLbl=d===0?'':d===1?'DAY':'DAYS';
+    var icon=SPORT_ICONS[ev.sport]||SPORT_ICONS['baseball'];
+    var ha=(ev.home_away||'').toUpperCase()==='HOME'?'HOME':'AWAY';
+    card.innerHTML=
+      '<div class="sd-top-row">'+
+        '<div class="sd-icon">'+icon+'</div>'+
+        '<div class="sd-countdown">'+
+          '<div class="sd-days-num">'+dNum+'</div>'+
+          (dLbl?'<div class="sd-days-lbl">'+dLbl+'</div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="sd-divider"></div>'+
+      '<div class="sd-opponent">'+(ev.opponent||'TBD').toUpperCase()+'</div>'+
+      '<div class="sd-meta">'+
+        '<span class="sd-ha">'+ha+'</span><br>'+
+        (ev.game_time?ev.game_time:'')+(ev.release_time?' · REL '+ev.release_time:'')+
+      '</div>';
+  }
+}
+
+/* WORDS OF WISDOM */
+function renderWisdom(){
+  var el=document.getElementById('p-wisdom');
+  if(!CW_INSPIRE.length){ el.style.display='none'; return; }
+  el.style.display='';
+  var it=CW_INSPIRE[inspIdx];
+  document.getElementById('wisdom-cat').textContent=(it.label||'Cowboy Code').toUpperCase();
+  document.getElementById('wisdom-text').textContent=it.text;
+  if(inspTimer) clearInterval(inspTimer);
+  inspTimer=setInterval(function(){
+    inspIdx=(inspIdx+1)%CW_INSPIRE.length;
+    var txt=document.getElementById('wisdom-text');
+    txt.classList.add('fade');
+    setTimeout(function(){
+      var nit=CW_INSPIRE[inspIdx];
+      document.getElementById('wisdom-cat').textContent=(nit.label||'Cowboy Code').toUpperCase();
+      txt.textContent=nit.text;
+      txt.classList.remove('fade');
+    }, 650);
+  }, 14000);
+}
+
+/* HONOR ROLL */
+async function renderHonorRoll(){
+  var names=await loadHonorRoll();
+  var inner=document.getElementById('honor-inner');
+  if(!names.length){ inner.innerHTML=''; return; }
+  var seg=names.map(function(n){
+    return '<span class="hn-name">'+n+'</span><span class="hn-sep">★</span>';
+  }).join('');
+  inner.innerHTML=seg+seg; /* doubled for seamless loop */
+  /* scale animation speed to name count */
+  var dur=Math.max(120, names.length*6);
+  inner.style.animationDuration=dur+'s';
+}
+
+/* SCRAP-E SIGNAL INTERCEPT — typewriter */
+var crtItems=[], crtCurrent=0, crtCharIdx=0, crtTypeTimer=null, crtNextTimer=null;
+function startCRT(){
+  if(!CW_NEWS.length){
+    document.getElementById('crt-hl-text').textContent='NO SIGNAL — SCANNING...';
+    document.getElementById('crt-body').textContent='SCRAP-E is searching for transmissions. Check news API configuration.';
+    return;
+  }
+  crtItems=CW_NEWS; crtCurrent=0; showCRTItem(0);
+}
+function showCRTItem(idx){
+  if(!crtItems.length) return;
+  var it=crtItems[idx%crtItems.length];
+  document.getElementById('crt-counter').textContent=(idx%crtItems.length+1)+' / '+crtItems.length;
+  document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
+  document.getElementById('crt-body').textContent=it.body||'';
+  /* typewriter headline */
+  var hlEl=document.getElementById('crt-hl-text');
+  hlEl.textContent='';
+  clearTimeout(crtTypeTimer); clearTimeout(crtNextTimer);
+  crtCharIdx=0;
+  var full=it.headline;
+  function type(){
+    if(crtCharIdx<full.length){
+      hlEl.textContent=full.slice(0,++crtCharIdx);
+      crtTypeTimer=setTimeout(type, 28+Math.random()*22);
+    } else {
+      /* hold, then advance */
+      crtNextTimer=setTimeout(function(){
+        crtCurrent=(crtCurrent+1)%crtItems.length;
+        showCRTItem(crtCurrent);
+      }, 16000);
+    }
+  }
+  type();
+}
+
+/* SCRAP-E EYES — blink + subtle look-around */
+var eyeBlinkT=null, eyeLookT=null;
+function startEyes(){
+  scheduleBlink(); scheduleLook();
+}
+function scheduleBlink(){
+  var left=document.getElementById('eye-left');
+  var right=document.getElementById('eye-right');
+  if(left&&right){
+    left.classList.add('blink'); right.classList.add('blink');
+    setTimeout(function(){
+      if(left) left.classList.remove('blink');
+      if(right) right.classList.remove('blink');
+    }, 120);
+  }
+  eyeBlinkT=setTimeout(scheduleBlink, 2800+Math.random()*3200);
+}
+function scheduleLook(){
+  var pl=document.getElementById('pupil-left');
+  var pr=document.getElementById('pupil-right');
+  if(pl&&pr){
+    var dx=(Math.random()*2-1)*5, dy=(Math.random()*2-1)*3;
+    pl.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
+    pr.style.transform='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
+  }
+  eyeLookT=setTimeout(scheduleLook, 1800+Math.random()*2400);
+}
+
+/* SOUND LEVEL BARS (cosmetic — mic not wired; shows ambient animation) */
+(function initSoundBars(){
+  var bars=document.getElementById('sound-bars');
+  var n=18, html='';
+  for(var i=0;i<n;i++) html+='<div class="s-bar" id="sb'+i+'" style="height:4px"></div>';
+  bars.innerHTML=html;
+  /* gentle idle animation */
+  function tick(){
+    for(var i=0;i<n;i++){
+      var b=document.getElementById('sb'+i);
+      if(!b) continue;
+      var h=Math.round(4+Math.abs(Math.sin((Date.now()/800)+(i*0.6)))*24 + Math.random()*8);
+      b.style.height=h+'px';
+      b.className='s-bar'+(h>28?' hot':h>18?' lit':'');
+    }
+  }
+  setInterval(tick,80);
+})();
+
+/* SOUND INDICATOR BULBS — follow bar animation */
+function updateSoundBulbs(level){
+  /* level 0-4, lights up from bottom */
+  for(var i=1;i<=4;i++){
+    var b=document.getElementById('bsnd-'+i);
+    if(!b) continue;
+    var on=level>=(5-i);
+    b.className='bulb bulb-sound'+(on?' lit':'');
+  }
+}
+setInterval(function(){ updateSoundBulbs(Math.floor(Math.random()*3)); },1200);
+
+/* CRT TOP BULBS — sequence animation */
+(function crtBulbs(){
+  var ids=['bcrt-1','bcrt-2','bcrt-3','bcrt-4','bcrt-5'];
+  var step=0;
+  setInterval(function(){
+    ids.forEach(function(id,i){ var b=document.getElementById(id); if(b) b.className='bulb bulb-crt'+(i===step?' ':''); });
+    step=(step+1)%ids.length;
+  }, 800);
+})();
+
+/* PHOTO SLIDESHOW placeholder — populate PHOTOS array with URLs */
+var PHOTOS=[];  /* TODO: add photo URLs, e.g. from Supabase storage */
+var photoIdx=0;
+function nextPhoto(){
+  var img=document.getElementById('photo-img');
+  if(!PHOTOS.length||!img){ return; }
+  img.classList.add('fade');
+  setTimeout(function(){
+    photoIdx=(photoIdx+1)%PHOTOS.length;
+    img.src=PHOTOS[photoIdx];
+    img.onload=function(){ img.classList.remove('fade'); };
+  }, 1200);
+}
+if(PHOTOS.length) setInterval(nextPhoto, 8000);
+
+/* ═══════════════════════════════════════════════════════════
+   LOAD ALL & BOOT
+   ═══════════════════════════════════════════════════════════ */
+async function loadAll(){
+  await loadRoomConfig();
+  await loadNoMedia();
+  await loadOverrides();
+  await loadCwEvents();
+  await loadCwCalendar();
+  await loadBirthdays();
+  await loadSportDays();
+  await loadInspiration();
+  await loadWeather();
+  await loadAirQuality();
+  await loadNews();
+  renderEvents();
+  renderBirthdays();
+  renderSportDays();
+  renderWeather();
+  renderWisdom();
+  await renderHonorRoll();
+  startCRT();
+}
+
+(async function boot(){
+  /* immediate renders */
+  renderClock(); setInterval(renderClock, 10000);
+  setInterval(renderStatus, 5000);
+  renderStatus();
+
+  /* start eyes */
+  startEyes();
+
+  /* load data */
+  await loadAll();
+
+  /* refresh every 5 min */
+  setInterval(loadAll, 5*60*1000);
+})();
+</script>
+</body>
+</html>

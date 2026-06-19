@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sport Schedule Uploader · Cowboy Wire</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --bg:     #1a1812;
+  --panel:  #22201a;
+  --border: #4a3e20;
+  --amber:  #c8a840;
+  --hi:     #f0d060;
+  --dim:    #8a7a40;
+  --copper: #b87040;
+  --green:  #4a9a40;
+  --red:    #9a4030;
+  --input:  #2a2620;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--amber); min-height:100vh; }
+
+header {
+  background:var(--panel); border-bottom:2px solid var(--border);
+  padding:16px 28px; display:flex; align-items:center; gap:16px;
+}
+header h1 { font-size:20px; letter-spacing:0.08em; color:var(--hi); }
+header p  { font-size:13px; color:var(--dim); }
+.badge { background:var(--border); color:var(--amber); font-size:11px; letter-spacing:0.1em; padding:3px 8px; border-radius:3px; }
+
+main { max-width:1200px; margin:0 auto; padding:28px; }
+
+/* STEP INDICATORS */
+.steps { display:flex; gap:0; margin-bottom:28px; }
+.step { flex:1; padding:10px 16px; background:var(--panel); border:1px solid var(--border); font-size:12px; letter-spacing:0.08em; color:var(--dim); text-transform:uppercase; }
+.step:first-child { border-radius:6px 0 0 6px; }
+.step:last-child  { border-radius:0 6px 6px 0; }
+.step.active { background:rgba(200,168,64,0.12); color:var(--amber); border-color:var(--amber); }
+.step.done   { background:rgba(74,154,64,0.12); color:var(--green); border-color:var(--green); }
+.step-num { font-size:16px; font-weight:bold; display:block; }
+
+/* CARDS */
+.card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:24px; margin-bottom:20px; }
+.card h2 { font-size:15px; letter-spacing:0.08em; color:var(--hi); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--amber); }
+
+/* UPLOAD ZONE */
+#drop-zone {
+  border:2px dashed var(--border); border-radius:8px;
+  padding:48px; text-align:center; cursor:pointer;
+  transition:border-color 0.2s, background 0.2s;
+}
+#drop-zone:hover, #drop-zone.drag-over {
+  border-color:var(--amber); background:rgba(200,168,64,0.06);
+}
+#drop-zone .icon { font-size:40px; margin-bottom:12px; opacity:0.6; }
+#drop-zone p { color:var(--dim); font-size:14px; margin-top:6px; }
+#drop-zone strong { color:var(--amber); }
+#file-input { display:none; }
+
+/* STATUS MESSAGES */
+.msg { padding:12px 16px; border-radius:6px; font-size:14px; margin:12px 0; }
+.msg.info    { background:rgba(200,168,64,0.1); border:1px solid rgba(200,168,64,0.3); color:var(--amber); }
+.msg.success { background:rgba(74,154,64,0.1);  border:1px solid rgba(74,154,64,0.3);  color:var(--green); }
+.msg.error   { background:rgba(154,64,48,0.1);  border:1px solid rgba(154,64,48,0.3);  color:#d07060; }
+.msg.warn    { background:rgba(184,112,64,0.1); border:1px solid rgba(184,112,64,0.3); color:var(--copper); }
+
+/* COLUMN MAPPER */
+#mapper-section { display:none; }
+.mapper-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.map-row { display:flex; align-items:center; gap:10px; }
+.map-row label { min-width:120px; font-size:13px; color:var(--amber); }
+select, input[type=text], input[type=date] {
+  background:var(--input); color:var(--hi); border:1px solid var(--border);
+  border-radius:4px; padding:7px 10px; font-size:13px; width:100%;
+  outline:none;
+}
+select:focus, input:focus { border-color:var(--amber); }
+select option { background:var(--input); }
+
+/* TABLE */
+#preview-section { display:none; }
+.table-wrap { overflow-x:auto; max-height:480px; overflow-y:auto; border-radius:6px; border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead th {
+  background:rgba(200,168,64,0.12); color:var(--amber);
+  padding:10px 12px; text-align:left; font-size:11px; letter-spacing:0.1em;
+  text-transform:uppercase; border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:2;
+}
+tbody tr { border-bottom:1px solid rgba(74,62,32,0.5); }
+tbody tr:hover { background:rgba(200,168,64,0.04); }
+tbody td { padding:7px 10px; vertical-align:middle; }
+tbody td input, tbody td select { padding:4px 6px; font-size:12px; }
+.sport-icon { font-size:18px; }
+.del-btn {
+  background:none; border:none; color:rgba(154,64,48,0.6); cursor:pointer;
+  font-size:16px; padding:2px 6px; border-radius:3px; transition:color 0.15s;
+}
+.del-btn:hover { color:#d07060; }
+.add-row-btn {
+  background:rgba(200,168,64,0.08); border:1px dashed var(--border);
+  color:var(--dim); padding:8px 16px; border-radius:4px; cursor:pointer;
+  font-size:13px; margin-top:10px; width:100%;
+  transition:border-color 0.15s, color 0.15s;
+}
+.add-row-btn:hover { border-color:var(--amber); color:var(--amber); }
+
+/* SPORT SPORT BADGE */
+.sport-badge {
+  display:inline-block; padding:2px 8px; border-radius:3px;
+  background:rgba(200,168,64,0.15); font-size:11px; letter-spacing:0.08em;
+  color:var(--amber); text-transform:uppercase;
+}
+
+/* BUTTONS */
+.btn { padding:10px 22px; border-radius:5px; border:none; cursor:pointer; font-size:14px; letter-spacing:0.05em; font-weight:600; transition:opacity 0.15s, transform 0.1s; }
+.btn:hover { opacity:0.85; }
+.btn:active { transform:scale(0.98); }
+.btn-primary { background:var(--amber); color:#1a1812; }
+.btn-secondary { background:rgba(200,168,64,0.15); color:var(--amber); border:1px solid var(--border); }
+.btn-danger   { background:rgba(154,64,48,0.2); color:#d07060; border:1px solid rgba(154,64,48,0.4); }
+.btn-success  { background:rgba(74,154,64,0.2); color:var(--green); border:1px solid rgba(74,154,64,0.4); }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; align-items:center; }
+
+/* STATS BAR */
+.stats-bar { display:flex; gap:20px; padding:12px 0; border-top:1px solid var(--border); margin-top:12px; }
+.stat { font-size:13px; color:var(--dim); }
+.stat strong { color:var(--hi); font-size:16px; }
+
+/* SPORT SELECTOR */
+.sport-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.sport-opt {
+  padding:6px 12px; border:1px solid var(--border); border-radius:4px;
+  font-size:12px; letter-spacing:0.08em; color:var(--dim); cursor:pointer;
+  background:none; transition:all 0.15s; text-transform:uppercase;
+}
+.sport-opt:hover, .sport-opt.selected { border-color:var(--amber); color:var(--amber); background:rgba(200,168,64,0.1); }
+
+/* RAW TEXT AREA */
+#raw-section { display:none; }
+#raw-text { width:100%; height:180px; resize:vertical; background:var(--input); color:var(--amber); border:1px solid var(--border); border-radius:4px; padding:12px; font-family:monospace; font-size:12px; }
+
+/* PROGRESS */
+#progress-bar { height:4px; background:var(--border); border-radius:2px; margin:12px 0; overflow:hidden; display:none; }
+#progress-fill { height:100%; background:var(--amber); border-radius:2px; width:0; transition:width 0.3s; }
+
+/* RESULT LOG */
+#result-log { display:none; background:var(--input); border:1px solid var(--border); border-radius:6px; padding:16px; font-family:monospace; font-size:12px; max-height:200px; overflow-y:auto; color:var(--dim); margin-top:12px; }
+#result-log .ok   { color:var(--green); }
+#result-log .fail { color:#d07060; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>⚙ SPORT SCHEDULE UPLOADER</h1>
+    <p>Cowboy Wire · Riverdale High School · Supabase → cw2_sport_days</p>
+  </div>
+  <span class="badge">ADMIN TOOL</span>
+</header>
+
+<main>
+  <!-- STEP INDICATORS -->
+  <div class="steps">
+    <div class="step active" id="step-1"><span class="step-num">1</span>Upload File</div>
+    <div class="step"        id="step-2"><span class="step-num">2</span>Map Columns</div>
+    <div class="step"        id="step-3"><span class="step-num">3</span>Review & Edit</div>
+    <div class="step"        id="step-4"><span class="step-num">4</span>Save to Supabase</div>
+  </div>
+
+  <!-- STEP 1: UPLOAD -->
+  <div class="card" id="upload-card">
+    <h2><div class="dot"></div>Upload Schedule File</h2>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="icon">📂</div>
+      <strong>Click to choose a file</strong> or drag it here
+      <p>Supports .xlsx, .xls, .csv — and .pdf (text extraction)</p>
+    </div>
+    <input type="file" id="file-input" accept=".xlsx,.xls,.csv,.pdf">
+    <div id="upload-msg"></div>
+
+    <div style="margin-top:20px;">
+      <p style="font-size:13px;color:var(--dim);margin-bottom:10px;">Or enter schedule data manually:</p>
+      <button class="btn btn-secondary" onclick="showManual()">Enter Manually</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: COLUMN MAPPER (for XLSX/CSV) -->
+  <div class="card" id="mapper-section">
+    <h2><div class="dot"></div>Map Columns</h2>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:16px;">Tell us which columns in your file match each field. Leave blank to skip.</p>
+    <div class="mapper-grid" id="mapper-grid"></div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <label style="font-size:13px;color:var(--amber);display:block;margin-bottom:8px;">Default release time (applied when column is blank):</label>
+      <input type="text" id="default-release" value="2:15 PM" style="max-width:140px;">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="applyMapping()">Parse Schedule →</button>
+      <button class="btn btn-secondary" onclick="resetUpload()">← Back</button>
+    </div>
+  </div>
+
+  <!-- STEP 2b: RAW PDF TEXT -->
+  <div class="card" id="raw-section">
+    <h2><div class="dot"></div>PDF Text — Review & Clean</h2>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:10px;">PDF extracted text is below. Use it as reference to fill the schedule manually below, or paste cleaned rows (one per line: <code>Date, Sport, Opponent, H/A, Time, Release</code>).</p>
+    <textarea id="raw-text" placeholder="Extracted PDF text will appear here..."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="parsePdfText()">Parse Lines →</button>
+      <button class="btn btn-secondary" onclick="showManual()">Enter Manually Instead</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: PREVIEW / EDIT TABLE -->
+  <div class="card" id="preview-section">
+    <h2><div class="dot"></div>Review & Edit Schedule</h2>
+    <p style="font-size:13px;color:var(--dim);margin-bottom:14px;">Correct any fields before saving. Click a cell to edit. Sport type must match the icon key exactly.</p>
+
+    <div class="table-wrap">
+      <table id="preview-table">
+        <thead>
+          <tr>
+            <th>Del</th>
+            <th>Date</th>
+            <th>Sport</th>
+            <th>Opponent</th>
+            <th>H/A</th>
+            <th>Game Time</th>
+            <th>Release Time</th>
+            <th>Active</th>
+          </tr>
+        </thead>
+        <tbody id="preview-body"></tbody>
+      </table>
+    </div>
+    <button class="add-row-btn" onclick="addRow()">+ Add Row</button>
+
+    <div class="stats-bar">
+      <div class="stat">Rows: <strong id="stat-rows">0</strong></div>
+      <div class="stat">Home: <strong id="stat-home">0</strong></div>
+      <div class="stat">Away: <strong id="stat-away">0</strong></div>
+      <div class="stat">Unique sports: <strong id="stat-sports">0</strong></div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="save-btn" onclick="saveToSupabase()">Save to Supabase →</button>
+      <button class="btn btn-danger" onclick="clearExistingAndSave()">⚠ Replace All Existing</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+      <button class="btn btn-secondary" onclick="resetUpload()">← Start Over</button>
+    </div>
+    <div id="progress-bar"><div id="progress-fill"></div></div>
+    <div id="result-log"></div>
+  </div>
+</main>
+
+<script>
+/* ═══════════════════════════
+   CONFIG
+═══════════════════════════ */
+var SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+var TABLE = 'cw2_sport_days';
+
+var SPORTS = ['football','volleyball','tennis','cross_country','golf','basketball','soccer','baseball','softball'];
+var SPORT_EMOJI = {football:'🏈',volleyball:'🏐',tennis:'🎾',cross_country:'👟',golf:'⛳',basketball:'🏀',soccer:'⚽',baseball:'⚾',softball:'🥎'};
+
+/* infer sport from text */
+function guessSport(txt){
+  txt=(txt||'').toLowerCase();
+  if(txt.includes('football')||txt.includes('fb')) return 'football';
+  if(txt.includes('volleyball')||txt.includes('vb')) return 'volleyball';
+  if(txt.includes('tennis')) return 'tennis';
+  if(txt.includes('cross')||txt.includes('xc')||txt.includes('cc')) return 'cross_country';
+  if(txt.includes('golf')) return 'golf';
+  if(txt.includes('basketball')||txt.includes('bball')||txt.includes('bkb')) return 'basketball';
+  if(txt.includes('soccer')) return 'soccer';
+  if(txt.includes('softball')||txt.includes('sftb')) return 'softball';
+  if(txt.includes('baseball')||txt.includes('bsbl')) return 'baseball';
+  return 'football'; /* default */
+}
+
+/* normalize date to YYYY-MM-DD */
+function normalizeDate(v){
+  if(!v) return '';
+  if(typeof v === 'number'){
+    /* Excel serial date */
+    var d = new Date((v - 25569) * 86400 * 1000);
+    return d.toISOString().slice(0,10);
+  }
+  var s=String(v).trim();
+  /* already ISO */
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  /* MM/DD/YYYY or M/D/YY */
+  var m=s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+  if(m){
+    var y=m[3].length===2?'20'+m[3]:m[3];
+    return y+'-'+m[1].padStart(2,'0')+'-'+m[2].padStart(2,'0');
+  }
+  /* Month DD YYYY or Sep 12 2026 */
+  var months={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',oct:'10',nov:'11',dec:'12'};
+  var m2=s.match(/([A-Za-z]+)\.?\s+(\d{1,2}),?\s+(\d{4})/);
+  if(m2){ var mo=months[(m2[1].slice(0,3).toLowerCase())]; if(mo) return m2[3]+'-'+mo+'-'+m2[2].padStart(2,'0'); }
+  /* try native parse */
+  var pd=new Date(s); if(!isNaN(pd)) return pd.toISOString().slice(0,10);
+  return s;
+}
+
+function normalizeHA(v){
+  var s=(v||'').toLowerCase().trim();
+  if(s==='h'||s==='home'||s==='vs'||s.startsWith('home')) return 'home';
+  if(s==='a'||s==='away'||s==='@'||s.startsWith('away')||s.startsWith('at ')) return 'away';
+  return 'home';
+}
+
+/* ═══════════════════════════
+   STATE
+═══════════════════════════ */
+var parsedRows=[];
+var fileHeaders=[];
+var rawSheetData=[];
+
+/* ═══════════════════════════
+   STEP MANAGEMENT
+═══════════════════════════ */
+function setStep(n){
+  [1,2,3,4].forEach(function(i){
+    var el=document.getElementById('step-'+i);
+    el.className='step'+(i<n?' done':i===n?' active':'');
+  });
+}
+
+/* ═══════════════════════════
+   FILE HANDLING
+═══════════════════════════ */
+var dropZone=document.getElementById('drop-zone');
+dropZone.addEventListener('dragover',function(e){e.preventDefault();dropZone.classList.add('drag-over');});
+dropZone.addEventListener('dragleave',function(){dropZone.classList.remove('drag-over');});
+dropZone.addEventListener('drop',function(e){e.preventDefault();dropZone.classList.remove('drag-over');handleFile(e.dataTransfer.files[0]);});
+document.getElementById('file-input').addEventListener('change',function(e){if(e.target.files[0]) handleFile(e.target.files[0]);});
+
+function showMsg(id,text,type){ var el=document.getElementById(id); el.innerHTML='<div class="msg '+type+'">'+text+'</div>'; }
+
+function handleFile(file){
+  if(!file) return;
+  var ext=file.name.split('.').pop().toLowerCase();
+  showMsg('upload-msg','Reading <strong>'+file.name+'</strong>...','info');
+  if(ext==='pdf'){
+    readPDF(file);
+  } else {
+    readXLSX(file);
+  }
+}
+
+function readXLSX(file){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      rawSheetData=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      if(rawSheetData.length<2){ showMsg('upload-msg','File appears empty or has no data rows.','error'); return; }
+      fileHeaders=rawSheetData[0].map(function(h){return String(h).trim();});
+      showMsg('upload-msg','Found <strong>'+fileHeaders.length+'</strong> columns and <strong>'+(rawSheetData.length-1)+'</strong> rows. Now map the columns below.','success');
+      buildMapper();
+    }catch(err){ showMsg('upload-msg','Could not read file: '+err.message,'error'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function readPDF(file){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  var reader=new FileReader();
+  reader.onload=function(e){
+    pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise.then(function(pdf){
+      var pages=[], pageNums=[];
+      for(var i=1;i<=pdf.numPages;i++) pageNums.push(i);
+      Promise.all(pageNums.map(function(n){
+        return pdf.getPage(n).then(function(pg){
+          return pg.getTextContent().then(function(tc){
+            return tc.items.map(function(it){return it.str;}).join(' ');
+          });
+        });
+      })).then(function(texts){
+        var full=texts.join('\n');
+        document.getElementById('raw-text').value=full;
+        document.getElementById('raw-section').style.display='block';
+        document.getElementById('mapper-section').style.display='none';
+        showMsg('upload-msg','PDF text extracted from <strong>'+pdf.numPages+'</strong> page(s). Review and clean below, then click Parse Lines.','info');
+        setStep(2);
+      });
+    }).catch(function(err){showMsg('upload-msg','PDF read error: '+err.message,'error');});
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+/* ═══════════════════════════
+   COLUMN MAPPER
+═══════════════════════════ */
+var FIELDS=[
+  {key:'date',      label:'Date'},
+  {key:'sport',     label:'Sport'},
+  {key:'opponent',  label:'Opponent'},
+  {key:'home_away', label:'Home / Away'},
+  {key:'game_time', label:'Game Time'},
+  {key:'release_time',label:'Release Time'},
+];
+var GUESSES={date:['date','game date','when','day'],sport:['sport','type','activity'],opponent:['opponent','opp','vs','against','team'],home_away:['h/a','home/away','location','site','where'],game_time:['time','game time','start','kickoff'],release_time:['release','dismiss','early release']};
+
+function buildMapper(){
+  document.getElementById('mapper-section').style.display='block';
+  document.getElementById('raw-section').style.display='none';
+  var grid=document.getElementById('mapper-grid');
+  grid.innerHTML='';
+  FIELDS.forEach(function(f){
+    var best='';
+    var kws=GUESSES[f.key]||[];
+    fileHeaders.forEach(function(h,i){
+      var hl=h.toLowerCase();
+      kws.forEach(function(kw){if(hl.includes(kw)&&!best) best=String(i);});
+    });
+    var opts='<option value="">— skip —</option>';
+    fileHeaders.forEach(function(h,i){ opts+='<option value="'+i+'"'+(best===String(i)?' selected':'')+'>'+h+'</option>'; });
+    grid.innerHTML+='<div class="map-row"><label>'+f.label+'</label><select id="map-'+f.key+'">'+opts+'</select></div>';
+  });
+  setStep(2);
+}
+
+function applyMapping(){
+  var cols={};
+  FIELDS.forEach(function(f){ var v=document.getElementById('map-'+f.key).value; if(v!=='') cols[f.key]=parseInt(v); });
+  var defRelease=document.getElementById('default-release').value||'2:15 PM';
+  parsedRows=[];
+  for(var r=1;r<rawSheetData.length;r++){
+    var row=rawSheetData[r];
+    var date=cols.date!=null?normalizeDate(row[cols.date]):'';
+    if(!date) continue; /* skip rows with no date */
+    parsedRows.push({
+      date:       date,
+      sport:      cols.sport!=null?guessSport(row[cols.sport]):'football',
+      opponent:   cols.opponent!=null?String(row[cols.opponent]||'').trim():'',
+      home_away:  cols.home_away!=null?normalizeHA(row[cols.home_away]):'home',
+      game_time:  cols.game_time!=null?String(row[cols.game_time]||'').trim():'',
+      release_time:cols.release_time!=null?String(row[cols.release_time]||'').trim():defRelease,
+      active:     true
+    });
+  }
+  showPreview();
+}
+
+/* ═══════════════════════════
+   PDF TEXT PARSER
+═══════════════════════════ */
+function parsePdfText(){
+  var raw=document.getElementById('raw-text').value;
+  var lines=raw.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var defRelease=document.getElementById('default-release')?document.getElementById('default-release').value:'2:15 PM';
+  parsedRows=[];
+  lines.forEach(function(line){
+    /* Try to find a date pattern in the line */
+    var dm=line.match(/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})\b/) ||
+           line.match(/\b([A-Za-z]+ \d{1,2},?\s*\d{4})\b/) ||
+           line.match(/\b(Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr|May|Jun)[a-z]*\.?\s+\d{1,2}/i);
+    if(!dm) return;
+    var date=normalizeDate(dm[0]);
+    if(!date||date.length<8) return;
+    var sport=guessSport(line);
+    /* try to find opponent — text after "vs" "at" "@" or a slash */
+    var opp='';
+    var om=line.match(/(?:vs\.?|@|at)\s+([A-Z][A-Za-z ]+)/);
+    if(om) opp=om[1].trim();
+    /* home/away */
+    var ha='home';
+    if(line.toLowerCase().includes(' at ')||line.includes(' @ ')||line.toLowerCase().includes('away')) ha='away';
+    /* time */
+    var tm='', tmm=line.match(/\b(\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)\b/);
+    if(tmm) tm=tmm[1];
+    parsedRows.push({date:date,sport:sport,opponent:opp,home_away:ha,game_time:tm,release_time:defRelease,active:true});
+  });
+  showPreview();
+}
+
+/* ═══════════════════════════
+   MANUAL ENTRY
+═══════════════════════════ */
+function showManual(){
+  parsedRows=[{date:'',sport:'football',opponent:'',home_away:'home',game_time:'',release_time:'2:15 PM',active:true}];
+  showPreview();
+}
+
+/* ═══════════════════════════
+   PREVIEW TABLE
+═══════════════════════════ */
+function showPreview(){
+  document.getElementById('mapper-section').style.display='none';
+  document.getElementById('raw-section').style.display='none';
+  document.getElementById('preview-section').style.display='block';
+  renderTable();
+  setStep(3);
+}
+
+function sportOpts(current){
+  return SPORTS.map(function(s){
+    return '<option value="'+s+'"'+(s===current?' selected':'')+'>'+SPORT_EMOJI[s]+' '+s+'</option>';
+  }).join('');
+}
+
+function renderTable(){
+  var tbody=document.getElementById('preview-body');
+  tbody.innerHTML='';
+  parsedRows.forEach(function(row,i){
+    var tr=document.createElement('tr');
+    tr.innerHTML=
+      '<td><button class="del-btn" onclick="deleteRow('+i+')">✕</button></td>'+
+      '<td><input type="date" value="'+row.date+'" onchange="parsedRows['+i+'].date=this.value;updateStats()"></td>'+
+      '<td><select onchange="parsedRows['+i+'].sport=this.value">'+sportOpts(row.sport)+'</select></td>'+
+      '<td><input type="text" value="'+row.opponent+'" placeholder="Opponent" onchange="parsedRows['+i+'].opponent=this.value" style="min-width:140px"></td>'+
+      '<td><select onchange="parsedRows['+i+'].home_away=this.value"><option value="home"'+(row.home_away==='home'?' selected':'')+'>Home</option><option value="away"'+(row.home_away==='away'?' selected':'')+'>Away</option></select></td>'+
+      '<td><input type="text" value="'+row.game_time+'" placeholder="3:30 PM" onchange="parsedRows['+i+'].game_time=this.value" style="max-width:90px"></td>'+
+      '<td><input type="text" value="'+row.release_time+'" placeholder="2:15 PM" onchange="parsedRows['+i+'].release_time=this.value" style="max-width:90px"></td>'+
+      '<td><select onchange="parsedRows['+i+'].active=(this.value===\'true\')"><option value="true"'+(row.active?' selected':'')+'>✓ Yes</option><option value="false"'+(!row.active?' selected':'')+'>✗ No</option></select></td>';
+    tbody.appendChild(tr);
+  });
+  updateStats();
+}
+
+function deleteRow(i){ parsedRows.splice(i,1); renderTable(); }
+
+function addRow(){
+  parsedRows.push({date:'',sport:'football',opponent:'',home_away:'home',game_time:'3:30 PM',release_time:'2:15 PM',active:true});
+  renderTable();
+  /* scroll to bottom */
+  var wrap=document.querySelector('.table-wrap'); wrap.scrollTop=wrap.scrollHeight;
+}
+
+function updateStats(){
+  var home=parsedRows.filter(function(r){return r.home_away==='home';}).length;
+  var away=parsedRows.filter(function(r){return r.home_away==='away';}).length;
+  var sports=[...new Set(parsedRows.map(function(r){return r.sport;}))].length;
+  document.getElementById('stat-rows').textContent=parsedRows.length;
+  document.getElementById('stat-home').textContent=home;
+  document.getElementById('stat-away').textContent=away;
+  document.getElementById('stat-sports').textContent=sports;
+}
+
+/* ═══════════════════════════
+   SUPABASE SAVE
+═══════════════════════════ */
+async function saveToSupabase(deleteFirst){
+  var btn=document.getElementById('save-btn');
+  var log=document.getElementById('result-log');
+  var pb=document.getElementById('progress-bar');
+  var pf=document.getElementById('progress-fill');
+  btn.disabled=true; log.style.display='block'; log.innerHTML=''; pb.style.display='block'; pf.style.width='0';
+  setStep(4);
+
+  if(deleteFirst){
+    log.innerHTML+='<div>Clearing existing records...</div>';
+    try{
+      var dr=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE+'?active=not.is.null',{
+        method:'DELETE',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'}
+      });
+      if(!dr.ok) throw new Error('Delete failed: '+dr.status);
+      log.innerHTML+='<div class="ok">✓ Existing records cleared.</div>';
+    }catch(e){ log.innerHTML+='<div class="fail">✗ Clear failed: '+e.message+'</div>'; btn.disabled=false; return; }
+  }
+
+  var valid=parsedRows.filter(function(r){return r.date&&r.date.length>=8;});
+  if(!valid.length){ log.innerHTML+='<div class="fail">No valid rows to save (missing dates).</div>'; btn.disabled=false; return; }
+
+  var ok=0, fail=0;
+  for(var i=0;i<valid.length;i++){
+    try{
+      var res=await fetch(SUPABASE_URL+'/rest/v1/'+TABLE,{
+        method:'POST',
+        headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify(valid[i])
+      });
+      if(!res.ok){ var t=await res.text(); throw new Error(res.status+' '+t); }
+      ok++;
+      log.innerHTML+='<div class="ok">✓ '+valid[i].date+' · '+(valid[i].opponent||'—')+'</div>';
+    }catch(e){
+      fail++;
+      log.innerHTML+='<div class="fail">✗ Row '+(i+1)+' failed: '+e.message+'</div>';
+    }
+    pf.style.width=Math.round(((i+1)/valid.length)*100)+'%';
+    log.scrollTop=log.scrollHeight;
+  }
+
+  log.innerHTML+='<div style="margin-top:8px;color:var(--amber);font-weight:bold;">Done — '+ok+' saved, '+fail+' failed.</div>';
+  btn.disabled=false;
+}
+
+function clearExistingAndSave(){
+  if(confirm('This will DELETE all existing sport days records first, then save these '+parsedRows.length+' rows. Continue?')){
+    saveToSupabase(true);
+  }
+}
+
+/* ═══════════════════════════
+   EXPORT CSV
+═══════════════════════════ */
+function exportCSV(){
+  var header='date,sport,opponent,home_away,game_time,release_time,active';
+  var rows=parsedRows.map(function(r){
+    return [r.date,r.sport,'"'+(r.opponent||'')+'"',r.home_away,r.game_time,r.release_time,r.active].join(',');
+  });
+  var blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='sport_schedule.csv'; a.click();
+}
+
+function resetUpload(){
+  parsedRows=[]; fileHeaders=[]; rawSheetData=[];
+  document.getElementById('mapper-section').style.display='none';
+  document.getElementById('raw-section').style.display='none';
+  document.getElementById('preview-section').style.display='none';
+  document.getElementById('upload-msg').innerHTML='';
+  document.getElementById('file-input').value='';
+  document.getElementById('result-log').style.display='none';
+  document.getElementById('progress-bar').style.display='none';
+  setStep(1);
+}
+</script>
+</body>
+</html>
