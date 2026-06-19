@@ -438,30 +438,45 @@ html, body {
 /* BIRTHDAYS */
 #p-birthdays {
   left: 1341px; top: 409px; width: 409px; height: 154px;
-  padding: 10px 16px;
-  display: flex; flex-direction: column; justify-content: center; gap: 8px;
+  padding: 8px 16px 6px;
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 3px;
 }
 .bd-row {
-  display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 7px;
 }
 .bd-dot {
-  width: 6px; height: 6px; border-radius: 50%;
+  width: 5px; height: 5px; border-radius: 50%;
   background: var(--cw-copper);
-  box-shadow: 0 0 6px rgba(184,112,64,0.7);
+  box-shadow: 0 0 5px rgba(184,112,64,0.7);
   flex-shrink: 0;
 }
 .bd-name {
   flex: 1; min-width: 0;
-  font-family: var(--font-mono); font-size: 16px;
-  letter-spacing: 0.04em; color: var(--cw-amber-warm);
+  font-family: var(--font-mono); font-size: 14px;
+  letter-spacing: 0.03em; color: var(--cw-amber-warm);
   text-transform: uppercase;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .bd-date {
-  font-family: var(--font-crt); font-size: 20px;
+  font-family: var(--font-crt); font-size: 18px;
   color: var(--cw-highlight); flex-shrink: 0;
-  text-shadow: 0 0 8px rgba(240,208,96,0.5);
+  text-shadow: 0 0 6px rgba(240,208,96,0.4);
 }
+.bd-days {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); letter-spacing: 0.05em;
+  flex-shrink: 0; min-width: 46px; text-align: right;
+}
+.bd-today-banner {
+  margin-top: 5px; padding-top: 5px;
+  border-top: 1px solid rgba(200,168,64,0.18);
+  font-family: var(--font-crt); font-size: 24px;
+  letter-spacing: 0.07em; color: var(--cw-highlight);
+  text-align: center; line-height: 1.1;
+  text-shadow: 0 0 14px rgba(240,208,96,0.55);
+  animation: bdToday 2.2s ease-in-out infinite;
+}
+@keyframes bdToday { 0%,100%{opacity:1} 50%{opacity:0.55} }
 .bd-empty {
   font-family: var(--font-mono); font-size: 13px;
   color: rgba(200,168,64,0.3); letter-spacing: 0.1em;
@@ -515,13 +530,14 @@ html, body {
   transition: opacity 1.2s ease;
   filter: grayscale(1) sepia(.80) hue-rotate(-16deg) saturate(1.1) brightness(.70) contrast(1.15);
 }
-/* yellow-orange gradient overlay — light warm tint */
+/* warm tint + dark vignette */
 #p-photo::after {
   content: '';
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background:
-    radial-gradient(ellipse at 75% 25%, rgba(230,155,30,.32), transparent 70%),
-    linear-gradient(180deg, rgba(220,170,40,.18) 0%, rgba(200,130,20,.14) 55%, rgba(0,0,0,.28) 100%);
+    radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.82) 100%),
+    radial-gradient(ellipse at 75% 25%, rgba(230,155,30,.28), transparent 70%),
+    linear-gradient(180deg, rgba(220,170,40,.15) 0%, rgba(200,130,20,.12) 55%, rgba(0,0,0,.22) 100%);
 }
 /* scanlines — barely-there, just texture */
 #p-photo::before {
@@ -645,9 +661,9 @@ html, body {
 
 /* WORDS OF WISDOM */
 #p-wisdom {
-  left: 1398px; top: 798px; width: 379px; height: 214px;
-  padding: 16px 22px;
-  display: flex; flex-direction: column; gap: 6px;
+  left: 1398px; top: 726px; width: 379px; height: 214px;
+  padding: 14px 22px 10px;
+  display: flex; flex-direction: column; gap: 5px;
 }
 #wisdom-cat {
   font-family: var(--font-mono); font-size: 12px;
@@ -656,9 +672,9 @@ html, body {
   text-shadow: 0 1px 2px rgba(0,0,0,0.18);
 }
 #wisdom-text {
-  flex: 1; display: flex; align-items: center;
+  flex: 1; display: flex; align-items: flex-start;
   font-family: var(--font-type); font-size: 20px; line-height: 1.45;
-  color: #1c0a04; /* rich dark brown — max contrast on wood grain */
+  color: #1c0a04;
   font-style: italic;
   text-shadow: 0 1px 1px rgba(255,200,130,0.2);
   transition: opacity 0.6s ease;
@@ -1471,21 +1487,35 @@ function updateBodyLights(){
 
 /* BIRTHDAYS */
 function renderBirthdays(){
-  var n=new Date();
-  var upcoming=CW_BIRTHDAYS.map(function(r){
+  var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+  var all=CW_BIRTHDAYS.map(function(r){
     return {name:r.name, month:r.month, day:r.day, days:bdaysUntil(r.month,r.day)};
-  }).filter(function(r){return r.days<=30;}).sort(function(a,b){return a.days-b.days;}).slice(0,3);
+  });
+  var upcoming=all.filter(function(r){return r.days<=30;})
+                  .sort(function(a,b){return a.days-b.days;})
+                  .slice(0,4);
+  var todayNames=all.filter(function(r){return r.days===0;}).map(function(r){return r.name;});
   var el=document.getElementById('bday-list');
-  if(!upcoming.length){ el.innerHTML='<div class="bd-empty">NO UPCOMING BIRTHDAYS</div>'; return; }
+  if(!upcoming.length&&!todayNames.length){
+    el.innerHTML='<div class="bd-empty">NO UPCOMING BIRTHDAYS</div>'; return;
+  }
   var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   var html='';
   upcoming.forEach(function(r){
+    var d=r.days===0?'TODAY':r.days===1?'1 DAY':r.days+' DAYS';
     html+='<div class="bd-row">'+
       '<div class="bd-dot"></div>'+
       '<div class="bd-name">'+(r.name||'').toUpperCase()+'</div>'+
       '<div class="bd-date">'+M[r.month-1]+' '+r.day+'</div>'+
+      '<div class="bd-days">'+d+'</div>'+
     '</div>';
   });
+  if(todayNames.length){
+    var greet=todayNames.length===1
+      ? 'HAPPY BIRTHDAY '+todayNames[0].toUpperCase()+'!'
+      : 'HAPPY BIRTHDAY '+todayNames.map(function(n){return n.toUpperCase();}).join(' & ')+'!';
+    html+='<div class="bd-today-banner">★ '+greet+' ★</div>';
+  }
   el.innerHTML=html;
 }
 
