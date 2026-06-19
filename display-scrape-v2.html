@@ -147,8 +147,9 @@ html, body {
 /* SCRAP-E SIGNAL INTERCEPT */
 #p-crt {
   left: 700px; top: 172px; width: 566px; height: 388px;
-  padding: 14px 28px 10px 32px;
-  display: flex; flex-direction: column; gap: 10px;
+  padding: 0;
+  overflow: hidden;
+  display: flex; flex-direction: column;
 }
 /* CRT scanlines — visible but not harsh */
 #p-crt::before {
@@ -219,6 +220,87 @@ html, body {
   font-family: var(--font-mono); font-size: 12px;
   color: var(--cw-dim); letter-spacing: 0.1em;
 }
+
+/* ── CRT MULTI-PANE SYSTEM ── */
+#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+#crt-pane-news { padding: 14px 28px 10px 32px; gap: 10px; }
+#crt-pane-bell { padding: 12px 18px 8px 18px; gap: 0; }
+#crt-pane-standby { padding: 0; }
+#crt-pane-data { padding: 24px 28px; justify-content: center; }
+/* Active pane */
+#p-crt.crt-news #crt-pane-news,
+#p-crt.crt-bell #crt-pane-bell,
+#p-crt.crt-standby #crt-pane-standby,
+#p-crt.crt-data #crt-pane-data {
+  opacity: 1; pointer-events: auto;
+}
+/* ── BELL SCHEDULE PANE ── */
+#crt-bell-hdr {
+  font-family: var(--font-mono); font-size: 16px;
+  letter-spacing: 0.22em; color: var(--cw-amber);
+  text-align: center; text-transform: uppercase;
+  padding-bottom: 7px; margin-bottom: 6px;
+  border-bottom: 1px solid rgba(200,168,64,0.3);
+  flex-shrink: 0;
+  text-shadow: 0 0 10px rgba(200,168,64,0.3);
+  position: relative; z-index: 1;
+}
+#crt-bell-rows {
+  display: flex; flex-direction: column;
+  flex: 1; justify-content: space-between;
+  overflow: hidden; position: relative; z-index: 1;
+}
+.crt-br {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 6px; border-radius: 3px;
+  font-family: var(--font-crt);
+  border-bottom: 1px solid rgba(200,168,64,0.07);
+}
+.crt-br.is-now {
+  background: rgba(200,168,64,0.09);
+  border-bottom-color: rgba(200,168,64,0.15);
+}
+.crt-br.is-brk { opacity: 0.6; }
+.crt-brl {
+  flex: 1; font-size: 21px; letter-spacing: 0.06em;
+  color: var(--cw-amber-warm);
+  white-space: nowrap; overflow: hidden;
+}
+.crt-br.is-now .crt-brl { color: var(--cw-highlight); }
+.crt-brt {
+  font-size: 18px; color: var(--cw-dim); letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.crt-br.is-now .crt-brt { color: var(--cw-amber); }
+.crt-brsep {
+  color: var(--cw-dim); opacity: 0.35;
+  margin: 0 3px; font-size: 15px; font-family: var(--font-crt);
+}
+/* ── STANDBY PANE ── */
+#crt-standby-img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+/* ── DATA ACCESS PANE ── */
+#crt-data-lines {
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; z-index: 1;
+}
+.crt-dl {
+  font-family: var(--font-mono); font-size: 15px;
+  letter-spacing: 0.1em; color: var(--cw-amber);
+  opacity: 0; transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  text-transform: uppercase;
+}
+.crt-dl.vis { opacity: 1; transform: translateX(0); }
+.crt-dl.ok { color: var(--cw-highlight); }
+.crt-dl.dim { color: var(--cw-dim); }
 
 /* STATUS / NEXT CLASS */
 #p-status {
@@ -647,18 +729,34 @@ html, body {
       <div id="events-list"></div>
     </div>
 
-    <!-- SCRAP-E SIGNAL INTERCEPT -->
-    <div class="panel" id="p-crt">
-      <div id="crt-header">
-        <div id="crt-led"></div>
-        <div id="crt-label-text">SCRAP-E SIGNAL INTERCEPT</div>
+    <!-- SCRAP-E CRT — multi-pane: news / bell / standby / data -->
+    <div class="panel crt-news" id="p-crt">
+      <!-- PANE: NEWS (signal intercept) -->
+      <div id="crt-pane-news">
+        <div id="crt-header">
+          <div id="crt-led"></div>
+          <div id="crt-label-text">SCRAP-E SIGNAL INTERCEPT</div>
+        </div>
+        <div id="crt-divider"></div>
+        <div id="crt-headline"><span id="crt-hl-text">SCANNING TRANSMISSIONS...</span><span id="crt-cursor"></span></div>
+        <div id="crt-body">Calibrating signal receiver. Stand by for incoming transmissions.</div>
+        <div id="crt-footer">
+          <div id="crt-source">SOURCE: —</div>
+          <div id="crt-counter">1 / 1</div>
+        </div>
       </div>
-      <div id="crt-divider"></div>
-      <div id="crt-headline"><span id="crt-hl-text">SCANNING TRANSMISSIONS...</span><span id="crt-cursor"></span></div>
-      <div id="crt-body" id="crt-body-text">Calibrating signal receiver. Stand by for incoming transmissions.</div>
-      <div id="crt-footer">
-        <div id="crt-source">SOURCE: —</div>
-        <div id="crt-counter">1 / 1</div>
+      <!-- PANE: BELL SCHEDULE -->
+      <div id="crt-pane-bell">
+        <div id="crt-bell-hdr">★ BELL SCHEDULE ★</div>
+        <div id="crt-bell-rows"></div>
+      </div>
+      <!-- PANE: STANDBY IMAGE -->
+      <div id="crt-pane-standby">
+        <img id="crt-standby-img" src="scrape-standby.png" alt="SCRAP-E STAND BY" />
+      </div>
+      <!-- PANE: DATA ACCESS ANIMATION -->
+      <div id="crt-pane-data">
+        <div id="crt-data-lines"></div>
       </div>
     </div>
 
@@ -1281,42 +1379,153 @@ async function renderHonorRoll(){
   inner.style.animationDuration=dur+'s';
 }
 
-/* SCRAP-E SIGNAL INTERCEPT — typewriter */
-var crtItems=[], crtCurrent=0, crtCharIdx=0, crtTypeTimer=null, crtNextTimer=null;
-function startCRT(){
-  if(!CW_NEWS.length){
-    document.getElementById('crt-hl-text').textContent='NO SIGNAL — SCANNING...';
-    document.getElementById('crt-body').textContent='SCRAP-E is searching for transmissions. Check news API configuration.';
-    return;
+/* ═══════════════════════════════════════════════════════════
+   CRT CONTROLLER — modes: news | bell | standby | data
+   During class: bell schedule (future: rotate w/ objectives)
+   Passing/brunch/lunch: bell schedule
+   Off hours / no school: standby 10s → data 3s → news loop
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  var crtEl = document.getElementById('p-crt');
+  var CRT_MODE = 'news';
+
+  function setCRTMode(mode){
+    if(CRT_MODE === mode) return;
+    CRT_MODE = mode;
+    ['crt-news','crt-bell','crt-standby','crt-data'].forEach(function(c){ crtEl.classList.remove(c); });
+    crtEl.classList.add('crt-' + mode);
   }
-  crtItems=CW_NEWS; crtCurrent=0; showCRTItem(0);
-}
-function showCRTItem(idx){
-  if(!crtItems.length) return;
-  var it=crtItems[idx%crtItems.length];
-  document.getElementById('crt-counter').textContent=(idx%crtItems.length+1)+' / '+crtItems.length;
-  document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
-  document.getElementById('crt-body').textContent=it.body||'';
-  /* typewriter headline */
-  var hlEl=document.getElementById('crt-hl-text');
-  hlEl.textContent='';
-  clearTimeout(crtTypeTimer); clearTimeout(crtNextTimer);
-  crtCharIdx=0;
-  var full=it.headline;
-  function type(){
-    if(crtCharIdx<full.length){
-      hlEl.textContent=full.slice(0,++crtCharIdx);
-      crtTypeTimer=setTimeout(type, 28+Math.random()*22);
+
+  /* ── NEWS ── */
+  var _crtItems=[], _crtCur=0, _crtCharIdx=0, _crtTypeT=null, _crtNextT=null;
+  function _showNewsItem(idx){
+    if(!_crtItems.length) return;
+    var it=_crtItems[idx%_crtItems.length];
+    document.getElementById('crt-counter').textContent=(idx%_crtItems.length+1)+' / '+_crtItems.length;
+    document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
+    document.getElementById('crt-body').textContent=it.body||'';
+    var hlEl=document.getElementById('crt-hl-text');
+    hlEl.textContent='';
+    clearTimeout(_crtTypeT); clearTimeout(_crtNextT);
+    _crtCharIdx=0;
+    var full=it.headline;
+    function type(){
+      if(_crtCharIdx<full.length){
+        hlEl.textContent=full.slice(0,++_crtCharIdx);
+        _crtTypeT=setTimeout(type, 28+Math.random()*22);
+      } else {
+        _crtNextT=setTimeout(function(){
+          _crtCur=(_crtCur+1)%_crtItems.length;
+          _showNewsItem(_crtCur);
+        }, 16000);
+      }
+    }
+    type();
+  }
+  function _startNews(){
+    if(!CW_NEWS.length){
+      document.getElementById('crt-hl-text').textContent='NO SIGNAL — SCANNING...';
+      document.getElementById('crt-body').textContent='SCRAP-E is searching for transmissions.';
     } else {
-      /* hold, then advance */
-      crtNextTimer=setTimeout(function(){
-        crtCurrent=(crtCurrent+1)%crtItems.length;
-        showCRTItem(crtCurrent);
-      }, 16000);
+      _crtItems=CW_NEWS; _crtCur=0; _showNewsItem(0);
+    }
+    setCRTMode('news');
+  }
+  function _stopNews(){ clearTimeout(_crtTypeT); clearTimeout(_crtNextT); }
+
+  /* ── BELL SCHEDULE ── */
+  function _fmt12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return (h%12||12)+':'+m+' '+(h>=12?'PM':'AM'); }
+  function _renderBell(){
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    if(!sched){ _startNews(); return; }
+    var nm=(typeof nowMins==='function')?nowMins():0;
+    var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    var labels={regular:'REGULAR BELL',earlyRelease:'EARLY RELEASE',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',foggy:'FOGGY SCHEDULE',activity:'ACTIVITY DAY',codeDay:'CODE DAY'};
+    var hdr=document.getElementById('crt-bell-hdr');
+    if(hdr) hdr.textContent='★ '+(labels[window._cwSchedName]||'BELL SCHEDULE')+' ★';
+    var rows=document.getElementById('crt-bell-rows');
+    if(!rows) return;
+    var html='';
+    sched.periods.forEach(function(p){
+      var s=tm(p.start),e=tm(p.end),now=(nm>=s&&nm<e);
+      html+='<div class="crt-br'+(p.brk?' is-brk':'')+(now?' is-now':'')+'">'
+        +'<span class="crt-brl">'+(now?'▶ ':'')+p.label+'</span>'
+        +'<span class="crt-brt">'+_fmt12(p.start)+'</span>'
+        +'<span class="crt-brsep">›</span>'
+        +'<span class="crt-brt">'+_fmt12(p.end)+'</span>'
+        +'</div>';
+    });
+    rows.innerHTML=html;
+    setCRTMode('bell');
+  }
+
+  /* ── DATA ACCESS ANIMATION ── */
+  var _offTimers=[];
+  function _clearOff(){ _offTimers.forEach(clearTimeout); _offTimers=[]; }
+  var DATA_LINES=[
+    {t:'INITIALIZING SCRAP-E SYSTEMS...'},
+    {t:'CHECKING CALENDAR FEEDS...       [OK]', cls:'ok'},
+    {t:'LOADING WEATHER DATA...          [OK]', cls:'ok'},
+    {t:'FETCHING NEWS BROADCAST...       [OK]', cls:'ok'},
+    {t:'SCANNING HONOR ROLL DB...        [OK]', cls:'ok'},
+    {t:'SIGNAL INTERCEPT: ACTIVE.', cls:'ok'},
+  ];
+  function _showDataAccess(onDone){
+    setCRTMode('data');
+    var box=document.getElementById('crt-data-lines');
+    box.innerHTML=DATA_LINES.map(function(l){ return '<div class="crt-dl'+(l.cls?' '+l.cls:'')+'">'+l.t+'</div>'; }).join('');
+    var els=box.querySelectorAll('.crt-dl');
+    els.forEach(function(el,i){
+      _offTimers.push(setTimeout(function(){ el.classList.add('vis'); },i*320));
+    });
+    _offTimers.push(setTimeout(function(){ if(onDone) onDone(); }, els.length*320+800));
+  }
+  function _startOffSequence(){
+    _clearOff(); _stopNews();
+    setCRTMode('standby');
+    _offTimers.push(setTimeout(function(){
+      _showDataAccess(function(){ _startNews(); });
+    }, 10000));
+  }
+
+  /* ── MAIN TICK ── */
+  var _last=null;
+  function _tick(){
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    var nm=(typeof nowMins==='function')?nowMins():0;
+    var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    if(!sched){
+      if(_last!=='off'){ _startOffSequence(); _last='off'; } return;
+    }
+    var firstStart=tm(sched.periods[0].start);
+    var lastEnd=tm(sched.periods[sched.periods.length-1].end);
+    var inPeriod=sched.periods.some(function(p){ return nm>=tm(p.start)&&nm<tm(p.end); });
+    var afterSchool=(nm>=lastEnd);
+    var longBefore=(nm<firstStart-60);
+    if(inPeriod){
+      // Class in session — show bell schedule (rotate with objectives in future)
+      _clearOff(); _stopNews();
+      if(_last!=='bell'){ _renderBell(); _last='bell'; }
+    } else if(afterSchool||longBefore){
+      // Off hours — standby → data → news loop
+      if(_last!=='off'){ _startOffSequence(); _last='off'; }
+    } else {
+      // Passing, brunch, lunch, or approaching school — bell schedule
+      _clearOff(); _stopNews();
+      if(_last!=='bell'){ _renderBell(); _last='bell'; }
     }
   }
-  type();
-}
+
+  /* Re-highlight current period every minute while in bell mode */
+  setInterval(function(){ if(CRT_MODE==='bell') _renderBell(); }, 60000);
+
+  /* startCRT() is called by loadAll() after news data is ready */
+  window.startCRT = function(){
+    _tick();
+    setInterval(_tick, 30000);
+    setInterval(function(){ if(CW_NEWS.length>0 && !_crtItems.length) _crtItems=CW_NEWS; }, 15000);
+  };
+})();
 
 /* SCRAP-E EYES — blink + subtle look-around */
 var eyeBlinkT=null, eyeLookT=null;
