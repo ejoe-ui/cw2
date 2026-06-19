@@ -2709,7 +2709,7 @@ html, body { background:#050302 !important; }
 
 /* Special Days: move the content higher in each small cutout and make it more readable. */
 #special-days{
-  top:70.35% !important;
+  top:75.35% !important;
   height:14.4% !important;
 }
 #sd-cards{
@@ -5340,6 +5340,13 @@ body #sd-cards > .sd-card > .sd-days {
 }
 </style>
 
+
+<!-- Pass 167: cancel stacked transforms — top:75.35% upstream is the correct position -->
+<style id="cw2-pass167-transform-reset">
+#special-days {
+  transform: none !important;
+}
+</style>
 </body>
 </html>
 <style>
