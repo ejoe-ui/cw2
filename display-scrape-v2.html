@@ -296,9 +296,35 @@ html, body {
   margin: 0 3px; font-size: 15px; font-family: var(--font-crt);
 }
 /* ── STANDBY PANE ── */
-#crt-standby-img {
+#crt-standby-screen {
   width: 100%; height: 100%;
-  object-fit: cover; display: block;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 10px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(200,168,64,0.04) 0%, transparent 70%);
+}
+#crt-sby-logo {
+  font-family: var(--font-crt); font-size: 64px;
+  color: var(--cw-amber); letter-spacing: 0.18em;
+  text-shadow: 0 0 18px rgba(200,168,64,0.55), 0 0 40px rgba(200,168,64,0.22);
+  animation: eyeGlow 4s ease-in-out infinite;
+}
+#crt-sby-sub {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--cw-dim); letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+@keyframes sbyBlink { 0%,49%{opacity:1} 50%,100%{opacity:0.1} }
+#crt-sby-blink {
+  font-family: var(--font-crt); font-size: 22px;
+  color: var(--cw-amber-warm); letter-spacing: 0.28em;
+  margin-top: 8px;
+  animation: sbyBlink 1.8s step-end infinite;
+}
+#crt-sby-sig {
+  font-family: var(--font-mono); font-size: 11px;
+  color: rgba(200,168,64,0.3); letter-spacing: 0.14em;
+  text-transform: uppercase; margin-top: 4px;
 }
 /* ── DATA ACCESS PANE ── */
 #crt-data-lines {
@@ -913,18 +939,18 @@ html, body {
 /* burst mode: fast transition for random flicker */
 .bulb-crt.burst { transition: opacity 0.55s ease-in-out; }
 .bulb-sound {
-  width: 8px; height: 8px;
+  width: 13px; height: 13px;
   background: rgba(200,168,64,0.18);
   box-shadow: none;
   transition: background 0.15s, box-shadow 0.15s;
 }
 .bulb-sound.lit {
   background: var(--cw-amber);
-  box-shadow: 0 0 5px var(--cw-amber), 0 0 10px rgba(200,168,64,0.4);
+  box-shadow: 0 0 7px var(--cw-amber), 0 0 14px rgba(200,168,64,0.45);
 }
 .bulb-sound.hot {
   background: var(--cw-copper);
-  box-shadow: 0 0 6px var(--cw-copper), 0 0 14px rgba(184,112,64,0.5);
+  box-shadow: 0 0 8px var(--cw-copper), 0 0 18px rgba(184,112,64,0.55);
 }
 /* SCRAP-E body light animations */
 @keyframes bodyMuted   { 0%,100%{opacity:0.60} 50%{opacity:0.28} }
@@ -989,7 +1015,12 @@ html, body {
       </div>
       <!-- PANE: STANDBY IMAGE -->
       <div id="crt-pane-standby">
-        <img id="crt-standby-img" src="scrape-standby.png" alt="SCRAP-E STAND BY" />
+        <div id="crt-standby-screen">
+          <div id="crt-sby-logo">SCRAP-E</div>
+          <div id="crt-sby-sub">COWBOY WIRE · RIVERDALE PONY EXPRESS</div>
+          <div id="crt-sby-blink">◈ STAND BY ◈</div>
+          <div id="crt-sby-sig">SIGNAL ACTIVE — AWAITING TRANSMISSION</div>
+        </div>
       </div>
       <!-- PANE: DATA ACCESS ANIMATION -->
       <div id="crt-pane-data">
@@ -1762,7 +1793,7 @@ function renderWisdom(){
   if(!CW_INSPIRE.length){ el.style.display='none'; return; }
   el.style.display='';
   var it=CW_INSPIRE[inspIdx];
-  document.getElementById('wisdom-cat').textContent=(it.label||'Cowboy Code').toUpperCase();
+  document.getElementById('wisdom-cat').textContent=(it.label||'Cowboy Code').toUpperCase()+':';
   document.getElementById('wisdom-text').textContent=it.text;
   if(inspTimer) clearInterval(inspTimer);
   inspTimer=setInterval(function(){
@@ -1771,7 +1802,7 @@ function renderWisdom(){
     txt.classList.add('fade');
     setTimeout(function(){
       var nit=CW_INSPIRE[inspIdx];
-      document.getElementById('wisdom-cat').textContent=(nit.label||'Cowboy Code').toUpperCase();
+      document.getElementById('wisdom-cat').textContent=(nit.label||'Cowboy Code').toUpperCase()+':';
       txt.textContent=nit.text;
       txt.classList.remove('fade');
     }, 650);
