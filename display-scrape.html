@@ -12636,3 +12636,33 @@ async function loadAll(){
   font-weight: bold !important;
 }
 </style>
+<!-- PASS 166 — sd-card content: force with higher specificity -->
+<style id="cw2-pass166-sd-specificity">
+body #special-days {
+  transform: translateY(-80px) !important;
+}
+body #sd-cards > .sd-card {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 5% !important;
+}
+body #sd-cards > .sd-card > .sd-title {
+  font-size: clamp(11px, 0.95vw, 17px) !important;
+  text-align: center !important;
+  width: 100% !important;
+  line-height: 1.3 !important;
+  word-break: break-word !important;
+}
+body #sd-cards > .sd-card > .sd-date {
+  font-size: clamp(9px, 0.72vw, 13px) !important;
+  text-align: center !important;
+}
+body #sd-cards > .sd-card > .sd-days {
+  font-size: clamp(13px, 1.05vw, 19px) !important;
+  text-align: center !important;
+  font-weight: bold !important;
+}
+</style>
