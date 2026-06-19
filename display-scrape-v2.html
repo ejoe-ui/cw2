@@ -150,21 +150,23 @@ html, body {
   padding: 14px 28px 10px 32px;
   display: flex; flex-direction: column; gap: 10px;
 }
-/* CRT scanlines */
+/* CRT scanlines — visible but not harsh */
 #p-crt::before {
   content: '';
   position: absolute; inset: 0; z-index: 5; pointer-events: none;
   background: repeating-linear-gradient(
     0deg,
-    transparent, transparent 3px,
-    rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px
+    transparent, transparent 4px,
+    rgba(0,0,0,0.14) 4px, rgba(0,0,0,0.14) 5px
   );
 }
-/* CRT ambient glow */
+/* CRT phosphor glow + subtle vignette */
 #p-crt::after {
   content: '';
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  background: radial-gradient(ellipse at 50% 50%, rgba(200,168,64,0.04), transparent 70%);
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(200,168,64,0.07), transparent 68%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.35) 100%);
 }
 #crt-header {
   display: flex; align-items: center; gap: 8px;
@@ -367,8 +369,67 @@ html, body {
 /* scanlines — barely-there, just texture */
 #p-photo::before {
   content: '';
-  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .12;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0px, rgba(0,0,0,.5) 1px, transparent 1px, transparent 4px);
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .28;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.6) 0px, rgba(0,0,0,.6) 1px, transparent 1px, transparent 6px);
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN EFFECTS — old display vibes per panel
+   ══════════════════════════════════════════════════════ */
+
+/* STATUS + BIRTHDAYS + WEATHER + SPORT CARDS: subtle scanlines */
+#p-status::after,
+#p-birthdays::after,
+#p-weather::after,
+.sd-card::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 5px,
+    rgba(0,0,0,.07) 5px, rgba(0,0,0,.07) 6px
+  );
+}
+
+/* STATUS: amber phosphor vignette — like a small readout screen */
+#p-status::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,168,64,.05), transparent 72%),
+              radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,.28) 100%);
+}
+
+/* SOUND LEVEL: coordinate graph grid — fits the VU meter aesthetic */
+#p-sound::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(200,168,64,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,168,64,.04) 1px, transparent 1px);
+  background-size: 100% 20px, 22px 100%;
+}
+
+/* WEATHER: faint dot-matrix overlay — like an LCD readout */
+#p-weather::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(200,168,64,.06) 1px, transparent 1px);
+  background-size: 5px 5px;
+}
+
+/* BIRTHDAYS: slight green-tinted phosphor vignette */
+#p-birthdays::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,.22) 100%);
+}
+
+/* SPORT CARDS: screen vignette — like mini monitors */
+.sd-card::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, rgba(200,168,64,.04), transparent 65%),
+              radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(0,0,0,.30) 100%);
 }
 
 /* SPORT DAY SUB-CARDS */
