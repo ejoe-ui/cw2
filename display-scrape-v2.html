@@ -100,8 +100,8 @@ html, body {
   display: flex; flex-direction: column;
 }
 #events-title {
-  font-family: var(--font-mono); font-size: 15px;
-  letter-spacing: 0.18em; color: var(--cw-amber);
+  font-family: var(--font-mono); font-size: 19px;
+  letter-spacing: 0.16em; color: var(--cw-amber);
   text-transform: uppercase; text-align: center;
   padding-bottom: 7px;
   border-bottom: 1px solid rgba(200,168,64,0.28);
@@ -346,20 +346,22 @@ html, body {
 #p-photo {
   left: 404px; top: 810px; width: 178px; height: 166px;
   background: var(--cw-panel);
+  border-radius: 8px;
+  overflow: hidden;
 }
 #p-photo img {
   position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: cover;
   transition: opacity 1.2s ease;
-  filter: grayscale(1) sepia(.85) hue-rotate(-22deg) saturate(1.1) brightness(.66) contrast(1.2);
+  filter: grayscale(1) sepia(.80) hue-rotate(-16deg) saturate(1.1) brightness(.70) contrast(1.15);
 }
-/* orange-amber overlay — matches v1 warm tint */
+/* yellow-orange gradient overlay — light warm tint */
 #p-photo::after {
   content: '';
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background:
-    radial-gradient(ellipse at 50% 80%, rgba(210,120,20,.58), transparent 70%),
-    linear-gradient(180deg, rgba(185,100,15,.30) 0%, rgba(160,85,10,.20) 50%, rgba(0,0,0,.35) 100%);
+    radial-gradient(ellipse at 50% 75%, rgba(230,155,30,.32), transparent 70%),
+    linear-gradient(180deg, rgba(220,170,40,.18) 0%, rgba(200,130,20,.14) 55%, rgba(0,0,0,.28) 100%);
 }
 /* scanlines — barely-there, just texture */
 #p-photo::before {
