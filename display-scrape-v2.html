@@ -659,24 +659,26 @@ html, body {
   color: rgba(200,168,64,0.2); margin: auto;
 }
 
-/* WORDS OF WISDOM */
+/* WORDS OF WISDOM — PSD 1125,637,282,152 × 1.25 = 1406,796,353,190 */
 #p-wisdom {
-  left: 1398px; top: 726px; width: 379px; height: 214px;
-  padding: 14px 22px 10px;
-  display: flex; flex-direction: column; gap: 5px;
+  left: 1406px; top: 796px; width: 353px; height: 190px;
+  padding: 10px 16px 8px;
+  display: flex; flex-direction: column; gap: 4px;
 }
 #wisdom-cat {
-  font-family: var(--font-mono); font-size: 12px;
+  font-family: var(--font-mono); font-size: 11px;
   letter-spacing: 0.22em; color: var(--cw-copper);
   text-transform: uppercase;
   text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  flex-shrink: 0;
 }
 #wisdom-text {
   flex: 1; display: flex; align-items: flex-start;
-  font-family: var(--font-type); font-size: 20px; line-height: 1.45;
+  font-family: var(--font-type); font-size: 19px; line-height: 1.4;
   color: #1c0a04;
   font-style: italic;
   text-shadow: 0 1px 1px rgba(255,200,130,0.2);
+  overflow: hidden;
   transition: opacity 0.6s ease;
 }
 #wisdom-text.fade { opacity: 0; }
