@@ -646,19 +646,21 @@ html, body {
 /* WORDS OF WISDOM */
 #p-wisdom {
   left: 1398px; top: 798px; width: 379px; height: 214px;
-  padding: 16px 20px;
-  display: flex; flex-direction: column; gap: 8px;
+  padding: 16px 22px;
+  display: flex; flex-direction: column; gap: 6px;
 }
 #wisdom-cat {
-  font-family: var(--font-mono); font-size: 11px;
+  font-family: var(--font-mono); font-size: 12px;
   letter-spacing: 0.22em; color: var(--cw-copper);
   text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
 }
 #wisdom-text {
   flex: 1; display: flex; align-items: center;
-  font-family: var(--font-type); font-size: 18px; line-height: 1.4;
-  color: #4a3010; /* dark brown, readable on wood grain */
+  font-family: var(--font-type); font-size: 20px; line-height: 1.45;
+  color: #1c0a04; /* rich dark brown — max contrast on wood grain */
   font-style: italic;
+  text-shadow: 0 1px 1px rgba(255,200,130,0.2);
   transition: opacity 0.6s ease;
 }
 #wisdom-text.fade { opacity: 0; }
@@ -767,17 +769,22 @@ html, body {
   background: var(--cw-copper);
   box-shadow: 0 0 6px var(--cw-copper), 0 0 14px rgba(184,112,64,0.5);
 }
+/* SCRAP-E body light animations */
+@keyframes bodyMuted   { 0%,100%{opacity:0.60} 50%{opacity:0.28} }
+@keyframes bdayRainbow { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+
 #bulb-big {
   width: 20px; height: 20px;
+  /* initial amber — JS overrides once pass policy is known */
   background: radial-gradient(circle at 38% 38%, #ffe090, var(--cw-amber) 55%, #c07020);
-  box-shadow: 0 0 10px var(--cw-amber), 0 0 22px rgba(200,168,64,0.45);
-  animation: bigBulb 5s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(200,168,64,0.45), 0 0 12px rgba(200,168,64,0.18);
+  animation: bodyMuted 5s ease-in-out infinite;
 }
-@keyframes bigBulb { 0%,100%{opacity:0.88} 50%{opacity:1} }
 #bulb-small {
   width: 12px; height: 12px;
   background: var(--cw-amber);
-  box-shadow: 0 0 7px var(--cw-amber), 0 0 14px rgba(200,168,64,0.4);
+  box-shadow: 0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18);
+  animation: bodyMuted 5.5s ease-in-out infinite;
 }
 </style>
 </head>
@@ -1396,6 +1403,69 @@ function renderStatus(){
 
   } else {
     set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED','var(--cw-dim)',false);
+  }
+
+  // Update SCRAP-E body lights to reflect current pass state + birthdays
+  updateBodyLights();
+}
+
+/* SCRAP-E BODY LIGHTS
+   Big light  → mirrors pass policy dot color with muted slow pulse
+   Small light → muted amber pulse normally; slow rainbow on student birthdays */
+function updateBodyLights(){
+  var big   = document.getElementById('bulb-big');
+  var small = document.getElementById('bulb-small');
+
+  /* ── BIG LIGHT: read pass dot class set by renderStatus() above ── */
+  if(big){
+    var cls = (document.getElementById('st-pass-dot')||{}).className || 'off';
+    // Clear inline opacity so the animation drives it
+    big.style.opacity = '';
+    if(cls === 'open'){
+      // GREEN — allowed
+      big.style.background = 'radial-gradient(circle at 38% 38%, #80e880, #28a030 55%, #0a340a)';
+      big.style.boxShadow  = '0 0 8px rgba(40,160,48,0.55), 0 0 16px rgba(40,160,48,0.18)';
+      big.style.animation  = 'bodyMuted 4s ease-in-out infinite';
+    } else if(cls === 'warn'){
+      // YELLOW — last chance
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ffe060, #b08010 55%, #3e2c00)';
+      big.style.boxShadow  = '0 0 8px rgba(176,128,16,0.55), 0 0 16px rgba(176,128,16,0.18)';
+      big.style.animation  = 'bodyMuted 3s ease-in-out infinite';
+    } else if(cls === 'restricted'){
+      // RED — restricted
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ff7060, #b02818 55%, #380c08)';
+      big.style.boxShadow  = '0 0 8px rgba(176,40,24,0.55), 0 0 16px rgba(176,40,24,0.18)';
+      big.style.animation  = 'bodyMuted 4s ease-in-out infinite';
+    } else if(cls === 'grey'){
+      // NEUTRAL — passing / break / pre-bell
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ffe090, #c87020 55%, #4a2c08)';
+      big.style.boxShadow  = '0 0 6px rgba(200,112,32,0.40), 0 0 12px rgba(200,112,32,0.14)';
+      big.style.animation  = 'bodyMuted 5s ease-in-out infinite';
+    } else {
+      // OFF — dismissed / no school
+      big.style.background = 'radial-gradient(circle at 38% 38%, #38200c, #1c0e06 55%, #090504)';
+      big.style.boxShadow  = 'none';
+      big.style.animation  = 'none';
+      big.style.opacity    = '0.25';
+    }
+  }
+
+  /* ── SMALL LIGHT: birthday indicator ── */
+  if(small){
+    var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+    var hasBday=(CW_BIRTHDAYS||[]).some(function(b){ return b.month==cm && b.day==cd; });
+    if(hasBday){
+      // Rainbow cascade — hue-rotate loops over amber base, gentle pulse on top
+      small.style.background  = 'var(--cw-amber)';
+      small.style.boxShadow   = '0 0 7px rgba(200,168,64,0.6), 0 0 14px rgba(200,168,64,0.28)';
+      small.style.animation   = 'bdayRainbow 6s linear infinite, bodyMuted 5s ease-in-out infinite';
+    } else {
+      // Normal muted amber pulse
+      small.style.background  = 'var(--cw-amber)';
+      small.style.boxShadow   = '0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18)';
+      small.style.animation   = 'bodyMuted 5.5s ease-in-out infinite';
+      small.style.filter      = '';
+    }
   }
 }
 
