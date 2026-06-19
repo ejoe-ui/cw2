@@ -363,6 +363,25 @@ html, body {
   text-transform: uppercase; text-align: center;
   line-height: 1.5;
 }
+/* Secondary countdown — end-of-period, shown alongside passes-open during firstFifteen */
+#st-mid2 {
+  flex: 0 0 auto; min-width: 120px;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 4px 8px; gap: 2px;
+}
+#st-mins2-num {
+  font-family: var(--font-crt); font-size: 28px;
+  color: var(--cw-amber); line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px rgba(200,168,64,0.4);
+}
+#st-mins2-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--cw-dim); letter-spacing: 0.12em;
+  text-transform: uppercase; text-align: center;
+  line-height: 1.5;
+}
 /* 1-minute warning flash */
 @keyframes minWarn { 0%,100%{opacity:1} 50%{opacity:0.15} }
 .flashing { animation: minWarn 1.4s ease-in-out infinite; }
@@ -986,10 +1005,16 @@ html, body {
         <div id="st-ends">—</div>
       </div>
       <div class="st-div"></div>
-      <!-- MIDDLE: large minute countdown -->
+      <!-- MIDDLE: primary countdown (always) + secondary countdown (firstFifteen only) -->
       <div id="st-mid">
         <div id="st-mins-num">—</div>
         <div id="st-mins-lbl">MIN LEFT</div>
+      </div>
+      <!-- secondary countdown — visible only during first 15 min of period -->
+      <div class="st-div" id="st-div2" style="display:none"></div>
+      <div id="st-mid2" style="display:none">
+        <div id="st-mins2-num">—</div>
+        <div id="st-mins2-lbl">MIN LEFT</div>
       </div>
       <div class="st-div"></div>
       <!-- RIGHT: pass policy -->
@@ -1492,7 +1517,8 @@ function renderStatus(){
     });
   }
 
-  function set(periodTxt,endsTxt,minsNum,minsLblHtml,dotCls,passTxt,passTxtColor,flash){
+  function set(periodTxt,endsTxt,minsNum,minsLblHtml,dotCls,passTxt,passTxtColor,flash,
+               mins2Num,mins2LblHtml){
     document.getElementById('st-period').textContent   = periodTxt;
     document.getElementById('st-ends').textContent     = endsTxt;
     document.getElementById('st-mins-num').textContent = minsNum;
@@ -1501,6 +1527,14 @@ function renderStatus(){
     var pt=document.getElementById('st-pass-txt');
     pt.textContent=passTxt; pt.style.color=passTxtColor;
     setFlash(!!flash);
+    /* Secondary countdown: show when mins2Num provided, hide otherwise */
+    var show2 = (mins2Num!=null && mins2Num!=='');
+    document.getElementById('st-div2').style.display  = show2?'':'none';
+    document.getElementById('st-mid2').style.display  = show2?'flex':'none';
+    if(show2){
+      document.getElementById('st-mins2-num').textContent = mins2Num;
+      document.getElementById('st-mins2-lbl').innerHTML   = mins2LblHtml||'';
+    }
   }
 
   if(!sched){
@@ -1535,7 +1569,16 @@ function renderStatus(){
       } else {
         dotC='open'; passT='ALLOWED'; passColor='var(--cw-green)';
       }
-      set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,dotC,passT,passColor,flash);
+      if(firstFifteen){
+        /* Two countdowns: primary = until passes open, secondary = until end of period */
+        var mUntilOpen = (toMins(inP.start)+15) - nm;
+        set(xl(inP.label),'ENDS '+f12(inP.end),
+            String(mUntilOpen),'MIN UNTIL<br>PASSES OPEN',
+            dotC,passT,passColor,false,
+            String(mLeft),'MIN UNTIL<br>END OF '+xl(inP.label));
+      } else {
+        set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,dotC,passT,passColor,flash);
+      }
     }
 
   } else if(nextP){
