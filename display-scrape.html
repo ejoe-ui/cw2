@@ -5341,10 +5341,34 @@ body #sd-cards > .sd-card > .sd-days {
 </style>
 
 
-<!-- Pass 167: override Pass 166 specificity, restore confirmed-working -43px translate -->
-<style id="cw2-pass167-transform-fix">
+<!-- Pass 167: fine-tune position + fix centering blocked by Pass 161 -->
+<style id="cw2-pass167-final">
 body #special-days {
-  transform: translateY(-43px) !important;
+  transform: translateY(-28px) !important;
+}
+/* Override Pass 161 flex-start — center content in each card */
+body #sd-cards > .sd-card {
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 8% 4% !important;
+  gap: 6% !important;
+}
+body #sd-cards > .sd-card > .sd-title {
+  font-size: clamp(10px, 0.85vw, 14px) !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+  width: 100% !important;
+}
+body #sd-cards > .sd-card > .sd-date {
+  font-size: clamp(8px, 0.65vw, 11px) !important;
+  text-align: center !important;
+}
+body #sd-cards > .sd-card > .sd-days {
+  font-size: clamp(11px, 0.90vw, 16px) !important;
+  font-weight: bold !important;
+  text-align: center !important;
 }
 </style>
 </body>
