@@ -190,9 +190,11 @@ html, body {
   opacity: 0.3; position: relative; z-index: 1;
 }
 #crt-headline {
-  font-family: var(--font-type); font-size: 27px; line-height: 1.28;
+  font-family: var(--font-type); font-size: 25px; line-height: 1.28;
   color: var(--cw-highlight); letter-spacing: 0.02em;
-  min-height: 4em; position: relative; z-index: 1;
+  /* cap at 3 lines max so short headlines give body more room */
+  max-height: 3.9em; overflow: hidden;
+  position: relative; z-index: 1;
 }
 /* typewriter cursor */
 #crt-cursor {
@@ -228,7 +230,7 @@ html, body {
   opacity: 0; pointer-events: none;
   transition: opacity 0.5s ease;
 }
-#crt-pane-news { padding: 14px 28px 10px 32px; gap: 10px; }
+#crt-pane-news { padding: 12px 26px 8px 30px; gap: 6px; }
 #crt-pane-bell { padding: 12px 18px 8px 18px; gap: 0; }
 #crt-pane-standby { padding: 0; }
 #crt-pane-data { padding: 24px 28px; justify-content: center; }
@@ -1302,7 +1304,7 @@ async function loadNews(){
     CW_NEWS=data.items.filter(function(it){return it.title&&it.title.trim();}).map(function(it){
       return {
         headline: it.title.trim(),
-        body: (it.description||'').replace(/<[^>]+>/g,'').trim().slice(0,220),
+        body: (it.description||'').replace(/<[^>]+>/g,'').trim().slice(0,420),
         source: 'GOOD NEWS NETWORK'
       };
     });
