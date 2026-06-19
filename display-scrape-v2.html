@@ -673,13 +673,11 @@ html, body {
   width: 10px; height: 10px;
   background: var(--cw-amber);
   box-shadow: 0 0 6px var(--cw-amber), 0 0 12px rgba(200,168,64,0.4);
-  animation: bulbFlicker 4s ease-in-out infinite;
+  opacity: 0.12;
+  transition: opacity 3s ease-in-out;
 }
-.bulb-crt.off { background: rgba(200,168,64,0.18); box-shadow: none; animation: none; }
-@keyframes bulbFlicker {
-  0%,90%,100%{opacity:1}
-  91%{opacity:0.7} 93%{opacity:1} 95%{opacity:0.8} 97%{opacity:1}
-}
+/* burst mode: fast transition for random flicker */
+.bulb-crt.burst { transition: opacity 0.55s ease-in-out; }
 .bulb-sound {
   width: 8px; height: 8px;
   background: rgba(200,168,64,0.18);
@@ -1586,14 +1584,62 @@ function updateSoundBulbs(level){
 }
 setInterval(function(){ updateSoundBulbs(Math.floor(Math.random()*3)); },1200);
 
-/* CRT TOP BULBS — sequence animation */
-(function crtBulbs(){
+/* ─── CRT TOP BULB CLOCK ─────────────────────────────────────
+   :00   → 40-second burst: all 5 randomly fade in/out (fast)
+   :40s  → Pip 1 slow-fades on, others dim  (holds to 12:00)
+   12:00 → Pip 1 fades off, Pip 2 fades on  (holds to 24:00)
+   24:00 → Pip 2 fades off, Pip 3 fades on  (holds to 36:00)
+   36:00 → Pip 3 fades off, Pip 4 fades on  (holds to 48:00)
+   48:00 → Pip 4 fades off, Pip 5 fades on  (holds to :00)
+   ───────────────────────────────────────────────────────── */
+(function crtBulbClock(){
   var ids=['bcrt-1','bcrt-2','bcrt-3','bcrt-4','bcrt-5'];
-  var step=0;
-  setInterval(function(){
-    ids.forEach(function(id,i){ var b=document.getElementById(id); if(b) b.className='bulb bulb-crt'+(i===step?' ':''); });
-    step=(step+1)%ids.length;
-  }, 800);
+  var pips=ids.map(function(id){ return document.getElementById(id); });
+  var DIM=0.1, burstTimer=null;
+
+  function setOp(p, v){
+    if(p) p.style.opacity=String(v);
+  }
+
+  function startBurst(){
+    pips.forEach(function(p){ if(p){ p.classList.add('burst'); setOp(p, DIM); } });
+    /* small delay so transition class is applied first */
+    setTimeout(function(){
+      burstTimer=setInterval(function(){
+        pips.forEach(function(p){
+          if(p) setOp(p, Math.random()>0.45 ? (0.45+Math.random()*0.55).toFixed(2) : DIM);
+        });
+      }, 600);
+    }, 60);
+  }
+
+  function stopBurst(){
+    if(burstTimer){ clearInterval(burstTimer); burstTimer=null; }
+    pips.forEach(function(p){ if(p) p.classList.remove('burst'); });
+  }
+
+  function showPip(idx){
+    /* slow crossfade: active → full, all others → dim */
+    pips.forEach(function(p,i){ setOp(p, i===idx ? 1 : DIM); });
+  }
+
+  var lastPhase=-1;
+  function tick(){
+    var now=new Date(), totSec=now.getMinutes()*60+now.getSeconds();
+    var phase= totSec<40   ? 0   /* burst */
+             : totSec<720  ? 1   /* pip 1:  0:40–12:00 */
+             : totSec<1440 ? 2   /* pip 2: 12:00–24:00 */
+             : totSec<2160 ? 3   /* pip 3: 24:00–36:00 */
+             : totSec<2880 ? 4   /* pip 4: 36:00–48:00 */
+             : 5;                /* pip 5: 48:00–59:59 */
+    if(phase===lastPhase) return;
+    lastPhase=phase;
+    if(phase===0){ startBurst(); }
+    else { stopBurst(); showPip(phase-1); }
+  }
+
+  tick();
+  setInterval(tick, 1000);
 })();
 
 /* PHOTO SLIDESHOW — Google Drive via Apps Script */
