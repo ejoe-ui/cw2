@@ -791,6 +791,91 @@ html, body {
   transition: transform 0.4s cubic-bezier(.45,0,.3,1);
 }
 
+/* ── SCRAP-E FLOAT ANIMATION ──
+   #scrap-float wraps #p-eyes so we can float the eyes independently
+   of #p-eyes' rotate(-7deg) transform without conflicting.         */
+@keyframes scrapeFloat {
+  0%,100% { transform: translateY(0px); }
+  35%      { transform: translateY(-4px) rotate(0.3deg); }
+  70%      { transform: translateY(-1.5px) rotate(-0.15deg); }
+}
+#scrap-float {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 2;
+  animation: scrapeFloat 4.5s ease-in-out infinite;
+}
+
+/* ── EYE EMOTION SHAPE SYSTEM ──
+   Applied as class on #p-eyes: emo-idle / emo-happy / emo-concerned
+                                  emo-sleepy / emo-excited / emo-squint
+   Eye COLOR never changes — only HEIGHT and BORDER-RADIUS shapes emotions. */
+.scrap-eye {
+  transition: height 0.5s cubic-bezier(.4,0,.2,1),
+              border-radius 0.5s ease,
+              box-shadow 0.6s ease,
+              opacity 0.6s ease;
+}
+/* HAPPY — tall wide-open, bright glow, gentle smile curve on bottom */
+#p-eyes.emo-happy .scrap-eye {
+  height: 26px;
+  border-radius: 5px 5px 11px 11px;
+  box-shadow:
+    0 0 14px var(--cw-green),
+    0 0 30px rgba(96,200,96,0.55),
+    0 0 52px rgba(96,200,96,0.3),
+    inset 0 0 14px rgba(0,255,68,0.6);
+}
+#p-eyes.emo-happy .scrap-eye::after { top: 14%; bottom: 42%; }
+
+/* CONCERNED — narrow band, tight glow, furrowed-brow energy */
+#p-eyes.emo-concerned .scrap-eye {
+  height: 12px;
+  border-radius: 3px;
+  box-shadow:
+    0 0 7px var(--cw-green),
+    0 0 14px rgba(96,200,96,0.25),
+    inset 0 0 5px rgba(0,255,68,0.28);
+}
+
+/* SLEEPY — heavy lidded, dim, slow glow pulse */
+#p-eyes.emo-sleepy .scrap-eye {
+  height: 9px;
+  border-radius: 3px 3px 6px 6px;
+  opacity: 0.42;
+  box-shadow:
+    0 0 5px var(--cw-green),
+    0 0 9px rgba(96,200,96,0.18),
+    inset 0 0 4px rgba(0,255,68,0.18);
+  animation: eyeGlow 9s ease-in-out infinite !important;
+}
+
+/* EXCITED — rapid pulse, max brightness (Fridays + energy) */
+@keyframes eyeExcited {
+  0%,100%{ height: 20px; }
+  45%,55%{ height: 28px; }
+}
+#p-eyes.emo-excited .scrap-eye {
+  animation: eyeExcited 0.5s ease-in-out infinite,
+             eyeGlow 0.9s ease-in-out infinite !important;
+  box-shadow:
+    0 0 18px var(--cw-green),
+    0 0 38px rgba(96,200,96,0.65),
+    0 0 65px rgba(96,200,96,0.38),
+    inset 0 0 18px rgba(0,255,68,0.7);
+}
+
+/* SQUINT — flat menacing locked stare (restricted pass zone) */
+#p-eyes.emo-squint .scrap-eye {
+  height: 7px;
+  border-radius: 2px;
+  box-shadow:
+    0 0 5px var(--cw-green),
+    0 0 10px rgba(96,200,96,0.15),
+    inset 0 0 3px rgba(0,255,68,0.22);
+  animation: none !important;
+}
+#p-eyes.emo-squint .eye-pupil { opacity: 0; }
+
 /* LIGHT BULBS */
 .bulb {
   position: absolute;
@@ -972,9 +1057,12 @@ html, body {
     </div>
 
     <!-- SCRAP-E EYES -->
-    <div class="panel" id="p-eyes">
-      <div class="scrap-eye left" id="eye-left"><div class="eye-pupil" id="pupil-left"></div></div>
-      <div class="scrap-eye right" id="eye-right"><div class="eye-pupil" id="pupil-right"></div></div>
+    <!-- scrap-float: animates eyes up/down to give idle life — no separate PSD layer needed -->
+    <div id="scrap-float">
+      <div class="panel" id="p-eyes">
+        <div class="scrap-eye left" id="eye-left"><div class="eye-pupil" id="pupil-left"></div></div>
+        <div class="scrap-eye right" id="eye-right"><div class="eye-pupil" id="pupil-right"></div></div>
+      </div>
     </div>
 
     <!-- LIGHT BULBS: CRT top row (5)
@@ -1463,8 +1551,9 @@ function renderStatus(){
     set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED','var(--cw-dim)',false);
   }
 
-  // Update SCRAP-E body lights to reflect current pass state + birthdays
+  // Update SCRAP-E body lights and eye emotion to reflect current pass state + birthdays
   updateBodyLights();
+  if(typeof decideEmotion==='function') decideEmotion();
 }
 
 /* SCRAP-E BODY LIGHTS
@@ -1857,69 +1946,178 @@ async function renderHonorRoll(){
   };
 })();
 
-/* SCRAP-E EYES — blink + random look-around + mouse tracking
-   Mouse moves → pupils follow cursor subtly (max 5px).
-   Mouse idle 2s → resume random movements.                    */
+/* ═══════════════════════════════════════════════════════════
+   SCRAP-E EYES — emotion state machine, cross-eyed detection,
+   blink / wink, mouse tracking + idle random wander.
+
+   Emotion shapes (eye HEIGHT only — color stays green always):
+     idle      → 20px standard
+     happy     → 26px tall + smile curve  (birthday / open pass / Friday)
+     concerned → 12px narrow band         (loud audio / warn pass)
+     sleepy    → 9px heavy lid            (after school / before 7 AM)
+     excited   → pulsing 20-28px          (Friday in school)
+     squint    → 7px flat locked stare    (restricted zone)
+   ═══════════════════════════════════════════════════════════ */
 var eyeBlinkT=null, eyeLookT=null, mouseIdleT=null;
 var eyeTracking=false;
 
+/* Shared audio level written by sound meter, read here */
+window.SCRAP_AUDIO_LEVEL = 0;
+
+/* ── Emotion state ─────────────────────────────────────── */
+var SCRAP_EMO = 'idle';
+var EMO_OVERRIDE_UNTIL = 0;
+
+function setEmotion(state, durationMs){
+  var eyes=document.getElementById('p-eyes');
+  if(!eyes) return;
+  SCRAP_EMO=state;
+  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint']
+    .forEach(function(c){ eyes.classList.remove(c); });
+  eyes.classList.add('emo-'+state);
+  if(durationMs) EMO_OVERRIDE_UNTIL=Date.now()+durationMs;
+}
+
+function decideEmotion(){
+  if(Date.now()<EMO_OVERRIDE_UNTIL) return;
+
+  var now=new Date();
+  var nm=now.getHours()*60+now.getMinutes();
+  var day=now.getDay(); /* 0=Sun … 5=Fri */
+
+  /* Pass status */
+  var passCls=(document.getElementById('st-pass-dot')||{}).className||'off';
+
+  /* Priority cascade (highest wins first) */
+
+  /* 1. Restricted zone → squint */
+  if(passCls==='restricted'){ setEmotion('squint'); return; }
+
+  /* 2. Loud audio → concerned */
+  if((window.SCRAP_AUDIO_LEVEL||0)>68){ setEmotion('concerned'); return; }
+
+  /* 3. Last-chance warning → concerned */
+  if(passCls==='warn'){ setEmotion('concerned'); return; }
+
+  /* 4. Birthday today → happy all day */
+  var cm=now.getMonth()+1, cd=now.getDate();
+  var hasBday=(typeof CW_BIRTHDAYS!=='undefined')&&
+    CW_BIRTHDAYS.some(function(b){ return b.month==cm&&b.day==cd; });
+  if(hasBday){ setEmotion('happy'); return; }
+
+  /* 5. Open pass → happy */
+  if(passCls==='open'){ setEmotion('happy'); return; }
+
+  /* 6. Friday during school hours → excited */
+  var inSchool=(nm>=7*60+45&&nm<=15*60+30);
+  if(day===5&&inSchool){ setEmotion('excited'); return; }
+
+  /* 7. After school or before 7 AM → sleepy */
+  if(nm>15*60+30||nm<7*60){ setEmotion('sleepy'); return; }
+
+  /* 8. Default */
+  setEmotion('idle');
+}
+
+/* Exposed so sound meter can trigger re-evaluation */
+window.SCRAP_decidEmo=decideEmotion;
+
+/* ── Startup ───────────────────────────────────────────── */
 function startEyes(){
+  setEmotion('idle');
   scheduleBlink();
   scheduleLook();
+  setInterval(decideEmotion, 15000); /* periodic re-check */
 
   document.addEventListener('mousemove', function(e){
-    /* switch to tracking mode */
     if(!eyeTracking){
       eyeTracking=true;
       clearTimeout(eyeLookT); eyeLookT=null;
     }
     trackEyesToMouse(e.clientX, e.clientY);
-    /* restart idle timer */
     clearTimeout(mouseIdleT);
-    mouseIdleT=setTimeout(function(){
-      eyeTracking=false;
-      scheduleLook(); /* hand back to random */
-    }, 2000);
+    mouseIdleT=setTimeout(function(){ eyeTracking=false; scheduleLook(); }, 2000);
   });
 }
 
+/* ── Cross-eyed + normal tracking ─────────────────────── */
 function trackEyesToMouse(mx, my){
+  var leftEl =document.getElementById('eye-left');
+  var rightEl=document.getElementById('eye-right');
+  if(!leftEl||!rightEl) return;
+
+  var lr=leftEl.getBoundingClientRect();
+  var rr=rightEl.getBoundingClientRect();
+
+  /* Cross-eyed zone: mouse hovers near/between the eyes */
+  var gapCenter=(lr.right+rr.left)/2;
+  var halfZone=(rr.right-lr.left)*0.55; /* ~110% of both-eyes span */
+  var crossFactor=Math.max(0, 1-Math.abs(mx-gapCenter)/halfZone);
+
+  if(crossFactor>0.1){
+    /* Pupils point inward — more crossed the closer to center */
+    var ca=(crossFactor*5).toFixed(1);
+    var pl=document.getElementById('pupil-left');
+    var pr=document.getElementById('pupil-right');
+    if(pl) pl.style.transform='translate(calc(-50% + '+ca+'px), calc(-50%))';
+    if(pr) pr.style.transform='translate(calc(-50% - '+ca+'px), calc(-50%))';
+    return;
+  }
+
+  /* Normal: pupils follow cursor up to 5px from center */
   var eyesEl=document.getElementById('p-eyes');
   if(!eyesEl) return;
   var r=eyesEl.getBoundingClientRect();
   var cx=r.left+r.width/2, cy=r.top+r.height/2;
   var dx=mx-cx, dy=my-cy;
   var dist=Math.sqrt(dx*dx+dy*dy)||1;
-  var pull=Math.min(1, dist/260); /* ramps up over 260px from center */
+  var pull=Math.min(1, dist/260);
   var MAX=5;
-  var nx=(dx/dist)*pull*MAX, ny=(dy/dist)*pull*MAX;
-  setPupils(nx.toFixed(1), ny.toFixed(1));
+  setPupils(((dx/dist)*pull*MAX).toFixed(1), ((dy/dist)*pull*MAX).toFixed(1));
 }
 
 function setPupils(dx, dy){
+  var t='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
   var pl=document.getElementById('pupil-left');
   var pr=document.getElementById('pupil-right');
-  var t='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
   if(pl) pl.style.transform=t;
   if(pr) pr.style.transform=t;
 }
 
+/* ── Blink / wink scheduler ────────────────────────────── */
 function scheduleBlink(){
-  var left=document.getElementById('eye-left');
+  var left =document.getElementById('eye-left');
   var right=document.getElementById('eye-right');
   if(left&&right){
-    left.classList.add('blink'); right.classList.add('blink');
-    setTimeout(function(){
-      if(left) left.classList.remove('blink');
-      if(right) right.classList.remove('blink');
-    }, 120);
+    /* 22% chance of a single-eye wink when idle */
+    if(SCRAP_EMO==='idle'&&Math.random()<0.22){
+      var winkEye=Math.random()<0.5?left:right;
+      winkEye.classList.add('blink');
+      setTimeout(function(){ winkEye.classList.remove('blink'); }, 180);
+    } else {
+      left.classList.add('blink'); right.classList.add('blink');
+      setTimeout(function(){
+        if(left)  left.classList.remove('blink');
+        if(right) right.classList.remove('blink');
+      }, 120);
+    }
   }
-  eyeBlinkT=setTimeout(scheduleBlink, 2800+Math.random()*3200);
+  /* Blink cadence varies by mood */
+  var base = SCRAP_EMO==='excited' ? 1000
+           : SCRAP_EMO==='sleepy'  ? 5500
+           :                         2800;
+  var jitter = SCRAP_EMO==='excited' ? 800 : 3200;
+  eyeBlinkT=setTimeout(scheduleBlink, base+Math.random()*jitter);
 }
 
+/* ── Random look-around (when mouse is idle) ────────────── */
 function scheduleLook(){
-  if(eyeTracking) return; /* mouse has control — don't interrupt */
-  var dx=(Math.random()*2-1)*5, dy=(Math.random()*2-1)*3;
+  if(eyeTracking) return;
+  var maxX=SCRAP_EMO==='sleepy'?2:5;
+  var maxY=SCRAP_EMO==='sleepy'?1.5:3;
+  var dx=(Math.random()*2-1)*maxX;
+  var dy=(Math.random()*2-1)*maxY;
+  if(SCRAP_EMO==='sleepy') dy=Math.abs(dy)*0.6; /* sleepy pupils drift down */
   setPupils(dx.toFixed(1), dy.toFixed(1));
   eyeLookT=setTimeout(scheduleLook, 1800+Math.random()*2400);
 }
@@ -1944,6 +2142,7 @@ function scheduleLook(){
   var SENS_VALS  = [0.55, 1.0, 1.9, 3.5]; // gain multipliers
 
   var audioCtx=null, analyser=null, micStream=null;
+  var _audioEmoFrame=0; /* frame counter for throttled emotion updates */
   var liveFrame=null, cosmeticTimer=null, cosmeticBulbTimer=null;
 
   /* ── DOM refs ──────────────────────────────────────── */
@@ -2017,6 +2216,13 @@ function scheduleLook(){
     var db = norm>0.01 ? Math.round(-58+norm*68) : -60;
     if(dbNum) dbNum.textContent = db>-58 ? db : '—';
     setBulbs(norm<0.08?0:norm<0.28?1:norm<0.52?2:norm<0.76?3:4);
+    /* Expose level globally; re-evaluate eye emotion every ~90 frames (~1.5s) */
+    window.SCRAP_AUDIO_LEVEL=Math.round(norm*100);
+    _audioEmoFrame++;
+    if(_audioEmoFrame>=90){
+      _audioEmoFrame=0;
+      if(window.SCRAP_decidEmo) window.SCRAP_decidEmo();
+    }
 
     /* draw */
     syncCanvas();
