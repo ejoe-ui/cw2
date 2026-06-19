@@ -58,7 +58,7 @@ html, body {
 /* ── LAYER 3: FOREGROUND OVERLAY ── */
 #layer-fg {
   position: absolute; inset: 0; z-index: 10;
-  background: url('chassis-fg.png') 0 0 / 1920px 1080px no-repeat;
+  background: url('chassis-overlay.png') 0 0 / 1920px 1080px no-repeat;
   pointer-events: none;
 }
 
@@ -337,8 +337,10 @@ html, body {
   background: var(--cw-panel);
 }
 #p-photo img {
+  position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: cover;
   transition: opacity 1.2s ease;
+  filter: grayscale(1) sepia(.75) hue-rotate(-12deg) saturate(.9) brightness(.7) contrast(1.15);
 }
 #p-photo img.fade { opacity: 0; }
 
@@ -1285,20 +1287,57 @@ setInterval(function(){ updateSoundBulbs(Math.floor(Math.random()*3)); },1200);
   }, 800);
 })();
 
-/* PHOTO SLIDESHOW placeholder — populate PHOTOS array with URLs */
-var PHOTOS=[];  /* TODO: add photo URLs, e.g. from Supabase storage */
-var photoIdx=0;
-function nextPhoto(){
-  var img=document.getElementById('photo-img');
-  if(!PHOTOS.length||!img){ return; }
-  img.classList.add('fade');
-  setTimeout(function(){
-    photoIdx=(photoIdx+1)%PHOTOS.length;
-    img.src=PHOTOS[photoIdx];
-    img.onload=function(){ img.classList.remove('fade'); };
-  }, 1200);
+/* PHOTO SLIDESHOW — Google Drive via Apps Script */
+var DRIVE_PHOTO_URL = 'https://script.google.com/macros/s/AKfycbwFbF2ssCZFxwYYf2ziZBA7gQ9ZEpITFGL5W5clMuYaquxWiAxlh1Kqicc60Ztn68ts/exec';
+var PHOTOS = [], photoIdx = 0, photoActive = 0;
+var photoA, photoB;
+
+function initPhotos(){
+  photoA = document.getElementById('photo-img');
+  /* create a second img for crossfade */
+  photoB = document.createElement('img');
+  photoB.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;';
+  document.getElementById('p-photo').appendChild(photoB);
 }
-if(PHOTOS.length) setInterval(nextPhoto, 8000);
+
+function setPhoto(src){
+  var next = photoActive ? photoA : photoB;
+  var prev = photoActive ? photoB : photoA;
+  if(!src) return;
+  next.onload = function(){
+    next.style.opacity = '1';
+    prev.style.opacity = '0';
+    photoActive = photoActive ? 0 : 1;
+  };
+  next.src = src;
+}
+
+function nextPhoto(){
+  if(!PHOTOS.length) return;
+  photoIdx = (photoIdx + 1) % PHOTOS.length;
+  setPhoto(PHOTOS[photoIdx]);
+}
+
+async function loadPhotos(){
+  try{
+    var res = await fetch(DRIVE_PHOTO_URL);
+    if(!res.ok) throw new Error('http '+res.status);
+    var data = await res.json();
+    var urls = (data && Array.isArray(data.photos)) ? data.photos.filter(Boolean) : [];
+    if(urls.length){
+      PHOTOS = urls;
+      photoIdx = 0;
+      setPhoto(PHOTOS[0]);
+      document.getElementById('p-photo').style.background = 'none';
+    }
+  } catch(e){
+    console.warn('[CW2 Photos] Drive fetch failed:', e.message);
+    /* retry in 30s */
+    setTimeout(loadPhotos, 30000);
+  }
+}
+
+setInterval(nextPhoto, 10000);
 
 /* ═══════════════════════════════════════════════════════════
    LOAD ALL & BOOT
@@ -1332,6 +1371,10 @@ async function loadAll(){
 
   /* start eyes */
   startEyes();
+
+  /* init photo bay */
+  initPhotos();
+  loadPhotos();
 
   /* load data */
   await loadAll();
