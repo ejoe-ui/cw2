@@ -849,19 +849,20 @@ html, body {
   animation: eyeGlow 9s ease-in-out infinite !important;
 }
 
-/* EXCITED — rapid pulse, max brightness (Fridays + energy) */
+/* EXCITED — tall open eyes, gentle slow pulse, bright glow (Fridays) */
 @keyframes eyeExcited {
-  0%,100%{ height: 20px; }
-  45%,55%{ height: 28px; }
+  0%,100%{ height: 24px; }
+  50%     { height: 27px; }
 }
 #p-eyes.emo-excited .scrap-eye {
-  animation: eyeExcited 0.5s ease-in-out infinite,
-             eyeGlow 0.9s ease-in-out infinite !important;
+  animation: eyeExcited 2.5s ease-in-out infinite,
+             eyeGlow 2s ease-in-out infinite !important;
+  border-radius: 5px 5px 11px 11px;
   box-shadow:
-    0 0 18px var(--cw-green),
-    0 0 38px rgba(96,200,96,0.65),
-    0 0 65px rgba(96,200,96,0.38),
-    inset 0 0 18px rgba(0,255,68,0.7);
+    0 0 16px var(--cw-green),
+    0 0 34px rgba(96,200,96,0.6),
+    0 0 58px rgba(96,200,96,0.32),
+    inset 0 0 16px rgba(0,255,68,0.65);
 }
 
 /* SQUINT — flat menacing locked stare (restricted pass zone) */
@@ -1993,8 +1994,8 @@ function decideEmotion(){
   /* 1. Restricted zone → squint */
   if(passCls==='restricted'){ setEmotion('squint'); return; }
 
-  /* 2. Loud audio → concerned */
-  if((window.SCRAP_AUDIO_LEVEL||0)>68){ setEmotion('concerned'); return; }
+  /* 2. Sustained loud audio → concerned (smoothed level, high threshold) */
+  if((window.SCRAP_AUDIO_LEVEL||0)>82){ setEmotion('concerned'); return; }
 
   /* 3. Last-chance warning → concerned */
   if(passCls==='warn'){ setEmotion('concerned'); return; }
@@ -2012,8 +2013,8 @@ function decideEmotion(){
   var inSchool=(nm>=7*60+45&&nm<=15*60+30);
   if(day===5&&inSchool){ setEmotion('excited'); return; }
 
-  /* 7. After school or before 7 AM → sleepy */
-  if(nm>15*60+30||nm<7*60){ setEmotion('sleepy'); return; }
+  /* 7. After 9 PM or before 6 AM → sleepy */
+  if(nm>21*60||nm<6*60){ setEmotion('sleepy'); return; }
 
   /* 8. Default */
   setEmotion('idle');
@@ -2024,9 +2025,9 @@ window.SCRAP_decidEmo=decideEmotion;
 
 /* ── Startup ───────────────────────────────────────────── */
 function startEyes(){
-  setEmotion('idle');
   scheduleBlink();
   scheduleLook();
+  decideEmotion(); /* decide immediately — don't force idle and then wait 15s */
   setInterval(decideEmotion, 15000); /* periodic re-check */
 
   document.addEventListener('mousemove', function(e){
@@ -2142,7 +2143,8 @@ function scheduleLook(){
   var SENS_VALS  = [0.55, 1.0, 1.9, 3.5]; // gain multipliers
 
   var audioCtx=null, analyser=null, micStream=null;
-  var _audioEmoFrame=0; /* frame counter for throttled emotion updates */
+  var _audioEmoFrame=0;  /* frame counter for throttled emotion updates */
+  var _audioSmooth=0;    /* exponential moving average — dampens spikes  */
   var liveFrame=null, cosmeticTimer=null, cosmeticBulbTimer=null;
 
   /* ── DOM refs ──────────────────────────────────────── */
@@ -2216,10 +2218,12 @@ function scheduleLook(){
     var db = norm>0.01 ? Math.round(-58+norm*68) : -60;
     if(dbNum) dbNum.textContent = db>-58 ? db : '—';
     setBulbs(norm<0.08?0:norm<0.28?1:norm<0.52?2:norm<0.76?3:4);
-    /* Expose level globally; re-evaluate eye emotion every ~90 frames (~1.5s) */
-    window.SCRAP_AUDIO_LEVEL=Math.round(norm*100);
+    /* Smooth the level (EMA α=0.08 → slow to rise, slow to fall)
+       then expose globally. Re-evaluate eye emotion every ~300 frames (~5s). */
+    _audioSmooth = _audioSmooth*0.92 + norm*0.08;
+    window.SCRAP_AUDIO_LEVEL=Math.round(_audioSmooth*100);
     _audioEmoFrame++;
-    if(_audioEmoFrame>=90){
+    if(_audioEmoFrame>=300){
       _audioEmoFrame=0;
       if(window.SCRAP_decidEmo) window.SCRAP_decidEmo();
     }
