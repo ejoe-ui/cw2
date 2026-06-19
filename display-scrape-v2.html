@@ -340,9 +340,22 @@ html, body {
   position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: cover;
   transition: opacity 1.2s ease;
-  filter: grayscale(1) sepia(.75) hue-rotate(-12deg) saturate(.9) brightness(.7) contrast(1.15);
+  filter: grayscale(1) sepia(.78) hue-rotate(-12deg) saturate(.9) brightness(.68) contrast(1.18);
 }
-#p-photo img.fade { opacity: 0; }
+/* amber vignette overlay — matches v1 treatment */
+#p-photo::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 60% 90%, rgba(232,214,106,.22), transparent 60%),
+    linear-gradient(180deg, rgba(232,214,106,.06), transparent 25%, rgba(0,0,0,.32));
+}
+/* scanlines */
+#p-photo::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .4;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0px, rgba(0,0,0,.18) 1px, transparent 3px, transparent 5px);
+}
 
 /* SPORT DAY SUB-CARDS */
 .sd-card {
