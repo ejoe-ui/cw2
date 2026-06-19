@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Share+Tech+Mono&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 /* ── RESET ── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -210,17 +211,28 @@ html, body {
   opacity: 0.9;
 }
 #crt-footer {
-  display: flex; align-items: center; justify-content: space-between;
-  position: relative; z-index: 1;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  position: relative; z-index: 1; gap: 8px;
 }
 #crt-source {
   font-family: var(--font-mono); font-size: 12px;
   letter-spacing: 0.12em; color: var(--cw-dim);
-  text-transform: uppercase;
+  text-transform: uppercase; padding-bottom: 4px;
 }
-#crt-counter {
-  font-family: var(--font-mono); font-size: 12px;
-  color: var(--cw-dim); letter-spacing: 0.1em;
+/* QR code — amber-on-dark steampunk treatment */
+#crt-qr {
+  width: 78px; height: 78px; flex-shrink: 0;
+  background: #060604;
+  border: 1px solid rgba(200,168,64,0.30);
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(200,168,64,0.12);
+  overflow: hidden;
+  padding: 3px;
+}
+#crt-qr img, #crt-qr canvas {
+  width: 72px !important; height: 72px !important;
+  display: block !important;
+  image-rendering: pixelated;
 }
 
 /* ── CRT MULTI-PANE SYSTEM ── */
@@ -862,7 +874,7 @@ html, body {
         <div id="crt-body">Calibrating signal receiver. Stand by for incoming transmissions.</div>
         <div id="crt-footer">
           <div id="crt-source">SOURCE: —</div>
-          <div id="crt-counter">1 / 1</div>
+          <div id="crt-qr" title="Scan to read full story"></div>
         </div>
       </div>
       <!-- PANE: BELL SCHEDULE -->
@@ -1305,6 +1317,7 @@ async function loadNews(){
       return {
         headline: it.title.trim(),
         body: (it.description||'').replace(/<[^>]+>/g,'').trim().slice(0,420),
+        link: it.link||it.guid||null,
         source: 'GOOD NEWS NETWORK'
       };
     });
@@ -1665,12 +1678,33 @@ async function renderHonorRoll(){
 
   /* ── NEWS ── */
   var _crtItems=[], _crtCur=0, _crtCharIdx=0, _crtTypeT=null, _crtNextT=null;
+  var _qrInst=null;
+
+  function _updateQR(url){
+    var el=document.getElementById('crt-qr');
+    if(!el||!window.QRCode) return;
+    if(!url){ el.style.visibility='hidden'; return; }
+    el.style.visibility='visible';
+    if(!_qrInst){
+      el.innerHTML='';
+      _qrInst=new QRCode(el,{
+        text: url,
+        width: 72, height: 72,
+        colorDark: '#c8a840',   /* amber modules */
+        colorLight: '#060604',  /* near-black background */
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      try{ _qrInst.makeCode(url); }catch(e){}
+    }
+  }
+
   function _showNewsItem(idx){
     if(!_crtItems.length) return;
     var it=_crtItems[idx%_crtItems.length];
-    document.getElementById('crt-counter').textContent=(idx%_crtItems.length+1)+' / '+_crtItems.length;
     document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
     document.getElementById('crt-body').textContent=it.body||'';
+    _updateQR(it.link||null);
     var hlEl=document.getElementById('crt-hl-text');
     hlEl.textContent='';
     clearTimeout(_crtTypeT); clearTimeout(_crtNextT);
