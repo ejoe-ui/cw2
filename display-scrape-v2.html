@@ -342,19 +342,19 @@ html, body {
   transition: opacity 1.2s ease;
   filter: grayscale(1) sepia(.78) hue-rotate(-12deg) saturate(.9) brightness(.68) contrast(1.18);
 }
-/* amber vignette overlay — matches v1 treatment */
+/* amber/gold overlay — warm golden tone over sepia */
 #p-photo::after {
   content: '';
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
   background:
-    radial-gradient(ellipse at 60% 90%, rgba(232,214,106,.22), transparent 60%),
-    linear-gradient(180deg, rgba(232,214,106,.06), transparent 25%, rgba(0,0,0,.32));
+    radial-gradient(ellipse at 50% 110%, rgba(220,175,50,.55), transparent 65%),
+    linear-gradient(180deg, rgba(200,155,30,.28) 0%, rgba(180,130,20,.18) 50%, rgba(0,0,0,.30) 100%);
 }
-/* scanlines */
+/* scanlines — barely-there, just texture */
 #p-photo::before {
   content: '';
-  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .4;
-  background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0px, rgba(0,0,0,.18) 1px, transparent 3px, transparent 5px);
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .12;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.5) 0px, rgba(0,0,0,.5) 1px, transparent 1px, transparent 4px);
 }
 
 /* SPORT DAY SUB-CARDS */
