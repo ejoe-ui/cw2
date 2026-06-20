@@ -391,27 +391,27 @@ html, body {
 #watch-overlay > * { pointer-events: auto; }
 #watch-lbl {
   font-family: var(--font-mono); font-size: 10px;
-  letter-spacing: 0.22em; color: #8a6030;
+  letter-spacing: 0.22em; color: rgba(200,168,64,0.55);
 }
 #watch-display {
   font-family: var(--font-crt); font-size: 112px; line-height: 1;
-  color: #00ff44; letter-spacing: 0.05em;
-  text-shadow: 0 0 28px #00ff44, 0 0 56px rgba(0,255,68,0.3);
+  color: #c8a840; letter-spacing: 0.05em;
+  text-shadow: 0 0 22px #c8a840, 0 0 44px rgba(200,168,64,0.35);
 }
 #watch-btns { display: flex; gap: 10px; }
-/* Watch buttons — green, not amber */
+/* Watch buttons — amber to match dot and display */
 #watch-btns .t-btn {
-  color: rgba(0,200,60,0.6);
-  background: rgba(0,200,60,0.04);
-  border-color: rgba(0,200,60,0.22);
+  color: rgba(200,168,64,0.55);
+  background: rgba(200,168,64,0.04);
+  border-color: rgba(200,168,64,0.22);
 }
 #watch-btns .t-btn:hover:not(:disabled) {
-  color: #00ff44; background: rgba(0,255,68,0.08);
-  border-color: rgba(0,255,68,0.45);
+  color: #c8a840; background: rgba(200,168,64,0.10);
+  border-color: rgba(200,168,64,0.5);
 }
 #watch-btns .t-btn:disabled {
-  color: rgba(0,180,50,0.25);
-  border-color: rgba(0,180,50,0.12);
+  color: rgba(200,168,64,0.18);
+  border-color: rgba(200,168,64,0.10);
   background: transparent;
 }
 #watch-marks {
@@ -1110,6 +1110,22 @@ html, body {
   }
 }
 .scrap-eye.blink { transform: scaleY(0.08) !important; transition: transform 0.06s ease; }
+/* Minute-lap flash — eyes go amber for 1.8s */
+@keyframes eyeMinuteLap {
+  0%   { background: var(--cw-green);
+         box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), inset 0 0 8px rgba(0,255,68,0.4); }
+  15%  { background: #c8a840;
+         box-shadow: 0 0 18px #c8a840, 0 0 40px rgba(200,168,64,0.6), 0 0 80px rgba(200,168,64,0.3), inset 0 0 14px rgba(200,168,64,0.5); }
+  35%  { background: #ffd060;
+         box-shadow: 0 0 24px #ffd060, 0 0 56px rgba(255,208,96,0.7), 0 0 100px rgba(255,208,96,0.4), inset 0 0 18px rgba(255,208,96,0.6); }
+  65%  { background: #c8a840;
+         box-shadow: 0 0 18px #c8a840, 0 0 40px rgba(200,168,64,0.5), inset 0 0 14px rgba(200,168,64,0.45); }
+  100% { background: var(--cw-green);
+         box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), inset 0 0 8px rgba(0,255,68,0.4); }
+}
+.scrap-eye.lap-flash {
+  animation: eyeMinuteLap 1.8s ease-in-out forwards !important;
+}
 /* eye pupil dot */
 .eye-pupil {
   position: absolute; width: 8px; height: 8px;
@@ -3704,13 +3720,28 @@ async function loadAll(){
    TOOL: STOPWATCH — tick ring + choppy dot + mark log
    ═══════════════════════════════════════════════════════════════ */
 (function(){
-  var _wsRunning = false;
-  var _wsStart   = 0;   // Date.now() at start
-  var _wsAccum   = 0;   // ms accumulated before pause
-  var _wsRAF     = null;
-  var _wsMarks   = [];  // {label, ms}
+  var _wsRunning  = false;
+  var _wsStart    = 0;
+  var _wsAccum    = 0;
+  var _wsRAF      = null;
+  var _wsMarks    = [];
+  var _wsLastMin  = -1;  // tracks last completed minute for eye flash
 
   function _wsElapsed(){ return _wsRunning ? _wsAccum + (Date.now()-_wsStart) : _wsAccum; }
+
+  /* Flash SCRAP-E eyes amber for 1.8s at the top of each minute */
+  function _wsMinuteLap(){
+    var eyes = ['eye-left','eye-right'];
+    eyes.forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList.remove('lap-flash');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('lap-flash');
+      setTimeout(function(){ el.classList.remove('lap-flash'); }, 1900);
+    });
+    if(window.setEmotion) setEmotion('excited', 1800);
+  }
 
   function _fmtTime(ms){
     var s = Math.floor(ms/1000);
@@ -3816,6 +3847,14 @@ async function loadAll(){
     if(disp) disp.textContent = _fmtTime(ms);
     var c = document.getElementById('watch-canvas');
     if(c) drawWatch(c, ms);
+
+    // Detect minute rollover → flash SCRAP-E eyes
+    var completedMin = Math.floor(ms / 60000);
+    if(completedMin > 0 && completedMin !== _wsLastMin){
+      _wsLastMin = completedMin;
+      _wsMinuteLap();
+    }
+
     if(_wsRunning) _wsRAF = requestAnimationFrame(_wsLoop);
   }
 
@@ -3865,7 +3904,7 @@ async function loadAll(){
 
   function _wsReset(){
     _wsPause2();
-    _wsAccum = 0; _wsMarks = [];
+    _wsAccum = 0; _wsMarks = []; _wsLastMin = -1;
     var disp = document.getElementById('watch-display');
     if(disp) disp.textContent = '00:00.0';
     var marks = document.getElementById('watch-marks');
