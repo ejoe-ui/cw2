@@ -2047,8 +2047,9 @@ function updateBodyLights(){
     var hasBday=(CW_BIRTHDAYS||[]).some(function(b){ return b.month==cm && b.day==cd; });
     if(hasBday){
       // Full rainbow cycle through saturated colors
-      small.style.background  = '';
-      small.style.boxShadow   = '';
+      small.style.background  = 'hsl(0,90%,55%)';
+      small.style.boxShadow   = '0 0 8px hsl(0,80%,50%), 0 0 18px hsl(0,70%,40%)';
+      small.style.filter      = '';
       small.style.animation   = 'bdayRainbow 4s linear infinite';
     } else {
       // Normal muted amber pulse
@@ -3323,6 +3324,7 @@ async function loadAll(){
   renderWeather();
   renderWisdom();
   await renderHonorRoll();
+  updateBodyLights(); // re-run now that CW_BIRTHDAYS is populated
   startCRT();
 }
 
