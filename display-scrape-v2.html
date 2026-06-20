@@ -388,7 +388,7 @@ html, body {
   align-items: center; justify-content: center; gap: 12px;
   pointer-events: none;
 }
-#watch-overlay > * { pointer-events: auto; }
+#p-crt.crt-watch #watch-overlay > * { pointer-events: auto; }
 #watch-lbl {
   font-family: var(--font-mono); font-size: 10px;
   letter-spacing: 0.22em; color: rgba(200,168,64,0.55);
@@ -3406,7 +3406,9 @@ async function loadAll(){
   var _tInterval = null;
   var _tAnimFrame= null;
   var _sandPct   = 1.0;
+  var _tMaxScale = 1.0; // sand fill fraction: 15min=1.0, 10min~0.67, 3min~0.2
   var _dropAnim  = null;
+  var _SAND_REF  = 900; // 15 min = full hourglass reference
   // 4 sand particles falling through the neck — staggered start positions
   // t = 0..1 progress through the fall path (neck → pile top)
   var _sandPtcl  = [{t:0.05},{t:0.18},{t:0.31},{t:0.44},{t:0.57},{t:0.70},{t:0.83},{t:0.96}];
@@ -3434,7 +3436,9 @@ async function loadAll(){
      Bottom chamber = narrow neck → upward funnel + rectangle
      Sand is NOT symmetric: top drains as fill, bottom grows as mound
   ════════════════════════════════════════════════════════════ */
-  function drawHourglass(canvas, pct){
+  // scale = sand fill fraction (1=full=15min, ~0.67=10min, ~0.2=3min)
+  function drawHourglass(canvas, pct, scale){
+    scale = (scale === undefined) ? 1 : scale;
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
@@ -3443,13 +3447,13 @@ async function loadAll(){
 
     // ── Geometry ────────────────────────────────────────────
     var cx = W / 2;
-    var LX = 22, RX = W - 22;        // glass left/right
-    var topY    = 18;                 // top of top cap
-    var botY    = H - 18;             // bottom of bottom cap
-    var topRectH   = 58;              // height of top reservoir rectangle
-    var botRectH   = 58;              // height of bottom reservoir rectangle
-    var topRectBotY = topY + topRectH;   // where funnel starts tapering
-    var botRectTopY = botY - botRectH;   // where funnel starts widening
+    var LX = 22, RX = W - 22;
+    var topY       = 18;
+    var botY       = H - 18;
+    var topRectH   = 58;
+    var botRectH   = 58;
+    var topRectBotY = topY + topRectH;
+    var botRectTopY = botY - botRectH;
     var neckW = 10, neckH = 10;
     var neckTopY  = H/2 - neckH/2;
     var neckBotY  = H/2 + neckH/2;
@@ -3459,26 +3463,46 @@ async function loadAll(){
     var CYAN = '#00e5ff';
     var SAND = '#c8a840';
 
-    // ── Chamber path helpers ─────────────────────────────────
+    // ── Chamber clip helpers (sand fill only) ────────────────
     function topChamber(){
       ctx.beginPath();
-      ctx.moveTo(LX,     topY);          // top-left
-      ctx.lineTo(RX,     topY);          // top-right
-      ctx.lineTo(RX,     topRectBotY);   // rect bottom-right
-      ctx.lineTo(neckRX, neckTopY);      // funnel narrows to neck
-      ctx.lineTo(neckLX, neckTopY);      // neck top-left
-      ctx.lineTo(LX,     topRectBotY);   // rect bottom-left
+      ctx.moveTo(LX,     topY);
+      ctx.lineTo(RX,     topY);
+      ctx.lineTo(RX,     topRectBotY);
+      ctx.lineTo(neckRX, neckTopY);
+      ctx.lineTo(neckLX, neckTopY);
+      ctx.lineTo(LX,     topRectBotY);
       ctx.closePath();
     }
     function botChamber(){
       ctx.beginPath();
-      ctx.moveTo(neckLX, neckBotY);      // neck bottom-left
-      ctx.lineTo(neckRX, neckBotY);      // neck bottom-right
-      ctx.lineTo(RX,     botRectTopY);   // funnel widens to rect top-right
-      ctx.lineTo(RX,     botY);          // bottom-right
-      ctx.lineTo(LX,     botY);          // bottom-left
-      ctx.lineTo(LX,     botRectTopY);   // rect top-left
+      ctx.moveTo(neckLX, neckBotY);
+      ctx.lineTo(neckRX, neckBotY);
+      ctx.lineTo(RX,     botRectTopY);
+      ctx.lineTo(RX,     botY);
+      ctx.lineTo(LX,     botY);
+      ctx.lineTo(LX,     botRectTopY);
       ctx.closePath();
+    }
+
+    // ── Continuous glass outline — no horizontal neck seams ──
+    // One unbroken path; the neck horizontal joints are omitted
+    // so the glass looks seamless through the connector.
+    function glassOutline(){
+      ctx.beginPath();
+      ctx.moveTo(neckLX, neckTopY);      // neck top-left
+      ctx.lineTo(LX,     topRectBotY);   // up left funnel
+      ctx.lineTo(LX,     topY);          // up left wall
+      ctx.lineTo(RX,     topY);          // top edge
+      ctx.lineTo(RX,     topRectBotY);   // down right wall
+      ctx.lineTo(neckRX, neckTopY);      // down right funnel to neck top
+      ctx.lineTo(neckRX, neckBotY);      // right neck wall
+      ctx.lineTo(RX,     botRectTopY);   // down right funnel from neck
+      ctx.lineTo(RX,     botY);          // down right wall
+      ctx.lineTo(LX,     botY);          // bottom edge
+      ctx.lineTo(LX,     botRectTopY);   // up left wall
+      ctx.lineTo(neckLX, neckBotY);      // up left funnel to neck bottom
+      ctx.closePath();                   // left neck wall back to start
     }
 
     // ── Empty chamber background ─────────────────────────────
@@ -3486,39 +3510,42 @@ async function loadAll(){
     topChamber(); ctx.fill();
     botChamber(); ctx.fill();
 
-    // ── TOP SAND — draining fill clipped to top chamber ──────
-    // Sand surface starts at topY (full) and descends to neckTopY (empty)
-    var sandSurfaceY = topY + progress * (neckTopY - topY);
+    // ── TOP SAND — scaled by timer duration ──────────────────
+    // scale=1  → sand starts at topY (full chamber, 15 min)
+    // scale=0.2 → sand starts 80% down (small amount, 3 min)
+    var topFull   = topY;
+    var topEmpty  = neckTopY;
+    var topStartY = topFull + (1 - scale) * (topEmpty - topFull);
+    var sandSurfaceY = topStartY + progress * (topEmpty - topStartY);
+
     ctx.save();
     topChamber(); ctx.clip();
-    var topGrad = ctx.createLinearGradient(cx, sandSurfaceY, cx, neckTopY);
-    topGrad.addColorStop(0,   'rgba(210,178,70,0.97)');
-    topGrad.addColorStop(0.6, 'rgba(190,155,50,0.92)');
-    topGrad.addColorStop(1,   'rgba(170,135,40,0.85)');
-    ctx.fillStyle = topGrad;
-    // Fill from the surface down to just past the neck entrance
-    ctx.fillRect(0, sandSurfaceY, W, neckTopY - sandSurfaceY + 4);
-    // Subtle glow on top surface
-    ctx.fillStyle = 'rgba(240,210,100,0.18)';
-    ctx.fillRect(0, sandSurfaceY, W, 3);
+    if(sandSurfaceY < topEmpty){
+      var topGrad = ctx.createLinearGradient(cx, sandSurfaceY, cx, topEmpty);
+      topGrad.addColorStop(0,   'rgba(210,178,70,0.97)');
+      topGrad.addColorStop(0.6, 'rgba(190,155,50,0.92)');
+      topGrad.addColorStop(1,   'rgba(170,135,40,0.85)');
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(0, sandSurfaceY, W, topEmpty - sandSurfaceY + 4);
+      ctx.fillStyle = 'rgba(240,210,100,0.18)';
+      ctx.fillRect(0, sandSurfaceY, W, 3);
+    }
     ctx.restore();
 
-    // ── BOTTOM SAND — growing mound + base, clipped to bottom chamber ──
-    var botFunnelH = botRectTopY - neckBotY;  // height of funnel section
-    var maxBaseH   = botRectH * 0.94;
-    var maxMoundH  = botFunnelH * 0.86;
-    var maxMoundW  = (RX - LX) / 2 - 4;
+    // ── BOTTOM SAND — scaled by timer duration ────────────────
+    var botFunnelH  = botRectTopY - neckBotY;
+    var maxBaseH    = botRectH  * 0.94 * scale;
+    var maxMoundH   = botFunnelH * 0.86 * scale;
+    var maxMoundW   = (RX - LX) / 2 - 4;
 
     var baseH    = progress * maxBaseH;
     var moundProg = Math.max(0, (progress - 0.04) / 0.96);
     var moundH   = moundProg * maxMoundH;
-    // Width grows at ~35° angle of repose
     var moundW   = Math.min(maxMoundW, moundH * 1.45);
 
     ctx.save();
     botChamber(); ctx.clip();
 
-    // Base rectangle layer
     if(baseH > 0.5){
       var bg = ctx.createLinearGradient(cx, botY - baseH, cx, botY);
       bg.addColorStop(0,   'rgba(190,158,55,0.92)');
@@ -3528,8 +3555,6 @@ async function loadAll(){
       ctx.fillRect(LX, botY - baseH, RX - LX, baseH + 2);
       ctx.shadowBlur = 0;
     }
-
-    // Mound / cone on top of base
     if(moundH > 0.5 && moundW > 0.5){
       ctx.beginPath();
       ctx.moveTo(cx - moundW, botY - baseH);
@@ -3547,32 +3572,20 @@ async function loadAll(){
     }
     ctx.restore();
 
-    // ── GLASS OUTLINE — chambers with cyan neon glow ─────────
+    // ── GLASS OUTLINE — single continuous path, no neck seams ─
     ctx.strokeStyle = CYAN;
     ctx.lineWidth = 3.5;
     ctx.shadowColor = CYAN; ctx.shadowBlur = 12;
-    topChamber(); ctx.stroke();
-    botChamber(); ctx.stroke();
+    glassOutline(); ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // ── NECK CONNECTOR — glass straw (walls only, transparent center) ──
-    // Two thin cyan walls, hollow in the middle like a glass tube
-    var wallW = 2.5;
-    ctx.fillStyle = CYAN;
-    ctx.shadowColor = CYAN; ctx.shadowBlur = 10;
-    // Left wall
-    ctx.fillRect(neckLX, neckTopY, wallW, neckBotY - neckTopY);
-    // Right wall
-    ctx.fillRect(neckRX - wallW, neckTopY, wallW, neckBotY - neckTopY);
-    ctx.shadowBlur = 0;
-
-    // Subtle CRT scanlines
+    // ── Subtle CRT scanlines ──────────────────────────────────
     ctx.fillStyle = 'rgba(0,0,0,0.045)';
     for(var sl = topY; sl < botY; sl += 4){
       ctx.fillRect(LX, sl+1, RX - LX, 1);
     }
 
-    // ── FALLING SAND STREAM — particles neck → pile ───────────
+    // ── FALLING SAND STREAM — particles neck to pile ──────────
     if(_tRunning && pct > 0.008){
       var pileTopY = botY - baseH - moundH;
       var fallDist = pileTopY - neckBotY - 3;
@@ -3591,7 +3604,6 @@ async function loadAll(){
         ctx.shadowBlur = 0;
       }
     }
-
   }
 
   function _animateDrop(){
@@ -3600,7 +3612,7 @@ async function loadAll(){
       if(p.t >= 1) p.t -= 1;
     });
     var c = document.getElementById('timer-hglass');
-    if(c && _tRunning) drawHourglass(c, _sandPct);
+    if(c && _tRunning) drawHourglass(c, _sandPct, _tMaxScale);
     if(_tRunning) _dropAnim = requestAnimationFrame(_animateDrop);
   }
 
@@ -3622,7 +3634,7 @@ async function loadAll(){
     else if(_sandPct <= 0.20) disp.classList.add('warn');
 
     if(stat) stat.textContent = _getStatus(_sandPct);
-    if(c && !_tRunning) drawHourglass(c, _sandPct);
+    if(c && !_tRunning) drawHourglass(c, _sandPct, _tMaxScale);
   }
 
   function _timerTick(){
@@ -3638,7 +3650,7 @@ async function loadAll(){
     _tRunning = false; cancelAnimationFrame(_dropAnim); _dropAnim = null;
     _sandPct = 0;
     var c = document.getElementById('timer-hglass');
-    if(c) drawHourglass(c, 0);
+    if(c) drawHourglass(c, 0, _tMaxScale);
     var disp = document.getElementById('timer-display');
     if(disp){ disp.textContent = '00:00'; disp.classList.add('crit'); }
     var stat = document.getElementById('timer-status-txt');
@@ -3689,6 +3701,7 @@ async function loadAll(){
     _tDuration = minutes * 60;
     _tRemain   = _tDuration;
     _sandPct   = 1.0;
+    _tMaxScale = Math.max(0.15, Math.min(1, _tDuration / _SAND_REF));
     document.querySelectorAll('.t-preset').forEach(function(el){
       el.classList.toggle('t-pre-active', parseInt(el.dataset.m)===minutes);
     });
@@ -3704,7 +3717,7 @@ async function loadAll(){
   function _timerOnShow(){
     // draw current state
     var c = document.getElementById('timer-hglass');
-    if(c) drawHourglass(c, _sandPct);
+    if(c) drawHourglass(c, _sandPct, _tMaxScale);
     _updateTimerUI();
     if(_tDuration === 0){
       var stat = document.getElementById('timer-status-txt');
@@ -3744,6 +3757,7 @@ async function loadAll(){
         document.querySelectorAll('.t-preset').forEach(function(el){ el.classList.remove('t-pre-active'); });
         _timerPause();
         _tDuration = secs; _tRemain = secs; _sandPct = 1.0;
+        _tMaxScale = Math.max(0.15, Math.min(1, _tDuration / _SAND_REF));
         var start = document.getElementById('timer-start-btn');
         var reset = document.getElementById('timer-reset-btn');
         if(start){ start.disabled=false; start.textContent='START'; }
