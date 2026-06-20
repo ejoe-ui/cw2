@@ -1228,7 +1228,15 @@ html, body {
 }
 /* SCRAP-E body light animations */
 @keyframes bodyMuted   { 0%,100%{opacity:0.60} 50%{opacity:0.28} }
-@keyframes bdayRainbow { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+@keyframes bdayRainbow {
+  0%   { background: hsl(0,  90%,55%); box-shadow: 0 0 8px hsl(0,  80%,50%), 0 0 18px hsl(0,  70%,40%); }
+  16%  { background: hsl(35, 95%,55%); box-shadow: 0 0 8px hsl(35, 85%,50%), 0 0 18px hsl(35, 70%,40%); }
+  33%  { background: hsl(120,80%,45%); box-shadow: 0 0 8px hsl(120,80%,40%), 0 0 18px hsl(120,70%,30%); }
+  50%  { background: hsl(200,90%,55%); box-shadow: 0 0 8px hsl(200,80%,50%), 0 0 18px hsl(200,70%,40%); }
+  66%  { background: hsl(260,85%,65%); box-shadow: 0 0 8px hsl(260,75%,55%), 0 0 18px hsl(260,65%,45%); }
+  83%  { background: hsl(310,90%,60%); box-shadow: 0 0 8px hsl(310,80%,50%), 0 0 18px hsl(310,70%,40%); }
+  100% { background: hsl(0,  90%,55%); box-shadow: 0 0 8px hsl(0,  80%,50%), 0 0 18px hsl(0,  70%,40%); }
+}
 
 #bulb-big {
   width: 26px; height: 26px;
@@ -2038,10 +2046,10 @@ function updateBodyLights(){
     var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
     var hasBday=(CW_BIRTHDAYS||[]).some(function(b){ return b.month==cm && b.day==cd; });
     if(hasBday){
-      // Rainbow cascade — hue-rotate loops over amber base, gentle pulse on top
-      small.style.background  = 'var(--cw-amber)';
-      small.style.boxShadow   = '0 0 7px rgba(200,168,64,0.6), 0 0 14px rgba(200,168,64,0.28)';
-      small.style.animation   = 'bdayRainbow 6s linear infinite, bodyMuted 5s ease-in-out infinite';
+      // Full rainbow cycle through saturated colors
+      small.style.background  = '';
+      small.style.boxShadow   = '';
+      small.style.animation   = 'bdayRainbow 4s linear infinite';
     } else {
       // Normal muted amber pulse
       small.style.background  = 'var(--cw-amber)';
