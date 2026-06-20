@@ -942,6 +942,27 @@ html, body {
     inset 0 0 16px rgba(0,255,68,0.65);
 }
 
+/* LAUGH — squinted + quick bounce on the float wrapper */
+@keyframes eyeLaughBounce {
+  0%       { transform: translateY(0); }
+  12%      { transform: translateY(-5px); }
+  24%      { transform: translateY(0); }
+  38%      { transform: translateY(-4px); }
+  50%      { transform: translateY(0); }
+  62%      { transform: translateY(-3px); }
+  74%      { transform: translateY(0); }
+  100%     { transform: translateY(0); }
+}
+#scrap-float.laughing {
+  animation: eyeLaughBounce 1.5s ease-in-out forwards !important;
+}
+#p-eyes.emo-laugh .scrap-eye {
+  height: 8px;
+  border-radius: 3px 3px 5px 5px;
+  opacity: 0.72;
+  animation: eyeGlow 0.35s ease-in-out infinite !important;
+}
+
 /* SQUINT — flat menacing locked stare (restricted pass zone) */
 #p-eyes.emo-squint .scrap-eye {
   height: 7px;
@@ -2267,7 +2288,12 @@ async function renderHonorRoll(){
     if(el) el.innerHTML=msg.replace(/\n/g,'<br>');
     _ssReturnMode=CRT_MODE;
     setCRTMode('scrape');
-    setTimeout(function(){ setCRTMode(_ssReturnMode); }, duration||10000);
+    var dur=duration||10000;
+    setTimeout(function(){ setCRTMode(_ssReturnMode); }, dur);
+    /* 25% chance SCRAP•E laughs after the message clears */
+    if(Math.random()<0.25){
+      setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, dur+400);
+    }
   }
 
   function _showScrapeSays(){
@@ -2372,7 +2398,7 @@ function setEmotion(state, durationMs){
   var eyes=document.getElementById('p-eyes');
   if(!eyes) return;
   SCRAP_EMO=state;
-  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint']
+  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint','emo-laugh']
     .forEach(function(c){ eyes.classList.remove(c); });
   eyes.classList.add('emo-'+state);
   if(durationMs) EMO_OVERRIDE_UNTIL=Date.now()+durationMs;
@@ -2484,22 +2510,50 @@ function setPupils(dx, dy){
   if(pr) pr.style.transform=t;
 }
 
+/* ── Laugh ──────────────────────────────────────────────── */
+var _laughTimer = null;
+function playLaugh(){
+  if(_laughTimer) return;
+  var float = document.getElementById('scrap-float');
+  var eyes  = document.getElementById('p-eyes');
+  if(!float||!eyes) return;
+  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint','emo-laugh']
+    .forEach(function(c){ eyes.classList.remove(c); });
+  eyes.classList.add('emo-laugh');
+  float.classList.add('laughing');
+  EMO_OVERRIDE_UNTIL = Date.now() + 2000;
+  _laughTimer = setTimeout(function(){
+    float.classList.remove('laughing');
+    eyes.classList.remove('emo-laugh');
+    _laughTimer = null;
+    decideEmotion();
+  }, 1600);
+}
+window.SCRAP_laugh = playLaugh;
+
 /* ── Blink / wink scheduler ────────────────────────────── */
+function _doBlink(left, right, dur){
+  left.classList.add('blink'); right.classList.add('blink');
+  setTimeout(function(){
+    if(left)  left.classList.remove('blink');
+    if(right) right.classList.remove('blink');
+  }, dur||120);
+}
 function scheduleBlink(){
   var left =document.getElementById('eye-left');
   var right=document.getElementById('eye-right');
-  if(left&&right){
+  if(left&&right&&SCRAP_EMO!=='laugh'){
     /* 22% chance of a single-eye wink when idle */
     if(SCRAP_EMO==='idle'&&Math.random()<0.22){
       var winkEye=Math.random()<0.5?left:right;
       winkEye.classList.add('blink');
       setTimeout(function(){ winkEye.classList.remove('blink'); }, 180);
     } else {
-      left.classList.add('blink'); right.classList.add('blink');
-      setTimeout(function(){
-        if(left)  left.classList.remove('blink');
-        if(right) right.classList.remove('blink');
-      }, 120);
+      _doBlink(left, right, 120);
+      /* 15% chance of a follow-up double-blink */
+      if(Math.random()<0.15){
+        setTimeout(function(){ _doBlink(left, right, 100); }, 220);
+      }
     }
   }
   /* Blink cadence varies by mood */
