@@ -3822,6 +3822,8 @@ async function loadAll(){
   /* ── Canvas draw
      240 ticks × 0.25s each = 1 full circuit per minute
      Tick 0 at top-center (12 o'clock), clockwise
+     All ticks: #c8a840 amber family, varying opacity & size
+     Runner: tiny copper SCRAP-E head with green eyes
   ── */
   function drawWatch(canvas, elapsedMs){
     var ctx = canvas.getContext('2d');
@@ -3829,46 +3831,44 @@ async function loadAll(){
     ctx.clearRect(0,0,W,H);
 
     var INSET  = 45;
-    var TOTAL  = 240;   // 240 ticks × 0.25s = 60s = 1 minute
+    var TOTAL  = 240;
     var hasStarted = elapsedMs > 0 || _wsRunning;
-    var currentTick = Math.floor(elapsedMs / 250) % TOTAL; // advances every 0.25s
+    var currentTick = Math.floor(elapsedMs / 250) % TOTAL;
 
     var effW = W - 2*INSET;
     var effH = H - 2*INSET;
     var perim = 2*(effW + effH);
     var spacing = perim / TOTAL;
-
-    // Tick 0 at top-center (12 o'clock), clockwise
     var startOffset = effW / 2;
 
-    // ── Dim guide rectangle ──
-    ctx.strokeStyle = 'rgba(0,200,50,0.07)';
+    // ── Dim amber guide rectangle ──
+    ctx.strokeStyle = 'rgba(200,168,64,0.08)';
     ctx.lineWidth = 1;
     ctx.strokeRect(INSET, INSET, effW, effH);
 
-    // ── Build tick positions ──
+    // ── Build tick positions (store edge for runner orientation) ──
     var ticks = [];
     for(var i=0; i<TOTAL; i++){
       var dist = (startOffset + i * spacing) % perim;
-      var tx, ty, isVert;
+      var tx, ty, isVert, edge;
       if(dist <= effW){
-        tx = INSET + dist;  ty = INSET;  isVert = true;
+        tx = INSET + dist;  ty = INSET;  isVert = true;  edge = 'top';
       } else if(dist <= effW + effH){
-        tx = INSET + effW;  ty = INSET + (dist - effW);  isVert = false;
+        tx = INSET + effW;  ty = INSET + (dist - effW);  isVert = false;  edge = 'right';
       } else if(dist <= 2*effW + effH){
-        tx = INSET + effW - (dist - effW - effH);  ty = INSET + effH;  isVert = true;
+        tx = INSET + effW - (dist - effW - effH);  ty = INSET + effH;  isVert = true;  edge = 'bottom';
       } else {
-        tx = INSET;  ty = INSET + effH - (dist - 2*effW - effH);  isVert = false;
+        tx = INSET;  ty = INSET + effH - (dist - 2*effW - effH);  isVert = false;  edge = 'left';
       }
-      ticks.push({x:tx, y:ty, v:isVert, i:i});
+      ticks.push({x:tx, y:ty, v:isVert, i:i, e:edge});
     }
 
-    // ── Mark scheme (240 ticks, 0.25s each) ──
-    //   i % 40 === 0 → 10-second mark → amber-orange  (6 marks)
-    //   i % 20 === 0 → 5-second mark  → gold amber    (6 marks)
-    //   i % 4  === 0 → 1-second mark  → green         (50 marks)
-    //   i % 2  === 0 → 0.5-second     → dim green     (60 marks)
-    //   else          → 0.25-second   → very dim      (120 marks)
+    // ── Draw ticks — all amber family, 5 levels of opacity & size ──
+    //   every 40 ticks (10s): largest, full brightness
+    //   every 20 ticks (5s) : medium
+    //   every 4  ticks (1s) : small
+    //   every 2  ticks (0.5s): smaller, dimmer
+    //   every 1  tick  (0.25s): hairline, dimmest
     ticks.forEach(function(t){
       var is10s = (t.i % 40 === 0);
       var is5s  = (t.i % 20 === 0) && !is10s;
@@ -3876,36 +3876,70 @@ async function loadAll(){
       var isHs  = (t.i % 2  === 0) && !is1s && !is5s && !is10s;
       var isLit = hasStarted && (t.i <= currentTick);
 
-      // Sizes scaled down for 240-tick density
       var thick = is10s ? 6 : is5s ? 4 : is1s ? 2 : isHs ? 1.5 : 1;
       var len   = is10s ? 20 : is5s ? 14 : is1s ? 8 : isHs ? 5 : 4;
 
-      var color;
-      if(isLit){
-        color = is10s ? '#ff9040' : is5s ? '#c8a840' : is1s ? '#00cc44' : isHs ? '#008828' : '#006620';
-      } else {
-        color = is10s ? 'rgba(255,144,64,0.13)' : is5s ? 'rgba(200,168,64,0.11)' :
-                is1s  ? 'rgba(0,180,40,0.09)'   : isHs ? 'rgba(0,140,30,0.06)' : 'rgba(0,100,20,0.05)';
-      }
+      // All amber — lit vs unlit only differs in opacity
+      var color = isLit
+        ? (is10s ? 'rgba(200,168,64,1.0)' : is5s ? 'rgba(200,168,64,0.80)' :
+           is1s  ? 'rgba(200,168,64,0.58)' : isHs ? 'rgba(200,168,64,0.38)' : 'rgba(200,168,64,0.22)')
+        : (is10s ? 'rgba(200,168,64,0.14)' : is5s ? 'rgba(200,168,64,0.10)' :
+           is1s  ? 'rgba(200,168,64,0.07)' : isHs ? 'rgba(200,168,64,0.05)' : 'rgba(200,168,64,0.03)');
 
       ctx.fillStyle = color;
-      ctx.shadowColor = isLit ? color : 'transparent';
-      ctx.shadowBlur  = isLit ? (is10s ? 10 : is5s ? 7 : is1s ? 3 : 0) : 0;
+      ctx.shadowColor = isLit ? '#c8a840' : 'transparent';
+      ctx.shadowBlur  = isLit ? (is10s ? 10 : is5s ? 6 : is1s ? 2 : 0) : 0;
 
       if(t.v) ctx.fillRect(t.x - thick/2, t.y - len/2, thick, len);
       else    ctx.fillRect(t.x - len/2,   t.y - thick/2, len, thick);
       ctx.shadowBlur = 0;
     });
 
-    // ── Amber jumping dot ──
+    // ── SCRAP-E RUNNER — tiny copper head with green eyes ──────
     if(hasStarted){
       var dot = ticks[currentTick];
       if(dot){
-        ctx.fillStyle   = '#c8a840';
-        ctx.shadowColor = '#c8a840';
-        ctx.shadowBlur  = 20;
-        ctx.fillRect(dot.x - 6, dot.y - 6, 12, 12);
+        // Rotation: runner faces direction of travel, antenna points outward
+        var edgeAngle = {top: 0, right: Math.PI/2, bottom: Math.PI, left: -Math.PI/2};
+        var angle = edgeAngle[dot.e] || 0;
+
+        ctx.save();
+        ctx.translate(dot.x, dot.y);
+        ctx.rotate(angle);
+
+        var COPPER  = '#b07030';
+        var COP_HI  = '#d49240';
+        var EYE_COL = '#00ff44';
+
+        // Outer glow
+        ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
+
+        // Copper head body
+        ctx.fillStyle = COPPER;
+        ctx.fillRect(-7, -5, 14, 10);
+
+        // Highlight strip on top of head
+        ctx.fillStyle = COP_HI;
         ctx.shadowBlur = 0;
+        ctx.fillRect(-6, -5, 12, 2);
+
+        // Antenna stem (points outward = local "up")
+        ctx.fillStyle = COPPER;
+        ctx.fillRect(-1, -10, 2, 6);
+        // Antenna tip — amber glow
+        ctx.fillStyle = '#c8a840';
+        ctx.shadowColor = '#c8a840'; ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(0, -11, 2.2, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Green eyes on the front face (leading edge = local +x)
+        ctx.fillStyle = EYE_COL;
+        ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
+        ctx.beginPath(); ctx.arc(5, -2.2, 2,   0, Math.PI*2); ctx.fill(); // top eye
+        ctx.beginPath(); ctx.arc(5,  2.2, 2,   0, Math.PI*2); ctx.fill(); // bottom eye
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
       }
     }
   }
