@@ -3426,6 +3426,12 @@ async function loadAll(){
   await renderHonorRoll();
   updateBodyLights(); // re-run now that CW_BIRTHDAYS is populated
   startCRT();
+  // Apply teacher's default CRT pane from Switchboard (timer / watch / pick)
+  var _gc = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
+  var _defaultCrt = _gc.scrape_default_crt || '';
+  if(_defaultCrt === 'timer' || _defaultCrt === 'watch' || _defaultCrt === 'pick'){
+    setTimeout(function(){ if(typeof activateTool === 'function') activateTool(_defaultCrt); }, 500);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -4426,6 +4432,10 @@ async function loadAll(){
   }
 
   function _scheduleLunchLap(){
+    // Respect the Switchboard toggle (scrape_lunch_lap defaults to true if not set)
+    var gc = (window.SETTINGS && window.SETTINGS.global_categories) ? window.SETTINGS.global_categories : {};
+    if(gc.scrape_lunch_lap === false) return;
+
     var sched = (typeof getSchedule === 'function') ? getSchedule() : null;
     if(!sched) return;
 
