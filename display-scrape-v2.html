@@ -344,13 +344,12 @@ html, body {
 }
 #timer-display {
   font-family: var(--font-crt); font-size: 72px; line-height: 1;
-  color: #00ff44; text-align: center;
-  text-shadow: 0 0 18px #00ff44, 0 0 36px rgba(0,255,68,0.3);
+  color: #c8a840; text-align: center;
+  text-shadow: 0 0 18px #c8a840, 0 0 36px rgba(200,168,64,0.3);
   letter-spacing: 0.05em; flex-shrink: 0;
 }
 #timer-display.warn { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
-#timer-display.crit { color: #ff4444; text-shadow: 0 0 18px #ff4444; animation: critBlink 0.5s step-end infinite; }
-@keyframes critBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+#timer-display.crit { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
 #timer-presets {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 6px; flex-shrink: 0; width: 100%;
@@ -3462,7 +3461,7 @@ async function loadAll(){
     var neckLX = cx - neckW/2;
     var neckRX = cx + neckW/2;
 
-    var CYAN = '#00e5ff';
+    var CYAN = '#c8a840';
     var SAND = '#c8a840';
 
     // ── Chamber clip helpers (sand fill only) ────────────────
