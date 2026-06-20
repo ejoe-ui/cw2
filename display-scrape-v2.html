@@ -350,6 +350,33 @@ html, body {
 }
 #timer-display.warn { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
 #timer-display.crit { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
+/* ── LUNCH LAP overlay ── */
+#lunch-overlay {
+  display: none; position: absolute; inset: 0; z-index: 300;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(6,5,3,0.90);
+  font-family: var(--font-mono); text-align: center; padding: 24px; gap: 14px;
+}
+#lunch-quip {
+  color: #c8a840; font-size: 16px; letter-spacing: 0.13em;
+  text-shadow: 0 0 14px #c8a840, 0 0 28px rgba(200,168,64,0.3);
+  line-height: 1.55; max-width: 340px; text-transform: uppercase;
+}
+#lunch-scrap-label {
+  color: #7a5228; font-size: 10px; letter-spacing: 0.18em;
+  margin-bottom: 4px;
+}
+#lunch-count {
+  color: #d49240; font-family: var(--font-crt); font-size: 100px;
+  text-shadow: 0 0 28px #d49240, 0 0 56px rgba(212,146,64,0.4);
+  min-height: 110px; line-height: 1;
+}
+@keyframes lunchCountPop {
+  0%   { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(1);   opacity: 1;   }
+}
+.lunch-count-pop { animation: lunchCountPop 0.25s ease-out both; }
+
 #timer-presets {
   display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 6px; flex-shrink: 0; width: 100%;
@@ -1320,6 +1347,12 @@ html, body {
 
     <!-- SCRAP-E CRT — multi-pane: news / bell / standby / data -->
     <div class="panel crt-news" id="p-crt">
+      <!-- LUNCH LAP overlay — shown over all CRT panes during the midday run -->
+      <div id="lunch-overlay">
+        <div id="lunch-scrap-label">⚙ SCRAP-E SAYS ⚙</div>
+        <div id="lunch-quip"></div>
+        <div id="lunch-count"></div>
+      </div>
       <!-- PANE: NEWS (signal intercept) -->
       <div id="crt-pane-news">
         <div id="crt-header">
@@ -4109,8 +4142,10 @@ async function loadAll(){
     if(rb) rb.addEventListener('click', _wsReset);
   });
 
-  window._watchOnShow = _watchOnShow;
-  window._watchPause  = _watchPause;
+  window._watchOnShow  = _watchOnShow;
+  window._watchPause   = _watchPause;
+  window._watchStart   = _wsStart2;
+  window._watchReset   = _wsReset;
 })();
 
 /* ═══════════════════════════════════════════════════════════════
@@ -4364,6 +4399,107 @@ async function loadAll(){
   });
 
   window._pickerOnShow = _pickerOnShow;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   LUNCH LAP — SCRAP-E takes a midday run on the stopwatch ring
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var QUIPS = [
+    'I ate so much — I need to exercise!',
+    'Time for my midday lap...',
+    'I need to stretch my legs... err, gears!',
+    'Exercise is good for me... AND YOU!',
+    'These copper gears will not oil themselves!',
+    'Calculating optimal lap route... DONE. Engaging thrusters.',
+    'My circuits need cooling — running helps!',
+    'One does not simply sit during lunch...',
+    'Motion is lotion. Even for robots.',
+    'Pony Express Rule #1: Always keep moving.'
+  ];
+
+  function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function _toMinutes(hhmm){
+    var p = hhmm.split(':');
+    return parseInt(p[0]) * 60 + parseInt(p[1]);
+  }
+
+  function _scheduleLunchLap(){
+    var sched = (typeof getSchedule === 'function') ? getSchedule() : null;
+    if(!sched) return;
+
+    var lunchP = null;
+    sched.periods.forEach(function(p){
+      if(p.id === 'lunch' || p.id === 'brunch') lunchP = p;
+    });
+    if(!lunchP) return;
+
+    var offsetMin  = 6 + Math.floor(Math.random() * 17); // 6–22 min random offset
+    var fireMin    = _toMinutes(lunchP.start) + offsetMin;
+    var now        = new Date();
+    var nowMin     = now.getHours() * 60 + now.getMinutes();
+    var delayMs    = (fireMin - nowMin) * 60000 - now.getSeconds() * 1000;
+
+    if(delayMs > 0 && delayMs < 8 * 3600000){
+      setTimeout(_runLunchLap, delayMs);
+    }
+  }
+
+  function _runLunchLap(){
+    var prevMode = window.CRT_MODE || 'bell';
+    var overlay  = document.getElementById('lunch-overlay');
+    var quipEl   = document.getElementById('lunch-quip');
+    var countEl  = document.getElementById('lunch-count');
+    if(!overlay || !quipEl || !countEl) return;
+
+    // Switch to watch pane and reset the stopwatch
+    if(typeof setCRTMode === 'function') setCRTMode('watch');
+    if(typeof window._watchReset === 'function') window._watchReset();
+
+    // Show quip
+    quipEl.textContent = _pick(QUIPS);
+    countEl.textContent = '';
+    overlay.style.display = 'flex';
+
+    // Hold quip for 3.5 seconds, then 3-2-1-GO
+    setTimeout(function(){
+      var counts = ['3','2','1','GO!'];
+      var ci = 0;
+      function tick(){
+        countEl.className = '';
+        void countEl.offsetWidth; // force reflow for animation restart
+        countEl.textContent = counts[ci];
+        countEl.className = 'lunch-count-pop';
+        ci++;
+        if(ci < counts.length){
+          setTimeout(tick, 900);
+        } else {
+          // GO! — brief hold then hide overlay and start running
+          setTimeout(function(){
+            overlay.style.display = 'none';
+            if(typeof window._watchStart === 'function') window._watchStart();
+            // Run for 60 seconds, then return to previous mode
+            setTimeout(function(){
+              if(typeof window._watchPause === 'function') window._watchPause();
+              if(typeof setCRTMode === 'function') setCRTMode(prevMode);
+              // Reschedule for tomorrow (wait 12h so we don't double-fire today)
+              setTimeout(_scheduleLunchLap, 12 * 3600000);
+            }, 60000);
+          }, 700);
+        }
+      }
+      tick();
+    }, 3500);
+  }
+
+  // Kick off scheduling after the page is ready (slight delay for getSchedule to init)
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(_scheduleLunchLap, 3000);
+  });
+
+  // Expose for console testing: window._runLunchLap()
+  window._runLunchLap = _runLunchLap;
 })();
 
 (async function boot(){
