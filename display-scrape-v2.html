@@ -331,7 +331,7 @@ html, body {
 #timer-body {
   flex: 1; display: flex; gap: 14px; min-height: 0;
 }
-#timer-hglass { flex-shrink: 0; display: block; }
+#timer-hglass { flex-shrink: 0; display: block; pointer-events: none; }
 #timer-right {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: space-evenly; gap: 8px;
@@ -352,14 +352,15 @@ html, body {
 #timer-display.crit { color: #ff4444; text-shadow: 0 0 18px #ff4444; animation: critBlink 0.5s step-end infinite; }
 @keyframes critBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 #timer-presets {
-  display: flex; gap: 7px; flex-wrap: wrap;
-  justify-content: center; flex-shrink: 0;
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 6px; flex-shrink: 0; width: 100%;
 }
 .t-preset {
   font-family: var(--font-mono); font-size: 11px;
-  letter-spacing: 0.1em; color: rgba(200,168,64,0.45);
-  border: 1px solid rgba(200,168,64,0.25); padding: 6px 12px;
+  letter-spacing: 0.05em; color: rgba(200,168,64,0.45);
+  border: 1px solid rgba(200,168,64,0.25); padding: 6px 4px;
   cursor: pointer; transition: all 0.15s; user-select: none;
+  text-align: center;
 }
 .t-preset:hover { color: #c8a840; border-color: rgba(200,168,64,0.6); background: rgba(200,168,64,0.1); }
 .t-preset.t-pre-active { color: #c8a840; border-color: rgba(200,168,64,0.7); background: rgba(200,168,64,0.15); }
@@ -3403,94 +3404,110 @@ async function loadAll(){
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
 
-    var PS   = 7;    // pixel block size
-    var COLS = 26;   // grid columns
-    var ROWS = 46;   // grid rows
-    var OX   = Math.floor((W - COLS*PS) / 2);
-    var OY   = Math.floor((H - ROWS*PS) / 2);
+    // ── Geometry ──────────────────────────────────────
+    var mx   = W / 2;        // centre x
+    var LX   = 18;           // left edge of glass
+    var RX   = W - 18;       // right edge of glass
+    var BARY = 14;           // top of top plate
+    var BARH = 10;           // plate height
+    var PINCH = H / 2;       // tips meet here exactly
+    var BOT_Y = H - BARY - BARH; // top of bottom plate
+    var TRI_TOP = BARY + BARH;   // bottom of top plate = top of upper triangle
+    var TRI_BOT = BOT_Y;         // bottom of lower triangle
 
-    // Layout rows
-    var TOP_END  = 19; // last row of top taper (exclusive)
-    var NECK_S   = 19; // neck start row
-    var NECK_E   = 27; // neck end row (exclusive)
-    var BOT_S    = 27; // bottom taper start
+    var CYAN  = '#00e5ff';
+    var SAND  = '#c8a840';
+    var SANDF = 'rgba(200,168,64,0.82)';
+    var EMPTY = 'rgba(0,200,255,0.04)';
 
-    var FRAME = '#c8a840';
-    var SAND  = 'rgba(200,168,64,0.88)';
-    var EMPTY = 'rgba(200,168,64,0.09)';
-    var DROP  = 'rgba(220,195,90,1.0)';
-
-    function rowW(r){
-      if(r < NECK_S){
-        // top taper: 26→2 over TOP_END rows
-        return Math.max(2, Math.round(COLS - r * (COLS-2) / TOP_END));
-      } else if(r < NECK_E){
-        return 2; // narrow neck — just 2 px wide
-      } else {
-        // bottom taper: 2→26
-        var br = r - NECK_E;
-        var totalB = ROWS - NECK_E;
-        return Math.min(COLS, Math.max(2, Math.round(2 + br * (COLS-2) / totalB)));
-      }
+    // ── Helper: define upper triangle path ─────────────
+    function pathTop(){
+      ctx.beginPath();
+      ctx.moveTo(LX, TRI_TOP);
+      ctx.lineTo(RX, TRI_TOP);
+      ctx.lineTo(mx, PINCH);
+      ctx.closePath();
+    }
+    // ── Helper: define lower triangle path ─────────────
+    function pathBot(){
+      ctx.beginPath();
+      ctx.moveTo(mx, PINCH);
+      ctx.lineTo(LX, TRI_BOT);
+      ctx.lineTo(RX, TRI_BOT);
+      ctx.closePath();
     }
 
-    function dp(c, r, color){
-      ctx.fillStyle = color;
-      ctx.fillRect(OX + c*PS, OY + r*PS, PS-1, PS-1);
-    }
+    // ── Draw empty background for both triangles ───────
+    pathTop(); ctx.fillStyle = EMPTY; ctx.fill();
+    pathBot(); ctx.fillStyle = EMPTY; ctx.fill();
 
-    // Sand fill levels
-    var topRows = NECK_S - 1;              // usable interior rows in top
-    var botRows = ROWS - NECK_E - 1;       // usable interior rows in bottom
-    var topFill = Math.round(pct * topRows);
-    var botFill = Math.round((1-pct) * botRows);
+    // ── Upper triangle sand fill (drains from bottom toward tip) ──
+    // sand level: pct=1 → full (to TRI_TOP), pct=0 → empty (at PINCH)
+    var topFillY = TRI_TOP + (1 - pct) * (PINCH - TRI_TOP);
+    ctx.save();
+    pathTop();
+    ctx.clip();
+    ctx.fillStyle = SANDF;
+    ctx.fillRect(0, 0, W, topFillY);
+    ctx.restore();
 
-    for(var r=0; r<ROWS; r++){
-      var w  = rowW(r);
-      var lc = Math.floor((COLS - w) / 2);
-      for(var c=0; c<COLS; c++){
-        if(c < lc || c >= lc+w) continue;
-        var isBorder = (c===lc || c===lc+w-1);
-        if(isBorder){ dp(c,r,FRAME); continue; }
-        var isSand = false;
-        if(r < NECK_S){
-          // top: sand fills FROM TOP down to topFill rows
-          isSand = (r < topFill);
-        } else if(r >= NECK_E){
-          // bottom: sand fills from BOTTOM up by botFill rows
-          var interior_r = r - NECK_E;
-          isSand = (interior_r >= (botRows - botFill));
-        }
-        // neck interior stays empty (particles drawn separately)
-        dp(c, r, isSand ? SAND : EMPTY);
-      }
-    }
+    // ── Lower triangle sand fill (rises from bottom up) ──
+    // sand level: pct=1 → empty (at PINCH), pct=0 → full (to TRI_BOT)
+    var botFillY = TRI_BOT - (1 - pct) * (TRI_BOT - PINCH);
+    ctx.save();
+    pathBot();
+    ctx.clip();
+    ctx.fillStyle = SANDF;
+    ctx.fillRect(0, botFillY, W, H);
+    // Glow layer
+    ctx.shadowColor = SAND; ctx.shadowBlur = 18;
+    ctx.fillStyle = 'rgba(200,168,64,0.12)';
+    ctx.fillRect(0, botFillY, W, H);
+    ctx.shadowBlur = 0;
+    ctx.restore();
 
-    // Falling sand particles through neck
+    // ── Outline both triangles with cyan ───────────────
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = 2.5;
+    ctx.shadowColor = CYAN; ctx.shadowBlur = 8;
+    pathTop(); ctx.stroke();
+    pathBot(); ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // ── Top and bottom plates ──────────────────────────
+    ctx.fillStyle = CYAN;
+    ctx.shadowColor = CYAN; ctx.shadowBlur = 6;
+    // top plate
+    ctx.fillRect(LX, BARY, RX-LX, BARH);
+    // bottom plate
+    ctx.fillRect(LX, BOT_Y, RX-LX, BARH);
+    // Tiny side braces
+    ctx.fillRect(LX-2, BARY, 4, TRI_BOT - BARY + BARH);
+    ctx.fillRect(RX-2, BARY, 4, TRI_BOT - BARY + BARH);
+    ctx.shadowBlur = 0;
+
+    // ── Falling sand particles at pinch ────────────────
     if(_tRunning && pct > 0.005){
-      var nc = Math.floor(COLS/2); // center column of neck
       _sandPtcl.forEach(function(p){
-        var pr = NECK_S + p.y / 5 * (NECK_E - NECK_S);
-        var ri = Math.floor(pr);
-        if(ri >= NECK_S && ri < NECK_E){
-          // brightness flicker for each particle
-          ctx.fillStyle = DROP;
-          ctx.fillRect(OX + nc*PS, OY + ri*PS, PS-1, PS-1);
-        }
+        // p.y 0..5 → drips from just above pinch to just below
+        var py = PINCH - 6 + p.y * 3.5;
+        var alpha = 0.95 - (p.y / 5) * 0.5;
+        ctx.fillStyle = 'rgba(220,200,90,' + alpha + ')';
+        ctx.shadowColor = SAND; ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(mx, py, 3, 0, Math.PI*2);
+        ctx.fill();
       });
+      ctx.shadowBlur = 0;
     }
 
-    // Horizontal frame lines at top and bottom
-    ctx.fillStyle = FRAME;
-    for(var fc=0; fc<COLS; fc++){
-      ctx.fillRect(OX + fc*PS, OY, PS-1, PS-1);           // top row
-      ctx.fillRect(OX + fc*PS, OY+(ROWS-1)*PS, PS-1, PS-1); // bottom row
-    }
-
-    // Red flash border at zero
+    // ── Red flash at zero ──────────────────────────────
     if(pct <= 0){
       ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 3;
-      ctx.strokeRect(OX+1, OY+1, COLS*PS-2, ROWS*PS-2);
+      ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 12;
+      pathTop(); ctx.stroke();
+      pathBot(); ctx.stroke();
+      ctx.shadowBlur = 0;
     }
   }
 
