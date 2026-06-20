@@ -3972,8 +3972,7 @@ async function loadAll(){
           ctx.fillStyle = COPPER; ctx.fillRect(-7, -5, 14, 10);
           ctx.fillStyle = COP_HI; ctx.shadowBlur = 0; ctx.fillRect(-6, -5, 12, 2);
           ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
-          ctx.beginPath(); ctx.arc(5,  -2.2, 2, 0, Math.PI*2); ctx.fill(); // eyes face right
-          ctx.beginPath(); ctx.arc(5,   2.2, 2, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(5, -2.2, 2, 0, Math.PI*2); ctx.fill(); // 1 eye, top half, facing right
 
         } else if(dot.e === 'bottom'){
           // Moving left — half-crown front Stetson above body (= INSIDE ring)
@@ -3982,8 +3981,7 @@ async function loadAll(){
           ctx.fillStyle = COPPER; ctx.fillRect(-7, -5, 14, 10);
           ctx.fillStyle = COP_HI; ctx.shadowBlur = 0; ctx.fillRect(-6, -5, 12, 2);
           ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
-          ctx.beginPath(); ctx.arc(-5, -2.2, 2, 0, Math.PI*2); ctx.fill(); // eyes face left
-          ctx.beginPath(); ctx.arc(-5,  2.2, 2, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(-5, -2.2, 2, 0, Math.PI*2); ctx.fill(); // 1 eye, top half, facing left
 
         } else if(dot.e === 'right'){
           // Going DOWN — circle body face-on, front Stetson on screen-top
