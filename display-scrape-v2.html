@@ -3535,8 +3535,8 @@ async function loadAll(){
     ctx.restore();
 
     // ── BOTTOM SAND — 2-second delay, then grows to full ─────
-    // botProg: remapped progress that starts at 0 two seconds
-    // after the timer begins, then ramps to 1 at end of timer.
+    // botProg: starts at 0, then 2 seconds after timer begins ramps 0→1
+    // Uses sqrt curve so mound grows quickly at first then eases in.
     var MOUND_DELAY = 2; // seconds before any bottom sand appears
     var elapsedSecs = totalSecs * progress;
     var botProg;
@@ -3544,7 +3544,8 @@ async function loadAll(){
       botProg = 0;
     } else {
       var rampDur = Math.max(1, totalSecs - MOUND_DELAY);
-      botProg = Math.min(1, (elapsedSecs - MOUND_DELAY) / rampDur);
+      var rawProg = Math.min(1, (elapsedSecs - MOUND_DELAY) / rampDur);
+      botProg = Math.sqrt(rawProg); // sqrt: fast initial growth, eases toward end
     }
 
     var botFunnelH  = botRectTopY - neckBotY;
@@ -3998,16 +3999,13 @@ async function loadAll(){
           ctx.beginPath(); ctx.arc( 2.5, -0.5, 2.2, 0, Math.PI*2); ctx.fill();
 
         } else {
-          // Going UP — circle body face-on, back Stetson on screen-top
+          // Going UP — back of head, no eyes (running away)
           hatBackView(-7.5);
           ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
           ctx.fillStyle = COPPER;
           ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
           ctx.fillStyle = COP_HI; ctx.shadowBlur = 0;
           ctx.fillRect(-5, -6, 10, 2);
-          ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
-          ctx.beginPath(); ctx.arc(-2.5, -0.5, 2.2, 0, Math.PI*2); ctx.fill();
-          ctx.beginPath(); ctx.arc( 2.5, -0.5, 2.2, 0, Math.PI*2); ctx.fill();
         }
 
         ctx.shadowBlur = 0;
