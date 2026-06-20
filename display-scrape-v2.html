@@ -352,7 +352,7 @@ html, body {
 #timer-display.crit { color: #ff4444; text-shadow: 0 0 18px #ff4444; animation: critBlink 0.5s step-end infinite; }
 @keyframes critBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 #timer-presets {
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(3, 1fr);
   gap: 6px; flex-shrink: 0; width: 100%;
 }
 .t-preset {
@@ -1362,11 +1362,9 @@ html, body {
             <div id="timer-status-txt">SELECT DURATION</div>
             <div id="timer-display">--:--</div>
             <div id="timer-presets">
-              <span class="t-preset" data-m="5">5 MIN</span>
+              <span class="t-preset" data-m="3">3 MIN</span>
               <span class="t-preset" data-m="10">10 MIN</span>
               <span class="t-preset" data-m="15">15 MIN</span>
-              <span class="t-preset" data-m="20">20 MIN</span>
-              <span class="t-preset" data-m="30">30 MIN</span>
             </div>
             <div id="timer-custom">
               <input type="text" id="timer-custom-input" placeholder="MM:SS" maxlength="5">
@@ -3452,7 +3450,7 @@ async function loadAll(){
     var botRectH   = 58;              // height of bottom reservoir rectangle
     var topRectBotY = topY + topRectH;   // where funnel starts tapering
     var botRectTopY = botY - botRectH;   // where funnel starts widening
-    var neckW = 10, neckH = 18;
+    var neckW = 10, neckH = 10;
     var neckTopY  = H/2 - neckH/2;
     var neckBotY  = H/2 + neckH/2;
     var neckLX = cx - neckW/2;
@@ -3551,29 +3549,21 @@ async function loadAll(){
 
     // ── GLASS OUTLINE — chambers with cyan neon glow ─────────
     ctx.strokeStyle = CYAN;
-    ctx.lineWidth = 2;
-    ctx.shadowColor = CYAN; ctx.shadowBlur = 10;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = CYAN; ctx.shadowBlur = 12;
     topChamber(); ctx.stroke();
     botChamber(); ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Top and bottom caps
+    // ── NECK CONNECTOR — glass straw (walls only, transparent center) ──
+    // Two thin cyan walls, hollow in the middle like a glass tube
+    var wallW = 2.5;
     ctx.fillStyle = CYAN;
-    ctx.shadowColor = CYAN; ctx.shadowBlur = 7;
-    ctx.fillRect(LX - 5, topY - 7, RX - LX + 10, 7);   // top cap
-    ctx.fillRect(LX - 5, botY,     RX - LX + 10, 7);   // bottom cap
-    // Vertical side rails
-    ctx.fillRect(LX - 5, topY - 7, 5, botY - topY + 14);
-    ctx.fillRect(RX,     topY - 7, 5, botY - topY + 14);
-    ctx.shadowBlur = 0;
-
-    // Neck throat glow
-    var throatGrad = ctx.createLinearGradient(neckLX, neckTopY, neckRX, neckBotY);
-    throatGrad.addColorStop(0, 'rgba(0,229,255,0.35)');
-    throatGrad.addColorStop(1, 'rgba(0,229,255,0.15)');
-    ctx.fillStyle = throatGrad;
-    ctx.shadowColor = CYAN; ctx.shadowBlur = 18;
-    ctx.fillRect(neckLX, neckTopY, neckW, neckBotY - neckTopY);
+    ctx.shadowColor = CYAN; ctx.shadowBlur = 10;
+    // Left wall
+    ctx.fillRect(neckLX, neckTopY, wallW, neckBotY - neckTopY);
+    // Right wall
+    ctx.fillRect(neckRX - wallW, neckTopY, wallW, neckBotY - neckTopY);
     ctx.shadowBlur = 0;
 
     // Subtle CRT scanlines
@@ -3602,14 +3592,6 @@ async function loadAll(){
       }
     }
 
-    // ── Red alarm outline at zero ─────────────────────────────
-    if(pct <= 0){
-      ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2.5;
-      ctx.shadowColor = '#ff4444'; ctx.shadowBlur = 14;
-      topChamber(); ctx.stroke();
-      botChamber(); ctx.stroke();
-      ctx.shadowBlur = 0;
-    }
   }
 
   function _animateDrop(){
