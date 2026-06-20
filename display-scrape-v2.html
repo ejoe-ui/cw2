@@ -3436,9 +3436,11 @@ async function loadAll(){
      Bottom chamber = narrow neck → upward funnel + rectangle
      Sand is NOT symmetric: top drains as fill, bottom grows as mound
   ════════════════════════════════════════════════════════════ */
-  // scale = sand fill fraction (1=full=15min, ~0.67=10min, ~0.2=3min)
-  function drawHourglass(canvas, pct, scale){
-    scale = (scale === undefined) ? 1 : scale;
+  // scale    = sand fill fraction (1=full=15min, ~0.67=10min, ~0.2=3min)
+  // totalSecs = original timer duration in seconds (for 2s mound delay)
+  function drawHourglass(canvas, pct, scale, totalSecs){
+    scale     = (scale     === undefined) ? 1 : scale;
+    totalSecs = (totalSecs === undefined) ? 0 : totalSecs;
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
@@ -3532,14 +3534,26 @@ async function loadAll(){
     }
     ctx.restore();
 
-    // ── BOTTOM SAND — scaled by timer duration ────────────────
+    // ── BOTTOM SAND — 2-second delay, then grows to full ─────
+    // botProg: remapped progress that starts at 0 two seconds
+    // after the timer begins, then ramps to 1 at end of timer.
+    var MOUND_DELAY = 2; // seconds before any bottom sand appears
+    var elapsedSecs = totalSecs * progress;
+    var botProg;
+    if(elapsedSecs < MOUND_DELAY || totalSecs <= 0){
+      botProg = 0;
+    } else {
+      var rampDur = Math.max(1, totalSecs - MOUND_DELAY);
+      botProg = Math.min(1, (elapsedSecs - MOUND_DELAY) / rampDur);
+    }
+
     var botFunnelH  = botRectTopY - neckBotY;
     var maxBaseH    = botRectH  * 0.94 * scale;
     var maxMoundH   = botFunnelH * 0.86 * scale;
     var maxMoundW   = (RX - LX) / 2 - 4;
 
-    var baseH    = progress * maxBaseH;
-    var moundProg = Math.max(0, (progress - 0.04) / 0.96);
+    var baseH    = botProg * maxBaseH;
+    var moundProg = Math.max(0, (botProg - 0.04) / 0.96);
     var moundH   = moundProg * maxMoundH;
     var moundW   = Math.min(maxMoundW, moundH * 1.45);
 
@@ -3586,7 +3600,7 @@ async function loadAll(){
     }
 
     // ── FALLING SAND STREAM — particles neck to pile ──────────
-    if(_tRunning && pct > 0.008){
+    if(_tRunning && pct > 0.008 && elapsedSecs >= MOUND_DELAY){
       var pileTopY = botY - baseH - moundH;
       var fallDist = pileTopY - neckBotY - 3;
       if(fallDist > 3){
@@ -3612,7 +3626,7 @@ async function loadAll(){
       if(p.t >= 1) p.t -= 1;
     });
     var c = document.getElementById('timer-hglass');
-    if(c && _tRunning) drawHourglass(c, _sandPct, _tMaxScale);
+    if(c && _tRunning) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
     if(_tRunning) _dropAnim = requestAnimationFrame(_animateDrop);
   }
 
@@ -3634,7 +3648,7 @@ async function loadAll(){
     else if(_sandPct <= 0.20) disp.classList.add('warn');
 
     if(stat) stat.textContent = _getStatus(_sandPct);
-    if(c && !_tRunning) drawHourglass(c, _sandPct, _tMaxScale);
+    if(c && !_tRunning) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
   }
 
   function _timerTick(){
@@ -3650,7 +3664,7 @@ async function loadAll(){
     _tRunning = false; cancelAnimationFrame(_dropAnim); _dropAnim = null;
     _sandPct = 0;
     var c = document.getElementById('timer-hglass');
-    if(c) drawHourglass(c, 0, _tMaxScale);
+    if(c) drawHourglass(c, 0, _tMaxScale, _tDuration);
     var disp = document.getElementById('timer-display');
     if(disp){ disp.textContent = '00:00'; disp.classList.add('crit'); }
     var stat = document.getElementById('timer-status-txt');
@@ -3717,7 +3731,7 @@ async function loadAll(){
   function _timerOnShow(){
     // draw current state
     var c = document.getElementById('timer-hglass');
-    if(c) drawHourglass(c, _sandPct, _tMaxScale);
+    if(c) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
     _updateTimerUI();
     if(_tDuration === 0){
       var stat = document.getElementById('timer-status-txt');
