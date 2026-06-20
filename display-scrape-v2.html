@@ -266,7 +266,7 @@ html, body {
   width: 18px; height: 184px;
   display: flex; flex-direction: column;
   align-items: center; justify-content: space-around;
-  z-index: 10;
+  z-index: 11;
 }
 .crt-tog {
   width: 14px; height: 14px; border-radius: 50%;
@@ -1351,14 +1351,6 @@ html, body {
       </div>
     </div>
 
-    <!-- CRT TOOL TOGGLE BUTTONS -->
-    <div id="crt-toggles">
-      <div class="crt-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
-      <div class="crt-tog" id="tog-watch" data-tip="WATCH" onclick="activateTool('watch')"></div>
-      <div class="crt-tog" id="tog-pick"  data-tip="PICK"  onclick="activateTool('pick')"></div>
-      <div class="crt-tog tog-exit" id="tog-exit" data-tip="EXIT" onclick="activateTool('exit')"></div>
-    </div>
-
     <!-- STATUS STRIP — period · countdown · pass policy -->
     <div class="panel" id="p-status">
       <!-- LEFT: period name + end time -->
@@ -1491,6 +1483,14 @@ html, body {
 
   <!-- LAYER 3: FOREGROUND OVERLAY -->
   <div id="layer-fg"></div>
+
+  <!-- CRT TOOL TOGGLE BUTTONS — above overlay (z-index 11) -->
+  <div id="crt-toggles">
+    <div class="crt-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
+    <div class="crt-tog" id="tog-watch" data-tip="WATCH" onclick="activateTool('watch')"></div>
+    <div class="crt-tog" id="tog-pick"  data-tip="PICK"  onclick="activateTool('pick')"></div>
+    <div class="crt-tog tog-exit" id="tog-exit" data-tip="EXIT" onclick="activateTool('exit')"></div>
+  </div>
 
 </div>
 <script>
