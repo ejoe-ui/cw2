@@ -302,11 +302,11 @@ html, body {
 
 /* ── SHARED TOOL STYLES ── */
 .t-btn {
-  font-family: var(--font-mono); font-size: 10px;
+  font-family: var(--font-mono); font-size: 12px;
   letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--cw-amber); background: rgba(200,168,64,0.08);
+  color: #c8a840; background: rgba(200,168,64,0.08);
   border: 1px solid rgba(200,168,64,0.3);
-  padding: 4px 10px; cursor: pointer; transition: all 0.15s;
+  padding: 8px 18px; cursor: pointer; transition: all 0.15s;
 }
 .t-btn:hover:not(:disabled) {
   background: rgba(200,168,64,0.2); border-color: var(--cw-amber);
@@ -320,7 +320,7 @@ html, body {
 
 /* ── TIMER PANE ── */
 #crt-pane-timer {
-  padding: 14px 18px 12px; gap: 8px;
+  padding: 12px 14px 10px; gap: 6px;
   background: rgba(0,0,0,0.45);
 }
 #timer-hdr {
@@ -329,41 +329,54 @@ html, body {
   text-align: center; flex-shrink: 0;
 }
 #timer-body {
-  flex: 1; display: flex; gap: 16px; overflow: hidden;
+  flex: 1; display: flex; gap: 14px; min-height: 0;
 }
 #timer-hglass { flex-shrink: 0; display: block; }
 #timer-right {
   flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
+  align-items: center; justify-content: space-evenly; gap: 8px;
+  min-width: 0;
 }
 #timer-status-txt {
   font-family: var(--font-mono); font-size: 10px;
   letter-spacing: 0.14em; color: var(--cw-copper);
-  text-align: center; min-height: 14px;
+  text-align: center; min-height: 14px; flex-shrink: 0;
 }
 #timer-display {
-  font-family: var(--font-crt); font-size: 58px; line-height: 1;
-  color: var(--cw-green); text-align: center;
-  text-shadow: 0 0 18px var(--cw-green), 0 0 36px rgba(0,255,68,0.3);
-  letter-spacing: 0.05em;
+  font-family: var(--font-crt); font-size: 72px; line-height: 1;
+  color: #00ff44; text-align: center;
+  text-shadow: 0 0 18px #00ff44, 0 0 36px rgba(0,255,68,0.3);
+  letter-spacing: 0.05em; flex-shrink: 0;
 }
-#timer-display.warn { color: var(--cw-amber); text-shadow: 0 0 18px var(--cw-amber); }
+#timer-display.warn { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
 #timer-display.crit { color: #ff4444; text-shadow: 0 0 18px #ff4444; animation: critBlink 0.5s step-end infinite; }
 @keyframes critBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-#timer-btns { display: flex; gap: 8px; }
 #timer-presets {
-  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+  display: flex; gap: 7px; flex-wrap: wrap;
+  justify-content: center; flex-shrink: 0;
 }
 .t-preset {
-  font-family: var(--font-mono); font-size: 9px;
-  letter-spacing: 0.1em; color: var(--cw-dim);
-  border: 1px solid rgba(200,168,64,0.2); padding: 3px 7px;
-  cursor: pointer; transition: all 0.15s;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: rgba(200,168,64,0.45);
+  border: 1px solid rgba(200,168,64,0.25); padding: 6px 12px;
+  cursor: pointer; transition: all 0.15s; user-select: none;
 }
-.t-preset:hover, .t-preset.t-pre-active {
-  color: var(--cw-amber); border-color: rgba(200,168,64,0.5);
-  background: rgba(200,168,64,0.1);
+.t-preset:hover { color: #c8a840; border-color: rgba(200,168,64,0.6); background: rgba(200,168,64,0.1); }
+.t-preset.t-pre-active { color: #c8a840; border-color: rgba(200,168,64,0.7); background: rgba(200,168,64,0.15); }
+#timer-custom {
+  display: flex; gap: 8px; align-items: center; flex-shrink: 0;
 }
+#timer-custom-input {
+  font-family: var(--font-mono); font-size: 13px;
+  letter-spacing: 0.1em; color: #c8a840;
+  background: rgba(200,168,64,0.06);
+  border: 1px solid rgba(200,168,64,0.3);
+  padding: 6px 10px; width: 80px; text-align: center;
+  outline: none;
+}
+#timer-custom-input::placeholder { color: rgba(200,168,64,0.3); }
+#timer-custom-input:focus { border-color: rgba(200,168,64,0.6); background: rgba(200,168,64,0.1); }
+#timer-btns { display: flex; gap: 10px; flex-shrink: 0; }
 
 /* ── STOPWATCH PANE ── */
 #crt-pane-watch { padding: 0; }
@@ -1312,7 +1325,7 @@ html, body {
       <div id="crt-pane-timer">
         <div id="timer-hdr">COUNTDOWN SEQUENCE</div>
         <div id="timer-body">
-          <canvas id="timer-hglass" width="160" height="300"></canvas>
+          <canvas id="timer-hglass" width="210" height="350"></canvas>
           <div id="timer-right">
             <div id="timer-status-txt">SELECT DURATION</div>
             <div id="timer-display">--:--</div>
@@ -1322,6 +1335,10 @@ html, body {
               <span class="t-preset" data-m="15">15 MIN</span>
               <span class="t-preset" data-m="20">20 MIN</span>
               <span class="t-preset" data-m="30">30 MIN</span>
+            </div>
+            <div id="timer-custom">
+              <input type="text" id="timer-custom-input" placeholder="MM:SS" maxlength="5">
+              <button class="t-btn" id="timer-set-btn">SET</button>
             </div>
             <div id="timer-btns">
               <button class="t-btn" id="timer-start-btn" disabled>START</button>
@@ -3358,9 +3375,10 @@ async function loadAll(){
   var _tRunning  = false;
   var _tInterval = null;
   var _tAnimFrame= null;
-  var _sandPct   = 1.0; // 1.0 = full, 0.0 = empty
-  var _dropY     = 0;   // falling sand drop y position (0..1)
+  var _sandPct   = 1.0;
   var _dropAnim  = null;
+  // 4 sand particles falling through the neck — staggered start positions
+  var _sandPtcl  = [{y:0},{y:1.3},{y:2.6},{y:3.9}];
 
   var TIMER_STATUS = [
     { pct: 1.00, msg: 'COUNTDOWN INITIATED' },
@@ -3385,27 +3403,35 @@ async function loadAll(){
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
 
-    var PS = 5;  // pixel size
-    var COLS = 22, ROWS = 44;
-    var OX = Math.floor((W - COLS*PS)/2);
-    var OY = Math.floor((H - ROWS*PS)/2);
+    var PS   = 7;    // pixel block size
+    var COLS = 26;   // grid columns
+    var ROWS = 46;   // grid rows
+    var OX   = Math.floor((W - COLS*PS) / 2);
+    var OY   = Math.floor((H - ROWS*PS) / 2);
 
-    // colour palette
-    var FRAME  = '#c8a840';
-    var SAND   = 'rgba(200,168,64,0.85)';
-    var EMPTY  = 'rgba(200,168,64,0.1)';
-    var DROP   = 'rgba(200,168,64,0.9)';
-    var NECK   = 16; // row where neck starts (0-indexed)
-    var NCENTER= 21; // center row (neck)
-    var NEND   = 27; // neck end row
+    // Layout rows
+    var TOP_END  = 19; // last row of top taper (exclusive)
+    var NECK_S   = 19; // neck start row
+    var NECK_E   = 27; // neck end row (exclusive)
+    var BOT_S    = 27; // bottom taper start
 
-    function halfW(r){
-      if(r <= NECK)         return Math.max(2, COLS - Math.round(r * (COLS-2) / NECK));
-      if(r <= NCENTER)      return 2;
-      if(r <= NEND)         return 2;
-      var br = r - NEND;
-      var totalBottom = ROWS - NEND;
-      return Math.min(COLS, 2 + Math.round(br * (COLS-2) / totalBottom));
+    var FRAME = '#c8a840';
+    var SAND  = 'rgba(200,168,64,0.88)';
+    var EMPTY = 'rgba(200,168,64,0.09)';
+    var DROP  = 'rgba(220,195,90,1.0)';
+
+    function rowW(r){
+      if(r < NECK_S){
+        // top taper: 26→2 over TOP_END rows
+        return Math.max(2, Math.round(COLS - r * (COLS-2) / TOP_END));
+      } else if(r < NECK_E){
+        return 2; // narrow neck — just 2 px wide
+      } else {
+        // bottom taper: 2→26
+        var br = r - NECK_E;
+        var totalB = ROWS - NECK_E;
+        return Math.min(COLS, Math.max(2, Math.round(2 + br * (COLS-2) / totalB)));
+      }
     }
 
     function dp(c, r, color){
@@ -3413,43 +3439,67 @@ async function loadAll(){
       ctx.fillRect(OX + c*PS, OY + r*PS, PS-1, PS-1);
     }
 
-    // top sand rows (pct of NECK rows from top)
-    var topSandRows = Math.round(pct * NECK);
-    // bottom sand rows fills from bottom ((1-pct) of bottom rows)
-    var bottomFilled = Math.round((1-pct) * (ROWS - NEND));
+    // Sand fill levels
+    var topRows = NECK_S - 1;              // usable interior rows in top
+    var botRows = ROWS - NECK_E - 1;       // usable interior rows in bottom
+    var topFill = Math.round(pct * topRows);
+    var botFill = Math.round((1-pct) * botRows);
 
     for(var r=0; r<ROWS; r++){
-      var w = halfW(r);
+      var w  = rowW(r);
       var lc = Math.floor((COLS - w) / 2);
       for(var c=0; c<COLS; c++){
         if(c < lc || c >= lc+w) continue;
-        var isBorder = (c===lc || c===lc+w-1 || r===0 || r===ROWS-1);
-        if(isBorder){ dp(c, r, FRAME); continue; }
-        // interior
+        var isBorder = (c===lc || c===lc+w-1);
+        if(isBorder){ dp(c,r,FRAME); continue; }
         var isSand = false;
-        if(r < NECK)          isSand = (r < topSandRows);
-        else if(r >= NEND)    isSand = (r >= ROWS - bottomFilled);
+        if(r < NECK_S){
+          // top: sand fills FROM TOP down to topFill rows
+          isSand = (r < topFill);
+        } else if(r >= NECK_E){
+          // bottom: sand fills from BOTTOM up by botFill rows
+          var interior_r = r - NECK_E;
+          isSand = (interior_r >= (botRows - botFill));
+        }
+        // neck interior stays empty (particles drawn separately)
         dp(c, r, isSand ? SAND : EMPTY);
       }
     }
 
-    // animated drop in neck when running
-    if(_tRunning && pct > 0){
-      var dropRow = Math.round(NECK + _dropY * (NEND - NECK));
-      var dc = Math.floor(COLS/2);
-      if(dropRow < ROWS-1){ dp(dc, dropRow, DROP); }
+    // Falling sand particles through neck
+    if(_tRunning && pct > 0.005){
+      var nc = Math.floor(COLS/2); // center column of neck
+      _sandPtcl.forEach(function(p){
+        var pr = NECK_S + p.y / 5 * (NECK_E - NECK_S);
+        var ri = Math.floor(pr);
+        if(ri >= NECK_S && ri < NECK_E){
+          // brightness flicker for each particle
+          ctx.fillStyle = DROP;
+          ctx.fillRect(OX + nc*PS, OY + ri*PS, PS-1, PS-1);
+        }
+      });
     }
 
-    // flash red outline when zero
+    // Horizontal frame lines at top and bottom
+    ctx.fillStyle = FRAME;
+    for(var fc=0; fc<COLS; fc++){
+      ctx.fillRect(OX + fc*PS, OY, PS-1, PS-1);           // top row
+      ctx.fillRect(OX + fc*PS, OY+(ROWS-1)*PS, PS-1, PS-1); // bottom row
+    }
+
+    // Red flash border at zero
     if(pct <= 0){
-      ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2;
-      ctx.strokeRect(OX, OY, COLS*PS, ROWS*PS);
+      ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 3;
+      ctx.strokeRect(OX+1, OY+1, COLS*PS-2, ROWS*PS-2);
     }
   }
 
   function _animateDrop(){
-    _dropY += 0.07;
-    if(_dropY > 1) _dropY = 0;
+    // Advance each particle
+    _sandPtcl.forEach(function(p){
+      p.y += 0.18;
+      if(p.y >= 5) p.y -= 5;
+    });
     var c = document.getElementById('timer-hglass');
     if(c && _tRunning) drawHourglass(c, _sandPct);
     if(_tRunning) _dropAnim = requestAnimationFrame(_animateDrop);
@@ -3563,14 +3613,51 @@ async function loadAll(){
     }
   }
 
+  // Parse custom input "MM:SS" or plain minutes → seconds
+  function _parseCustom(val){
+    val = val.trim();
+    if(/^\d+:\d{2}$/.test(val)){
+      var parts = val.split(':');
+      return parseInt(parts[0])*60 + parseInt(parts[1]);
+    }
+    var n = parseFloat(val);
+    if(!isNaN(n) && n > 0) return Math.round(n * 60);
+    return 0;
+  }
+
   // Wire up buttons once DOM is ready
   document.addEventListener('DOMContentLoaded', function(){
     var startBtn = document.getElementById('timer-start-btn');
     var resetBtn = document.getElementById('timer-reset-btn');
+    var setBtn   = document.getElementById('timer-set-btn');
+    var custInp  = document.getElementById('timer-custom-input');
+
     if(startBtn) startBtn.addEventListener('click', function(){
       if(_tRunning) _timerPause(); else _timerStart();
     });
     if(resetBtn) resetBtn.addEventListener('click', _timerReset);
+
+    function _applyCustom(){
+      if(!custInp) return;
+      var secs = _parseCustom(custInp.value);
+      if(secs > 0){
+        // deactivate any preset highlight
+        document.querySelectorAll('.t-preset').forEach(function(el){ el.classList.remove('t-pre-active'); });
+        _timerPause();
+        _tDuration = secs; _tRemain = secs; _sandPct = 1.0;
+        var start = document.getElementById('timer-start-btn');
+        var reset = document.getElementById('timer-reset-btn');
+        if(start){ start.disabled=false; start.textContent='START'; }
+        if(reset) reset.disabled=false;
+        _updateTimerUI();
+        var stat = document.getElementById('timer-status-txt');
+        if(stat) stat.textContent = 'READY — PRESS START';
+        custInp.value = '';
+      }
+    }
+    if(setBtn)  setBtn.addEventListener('click', _applyCustom);
+    if(custInp) custInp.addEventListener('keydown', function(e){ if(e.key==='Enter') _applyCustom(); });
+
     document.querySelectorAll('.t-preset').forEach(function(el){
       el.addEventListener('click', function(){ _setPreset(parseInt(el.dataset.m)); });
     });
