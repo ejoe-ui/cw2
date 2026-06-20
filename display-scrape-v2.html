@@ -399,6 +399,21 @@ html, body {
   text-shadow: 0 0 28px #00ff44, 0 0 56px rgba(0,255,68,0.3);
 }
 #watch-btns { display: flex; gap: 10px; }
+/* Watch buttons — green, not amber */
+#watch-btns .t-btn {
+  color: rgba(0,200,60,0.6);
+  background: rgba(0,200,60,0.04);
+  border-color: rgba(0,200,60,0.22);
+}
+#watch-btns .t-btn:hover:not(:disabled) {
+  color: #00ff44; background: rgba(0,255,68,0.08);
+  border-color: rgba(0,255,68,0.45);
+}
+#watch-btns .t-btn:disabled {
+  color: rgba(0,180,50,0.25);
+  border-color: rgba(0,180,50,0.12);
+  background: transparent;
+}
 #watch-marks {
   font-family: var(--font-mono); font-size: 11px;
   color: rgba(200,168,64,0.5); letter-spacing: 0.1em;
@@ -3705,7 +3720,7 @@ async function loadAll(){
   }
 
   /* ── Canvas draw
-     120 ticks × 0.5s each = 1 full circuit per minute
+     240 ticks × 0.25s each = 1 full circuit per minute
      Tick 0 at top-center (12 o'clock), clockwise
   ── */
   function drawWatch(canvas, elapsedMs){
@@ -3713,18 +3728,17 @@ async function loadAll(){
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
 
-    // INSET: clear the CRT bezel & rounded corners (~504×345 glass in 566×388 pane)
     var INSET  = 45;
-    var TOTAL  = 120;   // 120 ticks × 0.5s = 60s = 1 minute
+    var TOTAL  = 240;   // 240 ticks × 0.25s = 60s = 1 minute
     var hasStarted = elapsedMs > 0 || _wsRunning;
-    var currentTick = Math.floor(elapsedMs / 500) % TOTAL; // advances every 0.5s
+    var currentTick = Math.floor(elapsedMs / 250) % TOTAL; // advances every 0.25s
 
     var effW = W - 2*INSET;
     var effH = H - 2*INSET;
     var perim = 2*(effW + effH);
     var spacing = perim / TOTAL;
 
-    // Tick 0 starts at top-center (12 o'clock), going clockwise
+    // Tick 0 at top-center (12 o'clock), clockwise
     var startOffset = effW / 2;
 
     // ── Dim guide rectangle ──
@@ -3737,58 +3751,60 @@ async function loadAll(){
     for(var i=0; i<TOTAL; i++){
       var dist = (startOffset + i * spacing) % perim;
       var tx, ty, isVert;
-      if(dist <= effW){                                          // top L→R
+      if(dist <= effW){
         tx = INSET + dist;  ty = INSET;  isVert = true;
-      } else if(dist <= effW + effH){                            // right T→B
+      } else if(dist <= effW + effH){
         tx = INSET + effW;  ty = INSET + (dist - effW);  isVert = false;
-      } else if(dist <= 2*effW + effH){                          // bottom R→L
+      } else if(dist <= 2*effW + effH){
         tx = INSET + effW - (dist - effW - effH);  ty = INSET + effH;  isVert = true;
-      } else {                                                   // left B→T
+      } else {
         tx = INSET;  ty = INSET + effH - (dist - 2*effW - effH);  isVert = false;
       }
       ticks.push({x:tx, y:ty, v:isVert, i:i});
     }
 
-    // ── Draw ticks ──
-    // Mark scheme (per 0.5s ticks):
-    //   i % 20 === 0 → 10-second mark → amber-orange
-    //   i % 10 === 0 → 5-second mark  → gold amber
-    //   i % 2  === 0 → 1-second mark  → brighter green
-    //   else          → 0.5-second    → dim green
+    // ── Mark scheme (240 ticks, 0.25s each) ──
+    //   i % 40 === 0 → 10-second mark → amber-orange  (6 marks)
+    //   i % 20 === 0 → 5-second mark  → gold amber    (6 marks)
+    //   i % 4  === 0 → 1-second mark  → green         (50 marks)
+    //   i % 2  === 0 → 0.5-second     → dim green     (60 marks)
+    //   else          → 0.25-second   → very dim      (120 marks)
     ticks.forEach(function(t){
-      var is10s = (t.i % 20 === 0);
-      var is5s  = (t.i % 10 === 0) && !is10s;
-      var is1s  = (t.i % 2  === 0) && !is5s && !is10s;
+      var is10s = (t.i % 40 === 0);
+      var is5s  = (t.i % 20 === 0) && !is10s;
+      var is1s  = (t.i % 4  === 0) && !is5s && !is10s;
+      var isHs  = (t.i % 2  === 0) && !is1s && !is5s && !is10s;
       var isLit = hasStarted && (t.i <= currentTick);
 
-      var thick = is10s ? 7 : is5s ? 5 : is1s ? 3 : 2;
-      var len   = is10s ? 22 : is5s ? 15 : is1s ? 9 : 5;
+      // Sizes scaled down for 240-tick density
+      var thick = is10s ? 6 : is5s ? 4 : is1s ? 2 : isHs ? 1.5 : 1;
+      var len   = is10s ? 20 : is5s ? 14 : is1s ? 8 : isHs ? 5 : 4;
 
       var color;
       if(isLit){
-        color = is10s ? '#ff9040' : is5s ? '#c8a840' : is1s ? '#00cc44' : '#009930';
+        color = is10s ? '#ff9040' : is5s ? '#c8a840' : is1s ? '#00cc44' : isHs ? '#008828' : '#006620';
       } else {
-        color = is10s ? 'rgba(255,144,64,0.14)' : is5s ? 'rgba(200,168,64,0.12)' :
-                is1s  ? 'rgba(0,180,40,0.10)' : 'rgba(0,150,30,0.07)';
+        color = is10s ? 'rgba(255,144,64,0.13)' : is5s ? 'rgba(200,168,64,0.11)' :
+                is1s  ? 'rgba(0,180,40,0.09)'   : isHs ? 'rgba(0,140,30,0.06)' : 'rgba(0,100,20,0.05)';
       }
 
       ctx.fillStyle = color;
       ctx.shadowColor = isLit ? color : 'transparent';
-      ctx.shadowBlur  = isLit ? (is10s ? 12 : is5s ? 8 : is1s ? 4 : 2) : 0;
+      ctx.shadowBlur  = isLit ? (is10s ? 10 : is5s ? 7 : is1s ? 3 : 0) : 0;
 
       if(t.v) ctx.fillRect(t.x - thick/2, t.y - len/2, thick, len);
       else    ctx.fillRect(t.x - len/2,   t.y - thick/2, len, thick);
       ctx.shadowBlur = 0;
     });
 
-    // ── Jumping amber dot at current tick ──
+    // ── Amber jumping dot ──
     if(hasStarted){
       var dot = ticks[currentTick];
       if(dot){
         ctx.fillStyle   = '#c8a840';
         ctx.shadowColor = '#c8a840';
-        ctx.shadowBlur  = 22;
-        ctx.fillRect(dot.x - 7, dot.y - 7, 14, 14);
+        ctx.shadowBlur  = 20;
+        ctx.fillRect(dot.x - 6, dot.y - 6, 12, 12);
         ctx.shadowBlur = 0;
       }
     }
