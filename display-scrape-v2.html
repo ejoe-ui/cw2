@@ -2229,19 +2229,21 @@ async function renderHonorRoll(){
     document.querySelectorAll('.crt-tog').forEach(function(t){ t.classList.remove('active'); });
     if(key === 'exit'){
       _toolActive = null;
-      // Stop running tools
-      _timerPause(); _watchPause();
-      setCRTMode('news');
+      if(window._timerPause) window._timerPause();
+      if(window._watchPause) window._watchPause();
+      _startNews(); // resume news feed
       return;
     }
     _toolActive = key;
+    _stopNews(); // freeze the news cycle immediately
     var el = document.getElementById('tog-' + key);
     if(el) el.classList.add('active');
     setCRTMode(key);
-    if(key === 'timer') _timerOnShow();
-    if(key === 'watch') _watchOnShow();
-    if(key === 'pick')  _pickerOnShow();
+    if(key === 'timer') { if(window._timerOnShow) window._timerOnShow(); }
+    if(key === 'watch') { if(window._watchOnShow) window._watchOnShow(); }
+    if(key === 'pick')  { if(window._pickerOnShow) window._pickerOnShow(); }
   }
+  window.activateTool = activateTool; // expose for onclick handlers
 
   /* ── NEWS ── */
   var _crtItems=[], _crtCur=0, _crtCharIdx=0, _crtTypeT=null, _crtNextT=null;
@@ -2267,6 +2269,7 @@ async function renderHonorRoll(){
   }
 
   function _showNewsItem(idx){
+    if(_toolActive) return; // tool pane has control
     if(!_crtItems.length) return;
     var it=_crtItems[idx%_crtItems.length];
     document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
@@ -2278,11 +2281,13 @@ async function renderHonorRoll(){
     _crtCharIdx=0;
     var full=it.headline;
     function type(){
+      if(_toolActive){ clearTimeout(_crtTypeT); return; } // bail if tool grabbed CRT
       if(_crtCharIdx<full.length){
         hlEl.textContent=full.slice(0,++_crtCharIdx);
         _crtTypeT=setTimeout(type, 28+Math.random()*22);
       } else {
         _crtNextT=setTimeout(function(){
+          if(_toolActive) return; // don't advance while tool is active
           _crtCur=(_crtCur+1)%_crtItems.length;
           _showNewsItem(_crtCur);
         }, 16000);
@@ -2291,6 +2296,7 @@ async function renderHonorRoll(){
     type();
   }
   function _startNews(){
+    if(_toolActive) return; // tool pane has control
     if(!CW_NEWS.length){
       document.getElementById('crt-hl-text').textContent='NO SIGNAL — SCANNING...';
       document.getElementById('crt-body').textContent='SCRAP-E is searching for transmissions.';
@@ -2300,6 +2306,7 @@ async function renderHonorRoll(){
     setCRTMode('news');
   }
   function _stopNews(){ clearTimeout(_crtTypeT); clearTimeout(_crtNextT); }
+  window._stopNews = _stopNews;
 
   /* ── BELL SCHEDULE ── */
   function _fmt12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return (h%12||12)+':'+m+' '+(h>=12?'PM':'AM'); }
@@ -2471,9 +2478,11 @@ async function renderHonorRoll(){
     _offTimers.push(setTimeout(function(){ if(onDone) onDone(); }, els.length*320+800));
   }
   function _startOffSequence(){
+    if(_toolActive) return; // tool pane has control
     _clearOff(); _stopNews();
     setCRTMode('standby');
     _offTimers.push(setTimeout(function(){
+      if(_toolActive) return;
       _showDataAccess(function(){ _startNews(); });
     }, 10000));
   }
