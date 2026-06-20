@@ -270,17 +270,23 @@ html, body {
   line-height: 1.5;
   animation: scrapeGlow 2.2s ease-in-out infinite;
 }
-/* ── ORB HOTSPOT — transparent click zone over ORB module in chassis ── */
-#orb-hotspot {
+/* ── NAV HOTSPOTS — transparent click zones over chassis image elements ── */
+#orb-hotspot, #cw-hotspot {
   position: absolute;
-  left: 1430px; top: 18px; width: 105px; height: 105px;
   cursor: pointer;
   z-index: 10;
+  transition: background 0.2s;
+}
+#orb-hotspot {
+  left: 1509px; top: 26px; width: 108px; height: 101px;
   border-radius: 50%;
 }
-#orb-hotspot:hover {
+#cw-hotspot {
+  left: 635px; top: 23px; width: 256px; height: 73px;
+  border-radius: 4px;
+}
+#orb-hotspot:hover, #cw-hotspot:hover {
   background: rgba(255,255,255,0.06);
-  transition: background 0.2s;
 }
 
 /* ── STAMP MOOD GLOW — overlay on SCRAP-E APPROVED in chassis image ── */
@@ -1169,6 +1175,9 @@ html, body {
     <!-- ORB HOTSPOT — transparent click zone over the ORB module in the chassis image -->
     <div id="orb-hotspot" title="Go to ORB's page"></div>
 
+    <!-- COWBOY WIRE HOTSPOT — click the header to go to the main display -->
+    <div id="cw-hotspot" title="Go to Cowboy Wire main display"></div>
+
     <!-- LIGHT BULBS: SCRAP-E body -->
     <div class="bulb" id="bulb-big"   style="left:218px;top:955px"></div>
     <div class="bulb" id="bulb-small" style="left:268px;top:945px"></div>
@@ -1198,9 +1207,12 @@ window.addEventListener('resize', function(){
   st.style.top  = Math.round((window.innerHeight - 1080*s)/2)+'px';
 });
 
-/* ── ORB HOTSPOT CLICK ── */
+/* ── NAV HOTSPOT CLICKS ── */
 document.getElementById('orb-hotspot').addEventListener('click', function(){
   window.location.href = '/display-orb.html';
+});
+document.getElementById('cw-hotspot').addEventListener('click', function(){
+  window.location.href = '/display.html';
 });
 
 /* ═══════════════════════════════════════════════════════════
