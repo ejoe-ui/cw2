@@ -2046,19 +2046,31 @@ function updateBodyLights(){
     var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
     var hasBday=(CW_BIRTHDAYS||[]).some(function(b){ return b.month==cm && b.day==cd; });
     if(hasBday){
-      // Full rainbow cycle through saturated colors
-      small.style.background  = 'hsl(0,90%,55%)';
-      small.style.boxShadow   = '0 0 8px hsl(0,80%,50%), 0 0 18px hsl(0,70%,40%)';
-      small.style.filter      = '';
-      small.style.animation   = 'bdayRainbow 4s linear infinite';
+      _startBdayRainbow(small);
     } else {
-      // Normal muted amber pulse
-      small.style.background  = 'var(--cw-amber)';
-      small.style.boxShadow   = '0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18)';
-      small.style.animation   = 'bodyMuted 5.5s ease-in-out infinite';
-      small.style.filter      = '';
+      _stopBdayRainbow(small);
     }
   }
+}
+
+var _bdayRainbowTimer = null;
+var _bdayHue = 0;
+function _startBdayRainbow(el){
+  if(_bdayRainbowTimer) return; // already running
+  el.style.animation = 'none';
+  _bdayHue = 0;
+  _bdayRainbowTimer = setInterval(function(){
+    _bdayHue = (_bdayHue + 6) % 360;
+    var h = _bdayHue;
+    el.style.background = 'hsl('+h+',95%,55%)';
+    el.style.boxShadow  = '0 0 8px hsl('+h+',90%,50%), 0 0 16px hsl('+h+',80%,40%)';
+  }, 50); // ~20fps, full cycle ~3s
+}
+function _stopBdayRainbow(el){
+  if(_bdayRainbowTimer){ clearInterval(_bdayRainbowTimer); _bdayRainbowTimer=null; }
+  el.style.background = 'var(--cw-amber)';
+  el.style.boxShadow  = '0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18)';
+  el.style.animation  = 'bodyMuted 5.5s ease-in-out infinite';
 }
 
 /* BIRTHDAYS */
