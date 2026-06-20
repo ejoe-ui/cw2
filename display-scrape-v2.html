@@ -3877,11 +3877,17 @@ async function loadAll(){
       ctx.shadowBlur = 0;
     });
 
-    // ── SCRAP-E RUNNER — tiny copper head with green eyes ──────
+    // ── SCRAP-E RUNNER — copper head with directional cowboy hat ──
+    // Local coords: body x:-7→7, y:-5→5. Face at +x. Outward = local -y.
+    // Hat drawn first, then body on top so it looks seated on the head.
+    //
+    // Hat view by edge:
+    //   top / bottom  → bird's-eye: elliptical brim + oval crown from above
+    //   right (down)  → front view: Stetson crease, curled brim tips (toward viewer)
+    //   left  (up)    → back view : shadowed crown, sagging back brim (away from viewer)
     if(hasStarted){
       var dot = ticks[currentTick];
       if(dot){
-        // Rotation: runner faces direction of travel, antenna points outward
         var edgeAngle = {top: 0, right: Math.PI/2, bottom: Math.PI, left: -Math.PI/2};
         var angle = edgeAngle[dot.e] || 0;
 
@@ -3892,33 +3898,87 @@ async function loadAll(){
         var COPPER  = '#b07030';
         var COP_HI  = '#d49240';
         var EYE_COL = '#00ff44';
+        var HAT_MID = '#7a5228';
+        var HAT_DRK = '#4a2e10';
+        var HAT_LIT = '#b87438';
+        var BAND    = '#9a6020';
 
-        // Outer glow
+        // ── COWBOY HAT ──────────────────────────────────────────
+        ctx.shadowColor = HAT_MID; ctx.shadowBlur = 5;
+
+        if(dot.e === 'top' || dot.e === 'bottom'){
+          // Bird's-eye: looking down at the hat from above
+          // Outer brim — wide dark ellipse
+          ctx.fillStyle = HAT_DRK;
+          ctx.beginPath(); ctx.ellipse(0, -8, 9, 4, 0, 0, Math.PI*2); ctx.fill();
+          // Crown — central oval
+          ctx.fillStyle = HAT_MID;
+          ctx.beginPath(); ctx.ellipse(0, -8, 5, 2.8, 0, 0, Math.PI*2); ctx.fill();
+          // Crown center crease dent
+          ctx.fillStyle = HAT_DRK;
+          ctx.beginPath(); ctx.ellipse(0, -8, 2, 1.2, 0, 0, Math.PI*2); ctx.fill();
+          // Hat band ring
+          ctx.strokeStyle = BAND; ctx.lineWidth = 0.8;
+          ctx.beginPath(); ctx.ellipse(0, -8, 5.5, 3.2, 0, 0, Math.PI*2); ctx.stroke();
+
+        } else if(dot.e === 'right'){
+          // Front view: SCRAP-E coming toward viewer going down
+          // Crown — tall rectangle, Stetson style
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-4, -16, 8, 8);
+          // Classic center pinch crease
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-1.5, -16, 3, 5);
+          // Crown top highlight (lit from above)
+          ctx.fillStyle = HAT_LIT;
+          ctx.fillRect(-4, -16, 8, 1.5);
+          // Hat band
+          ctx.fillStyle = BAND;
+          ctx.fillRect(-4, -8.5, 8, 1.5);
+          // Wide front brim
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-9, -8, 18, 2);
+          // Brim tips curl up — lighter edge
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-9, -8, 2.5, 1.5);
+          ctx.fillRect(6.5, -8, 2.5, 1.5);
+
+        } else {
+          // Back view: SCRAP-E moving away going up (left edge)
+          // Crown — back face, shadow on top, no front crease
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-4, -16, 8, 8);
+          // Dark shadow across top/back of crown
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-4, -16, 8, 3);
+          // Subtle face shadow on back of crown
+          ctx.fillStyle = 'rgba(0,0,0,0.22)';
+          ctx.fillRect(-4, -13, 8, 5);
+          // Hat band
+          ctx.fillStyle = BAND;
+          ctx.fillRect(-4, -8.5, 8, 1.5);
+          // Back brim — slightly wider, center sags in the rear
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-9, -8, 18, 2.5);
+          ctx.fillRect(-3, -6.5, 6, 1.5);  // center sag
+        }
+
+        ctx.shadowBlur = 0;
+
+        // ── COPPER BODY (drawn over hat base so hat sits on head) ──
         ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
-
-        // Copper head body
         ctx.fillStyle = COPPER;
         ctx.fillRect(-7, -5, 14, 10);
-
-        // Highlight strip on top of head
+        // Highlight strip on top
         ctx.fillStyle = COP_HI;
         ctx.shadowBlur = 0;
         ctx.fillRect(-6, -5, 12, 2);
 
-        // Antenna stem (points outward = local "up")
-        ctx.fillStyle = COPPER;
-        ctx.fillRect(-1, -10, 2, 6);
-        // Antenna tip — amber glow
-        ctx.fillStyle = '#c8a840';
-        ctx.shadowColor = '#c8a840'; ctx.shadowBlur = 8;
-        ctx.beginPath(); ctx.arc(0, -11, 2.2, 0, Math.PI*2); ctx.fill();
-        ctx.shadowBlur = 0;
-
-        // Green eyes on the front face (leading edge = local +x)
+        // ── GREEN EYES on front face (leading edge = local +x) ──
         ctx.fillStyle = EYE_COL;
         ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
-        ctx.beginPath(); ctx.arc(5, -2.2, 2,   0, Math.PI*2); ctx.fill(); // top eye
-        ctx.beginPath(); ctx.arc(5,  2.2, 2,   0, Math.PI*2); ctx.fill(); // bottom eye
+        ctx.beginPath(); ctx.arc(5, -2.2, 2, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(5,  2.2, 2, 0, Math.PI*2); ctx.fill();
         ctx.shadowBlur = 0;
 
         ctx.restore();
