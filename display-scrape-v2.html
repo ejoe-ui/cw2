@@ -236,7 +236,8 @@ html, body {
 }
 
 /* ── CRT MULTI-PANE SYSTEM ── */
-#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data, #crt-pane-scrape {
+#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data, #crt-pane-scrape,
+#crt-pane-timer, #crt-pane-watch, #crt-pane-pick {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   opacity: 0; pointer-events: none;
@@ -251,9 +252,206 @@ html, body {
 #p-crt.crt-bell #crt-pane-bell,
 #p-crt.crt-standby #crt-pane-standby,
 #p-crt.crt-data #crt-pane-data,
-#p-crt.crt-scrape #crt-pane-scrape {
+#p-crt.crt-scrape #crt-pane-scrape,
+#p-crt.crt-timer #crt-pane-timer,
+#p-crt.crt-watch #crt-pane-watch,
+#p-crt.crt-pick  #crt-pane-pick {
   opacity: 1; pointer-events: auto;
 }
+
+/* ── CRT TOOL TOGGLES ── */
+#crt-toggles {
+  position: absolute;
+  left: 1284px; top: 365px;
+  width: 18px; height: 184px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-around;
+  z-index: 10;
+}
+.crt-tog {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(200,168,64,0.12);
+  border: 1px solid rgba(200,168,64,0.35);
+  cursor: pointer; position: relative;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.crt-tog:hover { background: rgba(200,168,64,0.28); box-shadow: 0 0 5px rgba(200,168,64,0.4); }
+.crt-tog.active {
+  background: rgba(0,255,68,0.25);
+  border-color: var(--cw-green);
+  box-shadow: 0 0 7px var(--cw-green), 0 0 14px rgba(0,255,68,0.25);
+}
+.crt-tog.tog-exit { border-color: rgba(200,168,64,0.5); }
+.crt-tog.tog-exit:hover { box-shadow: 0 0 5px rgba(200,168,64,0.5); }
+.crt-tog.tog-exit.active {
+  background: rgba(200,168,64,0.2);
+  border-color: var(--cw-amber);
+  box-shadow: 0 0 7px var(--cw-amber);
+}
+.crt-tog::before {
+  content: attr(data-tip);
+  position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity 0.15s; background: rgba(0,0,0,0.7);
+  padding: 2px 4px;
+}
+.crt-tog:hover::before { opacity: 1; }
+
+/* ── SHARED TOOL STYLES ── */
+.t-btn {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--cw-amber); background: rgba(200,168,64,0.08);
+  border: 1px solid rgba(200,168,64,0.3);
+  padding: 4px 10px; cursor: pointer; transition: all 0.15s;
+}
+.t-btn:hover:not(:disabled) {
+  background: rgba(200,168,64,0.2); border-color: var(--cw-amber);
+  color: var(--cw-highlight);
+}
+.t-btn:disabled { opacity: 0.28; cursor: default; }
+.t-btn.t-active {
+  background: rgba(200,168,64,0.22); border-color: var(--cw-highlight);
+  color: var(--cw-highlight);
+}
+
+/* ── TIMER PANE ── */
+#crt-pane-timer {
+  padding: 14px 18px 12px; gap: 8px;
+  background: rgba(0,0,0,0.45);
+}
+#timer-hdr {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.22em; color: var(--cw-copper);
+  text-align: center; flex-shrink: 0;
+}
+#timer-body {
+  flex: 1; display: flex; gap: 16px; overflow: hidden;
+}
+#timer-hglass { flex-shrink: 0; display: block; }
+#timer-right {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+}
+#timer-status-txt {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; color: var(--cw-copper);
+  text-align: center; min-height: 14px;
+}
+#timer-display {
+  font-family: var(--font-crt); font-size: 58px; line-height: 1;
+  color: var(--cw-green); text-align: center;
+  text-shadow: 0 0 18px var(--cw-green), 0 0 36px rgba(0,255,68,0.3);
+  letter-spacing: 0.05em;
+}
+#timer-display.warn { color: var(--cw-amber); text-shadow: 0 0 18px var(--cw-amber); }
+#timer-display.crit { color: #ff4444; text-shadow: 0 0 18px #ff4444; animation: critBlink 0.5s step-end infinite; }
+@keyframes critBlink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+#timer-btns { display: flex; gap: 8px; }
+#timer-presets {
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;
+}
+.t-preset {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.1em; color: var(--cw-dim);
+  border: 1px solid rgba(200,168,64,0.2); padding: 3px 7px;
+  cursor: pointer; transition: all 0.15s;
+}
+.t-preset:hover, .t-preset.t-pre-active {
+  color: var(--cw-amber); border-color: rgba(200,168,64,0.5);
+  background: rgba(200,168,64,0.1);
+}
+
+/* ── STOPWATCH PANE ── */
+#crt-pane-watch { padding: 0; }
+#watch-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#watch-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  pointer-events: none;
+}
+#watch-overlay > * { pointer-events: auto; }
+#watch-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; color: var(--cw-copper);
+}
+#watch-display {
+  font-family: var(--font-crt); font-size: 62px; line-height: 1;
+  color: var(--cw-green); letter-spacing: 0.05em;
+  text-shadow: 0 0 18px var(--cw-green), 0 0 36px rgba(0,255,68,0.25);
+}
+#watch-btns { display: flex; gap: 8px; }
+#watch-marks {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--cw-dim); letter-spacing: 0.1em;
+  text-align: center; max-height: 60px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 2px;
+}
+
+/* ── PICKER PANE ── */
+#crt-pane-pick {
+  padding: 14px 20px 14px; gap: 6px;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+}
+#pick-hdr {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.2em; color: var(--cw-amber);
+  text-align: center; flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(200,168,64,0.4);
+}
+#pick-sub {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.18em; color: var(--cw-dim);
+  text-align: center; flex-shrink: 0;
+}
+#pick-window {
+  flex: 1; width: 100%; position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(200,168,64,0.25);
+  border-bottom: 1px solid rgba(200,168,64,0.25);
+}
+#pick-highlight {
+  position: absolute; left: 0; right: 0;
+  top: 50%; transform: translateY(-50%);
+  height: 46px;
+  background: rgba(200,168,64,0.1);
+  box-shadow: 0 0 20px rgba(200,168,64,0.3);
+  pointer-events: none; z-index: 2;
+}
+#pick-highlight::before, #pick-highlight::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 1px;
+  background: rgba(200,168,64,0.4);
+}
+#pick-highlight::before { top: 0; } #pick-highlight::after { bottom: 0; }
+#pick-reel {
+  position: absolute; width: 100%; top: 0;
+  display: flex; flex-direction: column; align-items: center;
+}
+.pick-name {
+  height: 46px; line-height: 46px;
+  font-family: var(--font-crt); font-size: 22px;
+  letter-spacing: 0.08em; text-align: center;
+  color: rgba(200,168,64,0.45); width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 0 12px; box-sizing: border-box;
+}
+.pick-name.pick-selected {
+  color: var(--cw-highlight); font-size: 26px;
+  text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.5);
+  opacity: 1;
+}
+#pick-status {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; color: var(--cw-dim);
+  text-align: center; flex-shrink: 0; min-height: 14px;
+}
+@keyframes pickCursor { 0%,100%{opacity:1} 50%{opacity:0} }
+#pick-cursor { animation: pickCursor 1s step-end infinite; }
 /* ── SCRAP-E SAYS pane ── */
 #crt-pane-scrape {
   align-items: center; justify-content: center;
@@ -1101,6 +1299,64 @@ html, body {
       <div id="crt-pane-scrape">
         <div id="scrape-says-txt"></div>
       </div>
+
+      <!-- PANE: TIMER -->
+      <div id="crt-pane-timer">
+        <div id="timer-hdr">COUNTDOWN SEQUENCE</div>
+        <div id="timer-body">
+          <canvas id="timer-hglass" width="160" height="300"></canvas>
+          <div id="timer-right">
+            <div id="timer-status-txt">SELECT DURATION</div>
+            <div id="timer-display">--:--</div>
+            <div id="timer-presets">
+              <span class="t-preset" data-m="5">5 MIN</span>
+              <span class="t-preset" data-m="10">10 MIN</span>
+              <span class="t-preset" data-m="15">15 MIN</span>
+              <span class="t-preset" data-m="20">20 MIN</span>
+              <span class="t-preset" data-m="30">30 MIN</span>
+            </div>
+            <div id="timer-btns">
+              <button class="t-btn" id="timer-start-btn" disabled>START</button>
+              <button class="t-btn" id="timer-reset-btn" disabled>RESET</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE: STOPWATCH -->
+      <div id="crt-pane-watch">
+        <canvas id="watch-canvas"></canvas>
+        <div id="watch-overlay">
+          <div id="watch-lbl">ELAPSED TIME</div>
+          <div id="watch-display">00:00.0</div>
+          <div id="watch-btns">
+            <button class="t-btn" id="watch-start-btn">START</button>
+            <button class="t-btn" id="watch-mark-btn" disabled>MARK</button>
+            <button class="t-btn" id="watch-reset-btn" disabled>RESET</button>
+          </div>
+          <div id="watch-marks"></div>
+        </div>
+      </div>
+
+      <!-- PANE: STUDENT PICKER -->
+      <div id="crt-pane-pick">
+        <div id="pick-hdr">SCRAP&#8226;E STUDENT SELECTOR</div>
+        <div id="pick-sub">ROSTER REEL ACTIVE</div>
+        <div id="pick-window">
+          <div id="pick-highlight"></div>
+          <div id="pick-reel"></div>
+        </div>
+        <div id="pick-status">AWAITING TRANSMISSION<span id="pick-cursor">_</span></div>
+        <button class="t-btn" id="pick-btn">ENGAGE REEL</button>
+      </div>
+    </div>
+
+    <!-- CRT TOOL TOGGLE BUTTONS -->
+    <div id="crt-toggles">
+      <div class="crt-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
+      <div class="crt-tog" id="tog-watch" data-tip="WATCH" onclick="activateTool('watch')"></div>
+      <div class="crt-tog" id="tog-pick"  data-tip="PICK"  onclick="activateTool('pick')"></div>
+      <div class="crt-tog tog-exit" id="tog-exit" data-tip="EXIT" onclick="activateTool('exit')"></div>
     </div>
 
     <!-- STATUS STRIP — period · countdown · pass policy -->
@@ -1937,12 +2193,33 @@ async function renderHonorRoll(){
 (function(){
   var crtEl = document.getElementById('p-crt');
   var CRT_MODE = 'news';
+  var _toolActive = null; // 'timer' | 'watch' | 'pick' | null
 
   function setCRTMode(mode){
     if(CRT_MODE === mode) return;
     CRT_MODE = mode;
-    ['crt-news','crt-bell','crt-standby','crt-data'].forEach(function(c){ crtEl.classList.remove(c); });
+    ['crt-news','crt-bell','crt-standby','crt-data','crt-scrape',
+     'crt-timer','crt-watch','crt-pick'].forEach(function(c){ crtEl.classList.remove(c); });
     crtEl.classList.add('crt-' + mode);
+  }
+
+  // ── TOOL TOGGLE ACTIVATION ──
+  function activateTool(key){
+    document.querySelectorAll('.crt-tog').forEach(function(t){ t.classList.remove('active'); });
+    if(key === 'exit'){
+      _toolActive = null;
+      // Stop running tools
+      _timerPause(); _watchPause();
+      setCRTMode('news');
+      return;
+    }
+    _toolActive = key;
+    var el = document.getElementById('tog-' + key);
+    if(el) el.classList.add('active');
+    setCRTMode(key);
+    if(key === 'timer') _timerOnShow();
+    if(key === 'watch') _watchOnShow();
+    if(key === 'pick')  _pickerOnShow();
   }
 
   /* ── NEWS ── */
@@ -2183,6 +2460,7 @@ async function renderHonorRoll(){
   /* ── MAIN TICK ── */
   var _last=null;
   function _tick(){
+    if(_toolActive) return; // tool pane has control — skip auto-switching
     var sched=(typeof getSchedule==='function')?getSchedule():null;
     var nm=(typeof nowMins==='function')?nowMins():0;
     var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
@@ -2328,7 +2606,7 @@ async function renderHonorRoll(){
     var now=new Date(), day=now.getDay();
     var nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
     if(nm<8*60||nm>15*60+15){ _scheduleScrapeSays(); return; }
-    if(CRT_MODE==='standby'||CRT_MODE==='data'||CRT_MODE==='scrape'){ _scheduleScrapeSays(); return; }
+    if(_toolActive||CRT_MODE==='standby'||CRT_MODE==='data'||CRT_MODE==='scrape'){ _scheduleScrapeSays(); return; }
 
     var pool=SCRAPE_SAYS_GENERAL.slice();
     if(day===5) pool=pool.concat(SCRAPE_SAYS_FRIDAY);
@@ -3039,6 +3317,707 @@ async function loadAll(){
   await renderHonorRoll();
   startCRT();
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: TIMER — pixel hourglass + countdown
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var _tDuration = 0;   // seconds total
+  var _tRemain   = 0;   // seconds remaining
+  var _tRunning  = false;
+  var _tInterval = null;
+  var _tAnimFrame= null;
+  var _sandPct   = 1.0; // 1.0 = full, 0.0 = empty
+  var _dropY     = 0;   // falling sand drop y position (0..1)
+  var _dropAnim  = null;
+
+  var TIMER_STATUS = [
+    { pct: 1.00, msg: 'COUNTDOWN INITIATED' },
+    { pct: 0.75, msg: 'TIME REMAINING: SUFFICIENT' },
+    { pct: 0.50, msg: 'HALFWAY POINT REACHED' },
+    { pct: 0.30, msg: 'TIME RUNNING SHORT' },
+    { pct: 0.15, msg: '>>> WARNING: LOW TIME <<<' },
+    { pct: 0.05, msg: '!!! CRITICAL — WRAP UP !!!' },
+    { pct: 0.00, msg: 'TIME ELAPSED — PENCILS DOWN' }
+  ];
+
+  function _getStatus(pct){
+    for(var i=TIMER_STATUS.length-1; i>=0; i--){
+      if(pct >= TIMER_STATUS[i].pct) return TIMER_STATUS[i].msg;
+    }
+    return 'SEQUENCE COMPLETE';
+  }
+
+  /* ── Pixel hourglass canvas draw ── */
+  function drawHourglass(canvas, pct){
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    var PS = 5;  // pixel size
+    var COLS = 22, ROWS = 44;
+    var OX = Math.floor((W - COLS*PS)/2);
+    var OY = Math.floor((H - ROWS*PS)/2);
+
+    // colour palette
+    var FRAME  = '#c8a840';
+    var SAND   = 'rgba(200,168,64,0.85)';
+    var EMPTY  = 'rgba(200,168,64,0.1)';
+    var DROP   = 'rgba(200,168,64,0.9)';
+    var NECK   = 16; // row where neck starts (0-indexed)
+    var NCENTER= 21; // center row (neck)
+    var NEND   = 27; // neck end row
+
+    function halfW(r){
+      if(r <= NECK)         return Math.max(2, COLS - Math.round(r * (COLS-2) / NECK));
+      if(r <= NCENTER)      return 2;
+      if(r <= NEND)         return 2;
+      var br = r - NEND;
+      var totalBottom = ROWS - NEND;
+      return Math.min(COLS, 2 + Math.round(br * (COLS-2) / totalBottom));
+    }
+
+    function dp(c, r, color){
+      ctx.fillStyle = color;
+      ctx.fillRect(OX + c*PS, OY + r*PS, PS-1, PS-1);
+    }
+
+    // top sand rows (pct of NECK rows from top)
+    var topSandRows = Math.round(pct * NECK);
+    // bottom sand rows fills from bottom ((1-pct) of bottom rows)
+    var bottomFilled = Math.round((1-pct) * (ROWS - NEND));
+
+    for(var r=0; r<ROWS; r++){
+      var w = halfW(r);
+      var lc = Math.floor((COLS - w) / 2);
+      for(var c=0; c<COLS; c++){
+        if(c < lc || c >= lc+w) continue;
+        var isBorder = (c===lc || c===lc+w-1 || r===0 || r===ROWS-1);
+        if(isBorder){ dp(c, r, FRAME); continue; }
+        // interior
+        var isSand = false;
+        if(r < NECK)          isSand = (r < topSandRows);
+        else if(r >= NEND)    isSand = (r >= ROWS - bottomFilled);
+        dp(c, r, isSand ? SAND : EMPTY);
+      }
+    }
+
+    // animated drop in neck when running
+    if(_tRunning && pct > 0){
+      var dropRow = Math.round(NECK + _dropY * (NEND - NECK));
+      var dc = Math.floor(COLS/2);
+      if(dropRow < ROWS-1){ dp(dc, dropRow, DROP); }
+    }
+
+    // flash red outline when zero
+    if(pct <= 0){
+      ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 2;
+      ctx.strokeRect(OX, OY, COLS*PS, ROWS*PS);
+    }
+  }
+
+  function _animateDrop(){
+    _dropY += 0.07;
+    if(_dropY > 1) _dropY = 0;
+    var c = document.getElementById('timer-hglass');
+    if(c && _tRunning) drawHourglass(c, _sandPct);
+    if(_tRunning) _dropAnim = requestAnimationFrame(_animateDrop);
+  }
+
+  function _updateTimerUI(){
+    var disp = document.getElementById('timer-display');
+    var stat = document.getElementById('timer-status-txt');
+    var c    = document.getElementById('timer-hglass');
+    if(!disp) return;
+
+    var m = Math.floor(_tRemain/60);
+    var s = _tRemain % 60;
+    disp.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+
+    _sandPct = _tDuration > 0 ? _tRemain / _tDuration : 0;
+
+    // colour coding
+    disp.classList.remove('warn','crit');
+    if(_sandPct <= 0.05) disp.classList.add('crit');
+    else if(_sandPct <= 0.20) disp.classList.add('warn');
+
+    if(stat) stat.textContent = _getStatus(_sandPct);
+    if(c && !_tRunning) drawHourglass(c, _sandPct);
+  }
+
+  function _timerTick(){
+    if(_tRemain <= 0){
+      _timerDone(); return;
+    }
+    _tRemain--;
+    _updateTimerUI();
+  }
+
+  function _timerDone(){
+    clearInterval(_tInterval); _tInterval = null;
+    _tRunning = false; cancelAnimationFrame(_dropAnim); _dropAnim = null;
+    _sandPct = 0;
+    var c = document.getElementById('timer-hglass');
+    if(c) drawHourglass(c, 0);
+    var disp = document.getElementById('timer-display');
+    if(disp){ disp.textContent = '00:00'; disp.classList.add('crit'); }
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = '!!! TIME IS UP — SCRAP•E NOTIFIED !!!';
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'START';
+    // Personality reaction
+    setTimeout(function(){
+      if(window.SCRAP_wave) window.SCRAP_wave();
+    }, 500);
+    setTimeout(function(){
+      if(window.SCRAP_laugh) window.SCRAP_laugh();
+    }, 2200);
+  }
+
+  function _timerPause(){
+    if(_tInterval){ clearInterval(_tInterval); _tInterval=null; }
+    if(_dropAnim){ cancelAnimationFrame(_dropAnim); _dropAnim=null; }
+    _tRunning = false;
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'START';
+  }
+
+  function _timerStart(){
+    if(_tDuration <= 0 || _tRemain <= 0) return;
+    _tRunning = true;
+    _tInterval = setInterval(_timerTick, 1000);
+    _dropY = 0;
+    _animateDrop();
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'PAUSE';
+  }
+
+  function _timerReset(){
+    _timerPause();
+    _tRemain = _tDuration;
+    _sandPct = 1.0;
+    _updateTimerUI();
+    // clear crit
+    var disp = document.getElementById('timer-display');
+    if(disp) disp.classList.remove('crit','warn');
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = 'SELECT DURATION';
+  }
+
+  function _setPreset(minutes){
+    _timerPause();
+    _tDuration = minutes * 60;
+    _tRemain   = _tDuration;
+    _sandPct   = 1.0;
+    document.querySelectorAll('.t-preset').forEach(function(el){
+      el.classList.toggle('t-pre-active', parseInt(el.dataset.m)===minutes);
+    });
+    var start = document.getElementById('timer-start-btn');
+    var reset = document.getElementById('timer-reset-btn');
+    if(start){ start.disabled=false; start.textContent='START'; }
+    if(reset){ reset.disabled=false; }
+    _updateTimerUI();
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = 'READY — PRESS START';
+  }
+
+  function _timerOnShow(){
+    // draw current state
+    var c = document.getElementById('timer-hglass');
+    if(c) drawHourglass(c, _sandPct);
+    _updateTimerUI();
+    if(_tDuration === 0){
+      var stat = document.getElementById('timer-status-txt');
+      if(stat) stat.textContent = 'SELECT DURATION';
+    }
+  }
+
+  // Wire up buttons once DOM is ready
+  document.addEventListener('DOMContentLoaded', function(){
+    var startBtn = document.getElementById('timer-start-btn');
+    var resetBtn = document.getElementById('timer-reset-btn');
+    if(startBtn) startBtn.addEventListener('click', function(){
+      if(_tRunning) _timerPause(); else _timerStart();
+    });
+    if(resetBtn) resetBtn.addEventListener('click', _timerReset);
+    document.querySelectorAll('.t-preset').forEach(function(el){
+      el.addEventListener('click', function(){ _setPreset(parseInt(el.dataset.m)); });
+    });
+  });
+
+  // expose for activateTool
+  window._timerOnShow = _timerOnShow;
+  window._timerPause  = _timerPause;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: STOPWATCH — tick ring + choppy dot + mark log
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var _wsRunning = false;
+  var _wsStart   = 0;   // Date.now() at start
+  var _wsAccum   = 0;   // ms accumulated before pause
+  var _wsRAF     = null;
+  var _wsMarks   = [];  // {label, ms}
+  var _wsDotPos  = 0;   // 0..1 fraction around perimeter
+  var _wsLastDotUpdate = 0;
+
+  function _wsElapsed(){ return _wsRunning ? _wsAccum + (Date.now()-_wsStart) : _wsAccum; }
+
+  function _fmtTime(ms){
+    var s = Math.floor(ms/1000);
+    var t = Math.floor((ms%1000)/100);
+    var m = Math.floor(s/60); s = s%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s+'.'+t;
+  }
+
+  /* ── Canvas draw ── */
+  function drawWatch(canvas, elapsedMs, dotPos){
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    var TICK_W = 14;  // px width of tick zone along each edge
+    var AMBER  = 'rgba(200,168,64,';
+    var GREEN  = 'rgba(0,255,68,';
+
+    var totalTicks = 60; // one per second of a minute, or just decorative
+    var elapsedSec = elapsedMs / 1000;
+
+    // Build perimeter path array: ticks along top, right, bottom, left edges
+    // Each tick is a rect placed along the border
+    var TICK_PX = 6; // each "pixel" block
+    var GAP = 2;
+    var ticksTop    = Math.floor(W / (TICK_PX + GAP));
+    var ticksRight  = Math.floor(H / (TICK_PX + GAP));
+    var ticksBottom = ticksTop;
+    var ticksLeft   = ticksRight;
+    var totalT      = ticksTop + ticksRight + ticksBottom + ticksLeft;
+
+    // current second index drives which ticks are "lit"
+    var secMod = Math.floor(elapsedSec) % totalT;
+    // "progress" within current second (0..1) for dot sub-step
+    var fracSec = (elapsedMs % 1000) / 1000;
+
+    function drawTick(x, y, w, h, lit, isMajor){
+      var baseAlpha = lit ? 0.85 : 0.18;
+      ctx.fillStyle = lit ? (GREEN+baseAlpha+')') : (AMBER+baseAlpha+')');
+      ctx.fillRect(x, y, w, h);
+      if(lit && isMajor){
+        ctx.fillStyle = GREEN+'0.3)';
+        ctx.fillRect(x-2, y-2, w+4, h+4);
+      }
+    }
+
+    var i;
+    // Top edge (left→right)
+    for(i=0; i<ticksTop; i++){
+      var tx = i*(TICK_PX+GAP);
+      var ty = TICK_W - TICK_PX;
+      var isMaj = (i % Math.round(ticksTop/6) === 0);
+      var ph = isMaj ? TICK_PX+3 : TICK_PX;
+      var lit = _wsRunning && (i <= secMod % ticksTop || secMod >= ticksTop);
+      drawTick(tx, TICK_W - ph, TICK_PX, ph, lit, isMaj);
+    }
+    // Right edge (top→bottom)
+    var rBase = ticksTop;
+    for(i=0; i<ticksRight; i++){
+      var ry = i*(TICK_PX+GAP);
+      var isMaj = (i % Math.round(ticksRight/6) === 0);
+      var pw = isMaj ? TICK_PX+3 : TICK_PX;
+      var lit = _wsRunning && (secMod >= rBase && i <= (secMod - rBase) % ticksRight);
+      drawTick(W - TICK_W, ry, pw, TICK_PX, lit, isMaj);
+    }
+    // Bottom edge (right→left)
+    var bBase = rBase + ticksRight;
+    for(i=0; i<ticksBottom; i++){
+      var bx = W - i*(TICK_PX+GAP) - TICK_PX;
+      var isMaj = (i % Math.round(ticksBottom/6) === 0);
+      var ph = isMaj ? TICK_PX+3 : TICK_PX;
+      var lit = _wsRunning && (secMod >= bBase && i <= (secMod - bBase) % ticksBottom);
+      drawTick(bx, H - TICK_W, TICK_PX, ph, lit, isMaj);
+    }
+    // Left edge (bottom→top)
+    var lBase = bBase + ticksBottom;
+    for(i=0; i<ticksLeft; i++){
+      var ly = H - i*(TICK_PX+GAP) - TICK_PX;
+      var isMaj = (i % Math.round(ticksLeft/6) === 0);
+      var pw = isMaj ? TICK_PX+3 : TICK_PX;
+      var lit = _wsRunning && (secMod >= lBase && i <= (secMod - lBase) % ticksLeft);
+      drawTick(0, ly, pw, TICK_PX, lit, isMaj);
+    }
+
+    // Chunky jumping dot — moves 1 tick per second (choppy)
+    if(_wsRunning || elapsedMs > 0){
+      var dotIdx = Math.floor(elapsedSec) % totalT;
+      var dx, dy;
+      if(dotIdx < ticksTop){
+        dx = dotIdx*(TICK_PX+GAP) + TICK_PX/2;
+        dy = TICK_W;
+      } else if(dotIdx < rBase + ticksRight){
+        dx = W - TICK_W - TICK_PX/2;
+        dy = (dotIdx-rBase)*(TICK_PX+GAP) + TICK_PX/2;
+      } else if(dotIdx < bBase + ticksBottom){
+        dx = W - (dotIdx-bBase)*(TICK_PX+GAP) - TICK_PX/2;
+        dy = H - TICK_W;
+      } else {
+        dx = TICK_W;
+        dy = H - (dotIdx-lBase)*(TICK_PX+GAP) - TICK_PX/2;
+      }
+      ctx.fillStyle = '#c8a840';
+      ctx.shadowColor = '#c8a840';
+      ctx.shadowBlur = 10;
+      ctx.fillRect(dx-5, dy-5, 10, 10);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  function _wsLoop(){
+    var ms = _wsElapsed();
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = _fmtTime(ms);
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, ms);
+    if(_wsRunning) _wsRAF = requestAnimationFrame(_wsLoop);
+  }
+
+  function _wsSizeCanvas(){
+    var c = document.getElementById('watch-canvas');
+    if(!c) return;
+    var pane = document.getElementById('crt-pane-watch');
+    if(!pane) return;
+    c.width  = pane.offsetWidth  || 566;
+    c.height = pane.offsetHeight || 388;
+  }
+
+  function _wsStart2(){
+    _wsRunning = true;
+    _wsStart = Date.now();
+    _wsRAF = requestAnimationFrame(_wsLoop);
+    var sb = document.getElementById('watch-start-btn');
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(sb) sb.textContent = 'PAUSE';
+    if(mb) mb.disabled = false;
+    if(rb) rb.disabled = false;
+  }
+
+  function _wsPause2(){
+    if(!_wsRunning) return;
+    _wsAccum += Date.now() - _wsStart;
+    _wsRunning = false;
+    cancelAnimationFrame(_wsRAF); _wsRAF = null;
+    var sb = document.getElementById('watch-start-btn');
+    if(sb) sb.textContent = 'START';
+  }
+
+  function _wsMark(){
+    var ms = _wsElapsed();
+    var lbl = 'MARK ' + (_wsMarks.length+1);
+    _wsMarks.push({label: lbl, ms: ms});
+    var el = document.getElementById('watch-marks');
+    if(el){
+      var line = document.createElement('div');
+      line.textContent = lbl + '  ' + _fmtTime(ms);
+      el.insertBefore(line, el.firstChild);
+      // keep max 4 visible
+      while(el.children.length > 4) el.removeChild(el.lastChild);
+    }
+  }
+
+  function _wsReset(){
+    _wsPause2();
+    _wsAccum = 0; _wsMarks = [];
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = '00:00.0';
+    var marks = document.getElementById('watch-marks');
+    if(marks) marks.innerHTML = '';
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(mb) mb.disabled = true;
+    if(rb) rb.disabled = true;
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, 0);
+  }
+
+  function _watchOnShow(){
+    _wsSizeCanvas();
+    var ms = _wsElapsed();
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, ms);
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = _fmtTime(ms);
+  }
+
+  function _watchPause(){ _wsPause2(); }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var sb = document.getElementById('watch-start-btn');
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(sb) sb.addEventListener('click', function(){
+      if(_wsRunning) _wsPause2(); else _wsStart2();
+    });
+    if(mb) mb.addEventListener('click', _wsMark);
+    if(rb) rb.addEventListener('click', _wsReset);
+  });
+
+  window._watchOnShow = _watchOnShow;
+  window._watchPause  = _watchPause;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: STUDENT PICKER — slot machine reel
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var _spRunning  = false;
+  var _spInterval = null;
+  var _spNames    = [];    // roster from CW_BIRTHDAYS
+  var _spPicked   = [];    // already picked this session (from sessionStorage)
+  var _spReelY    = 0;     // current CSS top of reel (px)
+  var _spItemH    = 46;    // matches .pick-name height
+  var _spSpeed    = 0;     // ms per step (lower = faster)
+  var _spPhase    = 'idle';// idle | spin | slow | done
+  var _spTarget   = null;  // name chosen
+  var _spStepT    = null;
+
+  var PICK_KEY = 'scrape_picked_' + (new Date().toDateString());
+
+  function _loadPicked(){
+    try{
+      var d = sessionStorage.getItem(PICK_KEY);
+      _spPicked = d ? JSON.parse(d) : [];
+    }catch(e){ _spPicked = []; }
+  }
+
+  function _savePicked(){
+    try{ sessionStorage.setItem(PICK_KEY, JSON.stringify(_spPicked)); }catch(e){}
+  }
+
+  function _getNames(){
+    var raw = (typeof CW_BIRTHDAYS !== 'undefined') ? CW_BIRTHDAYS : [];
+    if(!raw || !raw.length) return ['STUDENT A','STUDENT B','STUDENT C','STUDENT D','STUDENT E'];
+    return raw.map(function(r){ return (r.name||'').toUpperCase().trim(); }).filter(Boolean);
+  }
+
+  function _shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  function _buildReel(names){
+    var reel = document.getElementById('pick-reel');
+    if(!reel) return;
+    reel.innerHTML = '';
+    // 3 copies of shuffled list for seamless scroll effect
+    var pool = _shuffle(names).concat(_shuffle(names)).concat(_shuffle(names));
+    pool.forEach(function(n){
+      var d = document.createElement('div');
+      d.className = 'pick-name';
+      d.textContent = n;
+      reel.appendChild(d);
+    });
+    _spReelY = 0;
+    reel.style.top = '0px';
+  }
+
+  function _scrollReel(step){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    var winH = win.offsetHeight || 200;
+    var midY = winH/2 - _spItemH/2;
+    _spReelY -= step * _spItemH;
+    reel.style.top = _spReelY + 'px';
+  }
+
+  function _centerOnTarget(){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    var items = reel.querySelectorAll('.pick-name');
+    var winH = win.offsetHeight || 200;
+    var midRow = -1;
+    for(var i=0;i<items.length;i++){
+      if(items[i].textContent === _spTarget){
+        // pick one in the second third to avoid starting position
+        if(i > Math.floor(items.length/3) && i < Math.floor(2*items.length/3)){
+          midRow = i; break;
+        }
+      }
+    }
+    if(midRow < 0) midRow = Math.floor(items.length/2);
+    _spReelY = -(midRow * _spItemH) + (winH/2 - _spItemH/2);
+    reel.style.transition = 'top 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+    reel.style.top = _spReelY + 'px';
+    setTimeout(function(){
+      if(reel) reel.style.transition = '';
+    }, 380);
+  }
+
+  function _setStatus(msg){ var el=document.getElementById('pick-status'); if(el) el.childNodes[0].textContent=msg; }
+  function _setSub(msg){ var el=document.getElementById('pick-sub'); if(el) el.textContent=msg; }
+
+  function _highlightSelected(){
+    var reel = document.getElementById('pick-reel');
+    if(!reel) return;
+    var items = reel.querySelectorAll('.pick-name');
+    var win   = document.getElementById('pick-window');
+    var winH  = win ? win.offsetHeight : 200;
+    items.forEach(function(el){ el.classList.remove('pick-selected'); });
+    // find the item whose center is closest to win center
+    var target = winH/2;
+    var best = null, bestDist = Infinity;
+    items.forEach(function(el){
+      var top = _spReelY + el.offsetTop + _spItemH/2;
+      var dist = Math.abs(top - target);
+      if(dist < bestDist){ bestDist=dist; best=el; }
+    });
+    if(best) best.classList.add('pick-selected');
+  }
+
+  function _spinStep(){
+    var reel = document.getElementById('pick-reel');
+    if(!reel) return;
+
+    if(_spPhase === 'spin'){
+      _scrollReel(1);
+      // gradually slow down — after ~40 steps start slowing
+      if(_spSpeed < 180) _spSpeed += 6;
+    } else if(_spPhase === 'slow'){
+      _scrollReel(1);
+      _spSpeed += 20;
+      if(_spSpeed >= 350){
+        // land it
+        _spPhase = 'done';
+        clearInterval(_spStepT); _spStepT = null;
+        _centerOnTarget();
+        setTimeout(_onPicked, 420);
+        return;
+      }
+    }
+    // reschedule with new speed
+    clearInterval(_spStepT);
+    _spStepT = setInterval(_spinStep, _spSpeed);
+  }
+
+  function _onPicked(){
+    _spRunning = false;
+    _spPicked.push(_spTarget);
+    _savePicked();
+    _highlightSelected();
+
+    // remaining roster count
+    var remaining = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; }).length;
+
+    _setStatus('PARTICIPATION PROTOCOL ENGAGED');
+    _setSub(_spTarget + ' — SELECTED');
+
+    var btn = document.getElementById('pick-btn');
+    if(btn){ btn.textContent = remaining > 0 ? 'ENGAGE REEL' : 'RESET ROSTER'; }
+
+    // personality reactions
+    setTimeout(function(){ if(window.SCRAP_wave) window.SCRAP_wave(); }, 300);
+    setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, 2000);
+
+    // reset blink speed (was fast during spin)
+    var eyes = document.getElementById('p-eyes');
+    if(eyes) eyes.classList.remove('emo-excited');
+  }
+
+  function _startSpin(){
+    if(_spRunning) return;
+    _loadPicked();
+    _spNames = _getNames();
+
+    // check if all picked
+    var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+    if(!available.length){
+      // reset
+      _spPicked = []; _savePicked();
+      available = _spNames.slice();
+      _setStatus('ROSTER RESET — ALL STUDENTS CLEARED');
+    }
+
+    // choose target
+    _spTarget = available[Math.floor(Math.random() * available.length)];
+
+    // build reel
+    _buildReel(_spNames);
+
+    _spRunning = true;
+    _spPhase   = 'spin';
+    _spSpeed   = 40;  // ms per step — fast start
+
+    // eyes excited during spin
+    var eyes = document.getElementById('p-eyes');
+    if(eyes){
+      ['emo-idle','emo-happy','emo-concerned','emo-laugh','emo-sleepy','emo-squint']
+        .forEach(function(c){ eyes.classList.remove(c); });
+      eyes.classList.add('emo-excited');
+    }
+
+    _setStatus('SCANNING ROSTER...');
+    _setSub('STUDENT REEL ACTIVE');
+
+    var btn = document.getElementById('pick-btn');
+    if(btn) btn.textContent = 'SELECTING...';
+    if(btn) btn.disabled = true;
+
+    _spStepT = setInterval(_spinStep, _spSpeed);
+
+    // switch to slow phase after random spin time (1.8–3.2s)
+    var spinTime = 1800 + Math.random() * 1400;
+    setTimeout(function(){
+      if(_spPhase === 'spin'){
+        _spPhase = 'slow';
+        _spSpeed = 180;
+      }
+    }, spinTime);
+
+    setTimeout(function(){
+      if(btn) btn.disabled = false;
+    }, 4500);
+  }
+
+  function _pickerOnShow(){
+    _loadPicked();
+    _spNames = _getNames();
+    var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+    var remaining = available.length;
+    _setSub('ROSTER: '+ _spNames.length +' / PICKED: '+ _spPicked.length);
+    if(remaining <= 0){
+      _setStatus('ALL STUDENTS SELECTED — RESET TO CONTINUE');
+    } else {
+      _setStatus('READY — PRESS ENGAGE');
+    }
+    var reelEl = document.getElementById('pick-reel');
+    if(reelEl && !reelEl.children.length){
+      _buildReel(_spNames);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('pick-btn');
+    if(btn) btn.addEventListener('click', function(){
+      // if all picked, act as reset
+      _loadPicked();
+      _spNames = _getNames();
+      var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+      if(!available.length){
+        _spPicked = []; _savePicked();
+        _pickerOnShow(); return;
+      }
+      _startSpin();
+    });
+  });
+
+  window._pickerOnShow = _pickerOnShow;
+})();
 
 (async function boot(){
   /* immediate renders */
