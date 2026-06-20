@@ -236,7 +236,7 @@ html, body {
 }
 
 /* ── CRT MULTI-PANE SYSTEM ── */
-#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data {
+#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data, #crt-pane-scrape {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
   opacity: 0; pointer-events: none;
@@ -250,8 +250,47 @@ html, body {
 #p-crt.crt-news #crt-pane-news,
 #p-crt.crt-bell #crt-pane-bell,
 #p-crt.crt-standby #crt-pane-standby,
-#p-crt.crt-data #crt-pane-data {
+#p-crt.crt-data #crt-pane-data,
+#p-crt.crt-scrape #crt-pane-scrape {
   opacity: 1; pointer-events: auto;
+}
+/* ── SCRAP-E SAYS pane ── */
+#crt-pane-scrape {
+  align-items: center; justify-content: center;
+  padding: 24px 36px; text-align: center;
+  background: rgba(0,0,0,0.55);
+}
+@keyframes scrapeGlow {
+  0%,100%{ text-shadow: 0 0 14px var(--cw-green), 0 0 28px rgba(96,200,96,0.4); opacity:1; }
+  50%     { text-shadow: 0 0 22px var(--cw-green), 0 0 48px rgba(96,200,96,0.6); opacity:0.88; }
+}
+#scrape-says-txt {
+  font-family: var(--font-crt); font-size: 34px;
+  color: var(--cw-green); letter-spacing: 0.1em;
+  line-height: 1.5;
+  animation: scrapeGlow 2.2s ease-in-out infinite;
+}
+/* ── STAMP MOOD GLOW — overlay on SCRAP-E APPROVED in chassis image ── */
+#stamp-glow {
+  position: absolute;
+  left: 65px; top: 422px; width: 148px; height: 118px;
+  border-radius: 6px; pointer-events: none; z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 2s ease, background 2s ease;
+}
+@keyframes stampPulse { 0%,100%{opacity:0.9} 50%{opacity:0.45} }
+#stamp-glow.glow-open {
+  background: radial-gradient(ellipse at 50% 55%, rgba(80,200,80,0.28) 0%, transparent 70%);
+  opacity: 1; animation: stampPulse 4s ease-in-out infinite;
+}
+#stamp-glow.glow-warn {
+  background: radial-gradient(ellipse at 50% 55%, rgba(200,168,40,0.24) 0%, transparent 70%);
+  opacity: 1; animation: stampPulse 3s ease-in-out infinite;
+}
+#stamp-glow.glow-restricted {
+  background: radial-gradient(ellipse at 50% 55%, rgba(180,40,28,0.20) 0%, transparent 70%);
+  opacity: 0.8; animation: stampPulse 4.5s ease-in-out infinite;
 }
 /* ── BELL SCHEDULE PANE ── */
 #crt-bell-hdr {
@@ -995,6 +1034,10 @@ html, body {
       <div id="crt-pane-data">
         <div id="crt-data-lines"></div>
       </div>
+      <!-- PANE: SCRAP-E SAYS interruption -->
+      <div id="crt-pane-scrape">
+        <div id="scrape-says-txt"></div>
+      </div>
     </div>
 
     <!-- STATUS STRIP — period · countdown · pass policy -->
@@ -1106,6 +1149,9 @@ html, body {
     <div class="bulb bulb-sound" id="bsnd-2" style="left:1806px;top:261px"></div>
     <div class="bulb bulb-sound" id="bsnd-3" style="left:1806px;top:288px"></div>
     <div class="bulb bulb-sound" id="bsnd-4" style="left:1806px;top:313px"></div>
+
+    <!-- STAMP MOOD GLOW — soft overlay on SCRAP-E APPROVED area, reacts to pass status -->
+    <div id="stamp-glow"></div>
 
     <!-- LIGHT BULBS: SCRAP-E body -->
     <div class="bulb" id="bulb-big"   style="left:218px;top:955px"></div>
@@ -1595,8 +1641,16 @@ function renderStatus(){
     set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED','var(--cw-dim)',false);
   }
 
-  // Update SCRAP-E body lights and eye emotion to reflect current pass state + birthdays
+  // Update SCRAP-E body lights, stamp glow, and eye emotion
   updateBodyLights();
+  var sg=document.getElementById('stamp-glow');
+  if(sg){
+    var dotCls=(document.getElementById('st-pass-dot')||{}).className||'off';
+    sg.className = dotCls==='open'       ? 'glow-open'
+                 : dotCls==='warn'       ? 'glow-warn'
+                 : dotCls==='restricted' ? 'glow-restricted'
+                 : '';
+  }
   if(typeof decideEmotion==='function') decideEmotion();
 }
 
@@ -1869,14 +1923,136 @@ async function renderHonorRoll(){
 
   /* ── BELL SCHEDULE ── */
   function _fmt12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return (h%12||12)+':'+m+' '+(h>=12?'PM':'AM'); }
+  /* ── Contextual header strings — time + day aware ── */
+  /* Seeded pick — stable within a 5-minute window so header doesn't jump on re-render */
+  function _pick(arr){
+    var seed=Math.floor(Date.now()/300000); /* changes every 5 min */
+    return arr[seed%arr.length];
+  }
+
+  function _contextualBellHdr(){
+    var now=new Date(), nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    var day=now.getDay();
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    var tm2=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+
+    /* Birthday today — add to any slot */
+    var hasBdayToday=false;
+    if(typeof CW_BIRTHDAYS!=='undefined'){
+      var cm=now.getMonth()+1,cd=now.getDate();
+      hasBdayToday=CW_BIRTHDAYS.some(function(b){return b.month==cm&&b.day==cd;});
+    }
+    if(hasBdayToday) return _pick([
+      '★ HAPPY BIRTHDAY, COWBOYS ★',
+      '★ BIRTHDAY VIBES IN ROOM 27 ★',
+      '★ CELEBRATE TODAY, ROOM 27 ★',
+    ]);
+
+    /* Break / end of day checks */
+    if(sched){
+      for(var i=0;i<sched.periods.length;i++){
+        var p=sched.periods[i];
+        if(p.brk&&nm>=tm2(p.start)&&nm<tm2(p.end)){
+          var lbl=(p.label||'').toLowerCase();
+          if(lbl.indexOf('lunch')>-1) return _pick([
+            '★ ENJOY LUNCH · ROOM 27 ★',
+            '★ FUEL UP, COWBOYS ★',
+            '★ LUNCH BREAK · SIGNAL PAUSED ★',
+            '★ EAT WELL · GRIND HARDER ★',
+            '★ RECHARGE · ROOM 27 ★',
+          ]);
+          return _pick([
+            '★ GRAB A SNACK · BACK ON TIME ★',
+            '★ BRUNCH BREAK · ROOM 27 ★',
+            '★ RECHARGE · THEN BACK TO WORK ★',
+            '★ SHORT BREAK · MAKE IT COUNT ★',
+          ]);
+        }
+      }
+      var lastP=sched.periods[sched.periods.length-1];
+      if(nm>=tm2(lastP.start)&&nm<tm2(lastP.end)) return _pick([
+        '★ ALMOST THERE, COWBOYS ★',
+        '★ FINAL STRETCH · ROOM 27 ★',
+        '★ HOME STRETCH, COWBOYS ★',
+        '★ ONE MORE PERIOD · FINISH STRONG ★',
+        '★ LAST PUSH, ROOM 27 ★',
+      ]);
+      if(nm>=tm2(lastP.end)) return _pick([
+        '★ THAT\'S A WRAP · SEE YOU TOMORROW ★',
+        '★ DISMISSED · COWBOYS RIDE OUT ★',
+        '★ SIGNAL SIGNING OFF · ROOM 27 ★',
+        '★ GOOD WORK TODAY, COWBOYS ★',
+        '★ PACK UP · RIDE SAFE, COWBOYS ★',
+      ]);
+    }
+
+    /* Day-specific */
+    if(day===5) return _pick([
+      '★ HAPPY FRIDAY, COWBOYS ★',
+      '★ FRIDAY VIBES · ROOM 27 ★',
+      '★ ALMOST THE WEEKEND, COWBOYS ★',
+      '★ FRIDAY FINAL PUSH · LET\'S GO ★',
+      '★ FINISH FRIDAY STRONG, ROOM 27 ★',
+      '★ FRIDAY FEELS · ROOM 27 ★',
+    ]);
+    if(day===1) return _pick([
+      '★ WELCOME BACK, ROOM 27 ★',
+      '★ NEW WEEK · NEW WIN, COWBOYS ★',
+      '★ MONDAY MODE · ACTIVATED ★',
+      '★ FRESH START · ROOM 27 ★',
+      '★ MONDAY STRONG, COWBOYS ★',
+    ]);
+
+    /* Time of day */
+    if(nm<7*60+55) return _pick([
+      '★ GOOD MORNING, ROOM 27 ★',
+      '★ WELCOME IN, COWBOYS ★',
+      '★ RISE AND SHINE, ROOM 27 ★',
+      '★ MORNING SIGNAL ACTIVE ★',
+    ]);
+    if(nm<8*60+30) return _pick([
+      '★ RISE AND GRIND, COWBOYS ★',
+      '★ LET\'S GET TO WORK, ROOM 27 ★',
+      '★ TIME TO SHINE, COWBOYS ★',
+      '★ ENGINES ON, ROOM 27 ★',
+      '★ SADDLE UP, COWBOYS ★',
+    ]);
+
+    /* General class time */
+    var labels={regular:'REGULAR BELL',earlyRelease:'EARLY RELEASE',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',foggy:'FOGGY SCHEDULE',activity:'ACTIVITY DAY',codeDay:'CODE DAY'};
+    return _pick([
+      '★ '+(labels[window._cwSchedName]||'BELL SCHEDULE')+' ★',
+      '★ COWBOY WIRE · LIVE ★',
+      '★ SIGNAL ACTIVE · ROOM 27 ★',
+      '★ ON THE CLOCK, COWBOYS ★',
+      '★ ROOM 27 · LOCKED IN ★',
+      '★ WORK TIME, COWBOYS ★',
+    ]);
+  }
+
+  function _contextualNewsHdr(){
+    var now=new Date(), nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    var day=now.getDay();
+    var hasBdayToday=false;
+    if(typeof CW_BIRTHDAYS!=='undefined'){
+      var cm=now.getMonth()+1,cd=now.getDate();
+      hasBdayToday=CW_BIRTHDAYS.some(function(b){return b.month==cm&&b.day==cd;});
+    }
+    if(hasBdayToday) return _pick(['BIRTHDAY BROADCAST · ROOM 27','SPECIAL TRANSMISSION · TODAY\'S A BIG DAY']);
+    if(day===5) return _pick(['HAPPY FRIDAY BROADCAST','FRIDAY SIGNAL INTERCEPT','FRIDAY TRANSMISSION · ROOM 27']);
+    if(day===1) return _pick(['MONDAY MORNING SIGNAL','WEEKLY TRANSMISSION · ROOM 27','SIGNAL INTERCEPT: NEW WEEK']);
+    if(nm<9*60) return _pick(['MORNING SIGNAL INTERCEPT','EARLY TRANSMISSION · ROOM 27','A.M. BROADCAST · COWBOY WIRE']);
+    if(nm>=14*60) return _pick(['AFTERNOON TRANSMISSION','P.M. SIGNAL INTERCEPT','END-OF-DAY BROADCAST · ROOM 27']);
+    return _pick(['SCRAP-E SIGNAL INTERCEPT','COWBOY WIRE · LIVE FEED','INCOMING TRANSMISSION · ROOM 27','MIDDAY SIGNAL INTERCEPT']);
+  }
+
   function _renderBell(){
     var sched=(typeof getSchedule==='function')?getSchedule():null;
     if(!sched){ _startNews(); return; }
     var nm=(typeof nowMins==='function')?nowMins():0;
     var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
-    var labels={regular:'REGULAR BELL',earlyRelease:'EARLY RELEASE',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',foggy:'FOGGY SCHEDULE',activity:'ACTIVITY DAY',codeDay:'CODE DAY'};
     var hdr=document.getElementById('crt-bell-hdr');
-    if(hdr) hdr.textContent='★ '+(labels[window._cwSchedName]||'BELL SCHEDULE')+' ★';
+    if(hdr) hdr.textContent=_contextualBellHdr();
     var rows=document.getElementById('crt-bell-rows');
     if(!rows) return;
     var html='';
@@ -1982,11 +2158,158 @@ async function renderHonorRoll(){
   /* Re-highlight current period every minute while in bell mode */
   setInterval(function(){ if(CRT_MODE==='bell') _renderBell(); }, 60000);
 
+  /* ── Update news header contextually when switching to news mode ── */
+  var _origStartNews = _startNews;
+  _startNews = function(){
+    var el=document.getElementById('crt-label-text');
+    if(el) el.textContent=_contextualNewsHdr();
+    _origStartNews();
+  };
+
+  /* ── SCRAP-E SAYS interruption system ── */
+
+  /* General pool — shuffled on boot so order is never the same twice */
+  var SCRAPE_SAYS_GENERAL=[
+    'SCRAP-E SAYS:\nHYDRATE.\nSERIOUSLY.',
+    'SCRAP-E SAYS:\nEYES UP.\nPHONES DOWN.',
+    'SCRAP-E SAYS:\nSTAND UP. STRETCH.\nSIT BACK DOWN.',
+    'SCRAP-E SAYS:\nYOU GOT THIS,\nCOWBOYS.',
+    'SCRAP-E SAYS:\nRESPECT THE ROOM.',
+    'SCRAP-E SAYS:\nASK A GOOD\nQUESTION TODAY.',
+    'SCRAP-E SAYS:\nCOLLABORATE.\nDON\'T COPY.',
+    'SCRAP-E SAYS:\nBE THE REASON\nSOMEONE SMILES TODAY.',
+    'SCRAP-E SAYS:\nFOCUS.\nYOU\'RE ALMOST THERE.',
+    'SCRAP-E SAYS:\nYOUR EFFORT\nIS SHOWING.\nKEEP GOING.',
+    'SCRAP-E SAYS:\nONE GOOD IDEA\nCAN CHANGE EVERYTHING.',
+    'SCRAP-E SAYS:\nBE CURIOUS.\nASK WHY.',
+    'SCRAP-E SAYS:\nDON\'T JUST SIT THERE.\nCONTRIBUTE.',
+    'SCRAP-E SAYS:\nSMALL WINS STILL COUNT.\nCELEBRATE THEM.',
+    'SCRAP-E SAYS:\nROOM 27 DOESN\'T\nDO AVERAGE.',
+    'SCRAP-E SAYS:\nTAKE NOTES.\nFUTURE YOU WILL\nTHANK PRESENT YOU.',
+    'SCRAP-E SAYS:\nBE PRESENT.\nMIND AND BODY.',
+    'SCRAP-E SAYS:\nDRINK WATER.\nNOT JUST DR. PEPPER.',
+    'SCRAP-E SAYS:\nGROWTH MINDSET.\nACTIVATE.',
+    'SCRAP-E SAYS:\nIF YOU\'RE CONFUSED,\nASK.\nTHAT\'S THE JOB.',
+    'SCRAP-E SAYS:\nSHOW YOUR WORK.\nALWAYS.',
+    'SCRAP-E SAYS:\nLEARN SOMETHING\nNEW TODAY.',
+    'SCRAP-E SAYS:\nYOUR VOICE\nMATTERS IN THIS ROOM.',
+    'SCRAP-E SAYS:\nBE THE STUDENT\nYOUR TEACHER BRAGS ABOUT.',
+    'SCRAP-E SAYS:\nSTOP COMPARING.\nSTART IMPROVING.',
+    'SCRAP-E SAYS:\nTHINK FIRST.\nSPEAK SECOND.',
+    'SCRAP-E SAYS:\nONE DAY YOU\'LL THANK\nYOURSELF FOR TODAY.',
+    'SCRAP-E SAYS:\nMAKE TODAY WORTH\nTALKING ABOUT.',
+    'SCRAP-E SAYS:\nBE KIND.\nIT\'S FREE.',
+    'SCRAP-E SAYS:\nCHECK YOUR WORK.\nTWICE.',
+  ];
+  var SCRAPE_SAYS_FRIDAY=[
+    'SCRAP-E SAYS:\nHAPPY FRIDAY.\nYOU EARNED IT.',
+    'SCRAP-E SAYS:\nFRIDAY ENERGY.\nLET\'S GO, COWBOYS.',
+    'SCRAP-E SAYS:\nMAKE IT TO FRIDAY\nSTRONG.',
+    'SCRAP-E SAYS:\nFINISH THE WEEK\nLIKE A COWBOY.',
+    'SCRAP-E SAYS:\nFRIDAY IS NOT\nAN EXCUSE TO COAST.',
+    'SCRAP-E SAYS:\nGOOD WEEK?\nMAKE NEXT WEEK BETTER.',
+  ];
+  var SCRAPE_SAYS_MONDAY=[
+    'SCRAP-E SAYS:\nWELCOME BACK,\nROOM 27.',
+    'SCRAP-E SAYS:\nNEW WEEK.\nFRESH START. LET\'S GO.',
+    'SCRAP-E SAYS:\nMONDAY MODE:\nACTIVATED.',
+    'SCRAP-E SAYS:\nANOTHER WEEK,\nANOTHER CHANCE\nTO BE GREAT.',
+    'SCRAP-E SAYS:\nLEAVE WHATEVER\nHAPPENED OVER THE WEEKEND\nBEHIND. WE\'RE WORKING.',
+  ];
+
+  /* Shuffle array in-place (Fisher-Yates) */
+  function _shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+    }
+    return arr;
+  }
+  _shuffle(SCRAPE_SAYS_GENERAL);
+
+  var _ssIdx=0, _ssReturnMode='bell';
+
+  function _fireScrapeMsg(msg, duration){
+    var el=document.getElementById('scrape-says-txt');
+    if(el) el.innerHTML=msg.replace(/\n/g,'<br>');
+    _ssReturnMode=CRT_MODE;
+    setCRTMode('scrape');
+    setTimeout(function(){ setCRTMode(_ssReturnMode); }, duration||10000);
+  }
+
+  function _showScrapeSays(){
+    var now=new Date(), day=now.getDay();
+    var nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    if(nm<8*60||nm>15*60+15){ _scheduleScrapeSays(); return; }
+    if(CRT_MODE==='standby'||CRT_MODE==='data'||CRT_MODE==='scrape'){ _scheduleScrapeSays(); return; }
+
+    var pool=SCRAPE_SAYS_GENERAL.slice();
+    if(day===5) pool=pool.concat(SCRAPE_SAYS_FRIDAY);
+    if(day===1) pool=pool.concat(SCRAPE_SAYS_MONDAY);
+    var msg=pool[_ssIdx%pool.length]; _ssIdx++;
+
+    _fireScrapeMsg(msg, 10000);
+    setTimeout(_scheduleScrapeSays, 10500);
+  }
+
+  function _scheduleScrapeSays(){
+    setTimeout(_showScrapeSays, (22+Math.random()*8)*60*1000);
+  }
+
+  /* ── BIRTHDAY SHOUTOUT — once per period when today is someone's birthday ── */
+  var _lastBdayPeriod=null;
+
+  function _checkBirthdayShoutout(periodLabel){
+    if(periodLabel===_lastBdayPeriod) return; /* already fired this period */
+    _lastBdayPeriod=periodLabel;
+
+    var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+    var bdays=(typeof CW_BIRTHDAYS!=='undefined')?
+      CW_BIRTHDAYS.filter(function(b){return b.month==cm&&b.day==cd;}):[];
+    if(!bdays.length) return;
+
+    var names=bdays.map(function(b){return (b.name||'').toUpperCase();});
+    var nameStr=names.length===1?names[0]:
+      names.slice(0,-1).join(', ')+' & '+names[names.length-1];
+
+    var templates=[
+      '★ HAPPY BIRTHDAY ★\n'+nameStr+'!\nROOM 27 CELEBRATES YOU.',
+      'SCRAP-E SAYS:\nBIG DAY ALERT!\n'+nameStr+'\n— HAPPY BIRTHDAY!',
+      'SCRAP-E SAYS:\nROOM 27 SHOUTOUT:\nHAPPY BIRTHDAY,\n'+nameStr+'!',
+      'SCRAP-E SAYS:\n★ TODAY IS SPECIAL ★\n'+nameStr+' — HAVE AN\nAMAZING BIRTHDAY!',
+    ];
+    var msg=templates[Math.floor(Math.random()*templates.length)];
+
+    /* Fire 3 minutes into the period — let the class settle */
+    setTimeout(function(){
+      if(CRT_MODE==='standby'||CRT_MODE==='data') return;
+      _fireScrapeMsg(msg, 13000); /* birthday gets 13s */
+    }, 3*60*1000);
+  }
+
+  /* Patch _tick to call birthday check when period changes */
+  var _origTick=_tick;
+  _tick=function(){
+    _origTick();
+    /* Birthday check — runs after _tick updates state */
+    var sched2=(typeof getSchedule==='function')?getSchedule():null;
+    var nm2=(typeof nowMins==='function')?nowMins():0;
+    var tm2=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    if(sched2){
+      sched2.periods.forEach(function(p){
+        if(!p.brk&&nm2>=tm2(p.start)&&nm2<tm2(p.end)){
+          _checkBirthdayShoutout(p.label);
+        }
+      });
+    }
+  };
+
   /* startCRT() is called by loadAll() after news data is ready */
   window.startCRT = function(){
     _tick();
     setInterval(_tick, 30000);
     setInterval(function(){ if(CW_NEWS.length>0 && !_crtItems.length) _crtItems=CW_NEWS; }, 15000);
+    _scheduleScrapeSays();
   };
 })();
 
