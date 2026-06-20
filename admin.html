@@ -427,6 +427,38 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
     </div>
   </div>
  
+  <!-- SCRAP•E SETTINGS -->
+  <div class="sb-box" id="section-scrape-settings">
+    <div class="sb-box-hd">
+      <div><span>⚙ SCRAP•E Settings</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Controls for the SCRAP•E display screen · updates within 60s</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-size:13px;font-weight:600;">Lunch Lap</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;">SCRAP•E auto-runs a surprise lap 6–22 min after lunch starts.</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn" id="scrapeLunchLapBtn" onclick="scrapeToggleLunchLap()" style="min-width:64px;">Loading...</button>
+        <button class="btn" onclick="window.open('/display-scrape-v2.html?room='+ROOM,'_blank')" style="white-space:nowrap;">Open SCRAP•E Screen ↗</button>
+      </div>
+    </div>
+    <div style="padding:12px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--text-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Default CRT Pane on Startup</div>
+      <div style="display:flex;gap:16px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="radio" name="scrape-crt" value="timer"> Timer ⏳</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="radio" name="scrape-crt" value="watch"> Stopwatch ⏱</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="radio" name="scrape-crt" value="pick"> Student Picker 🎲</label>
+      </div>
+      <div class="f-hint" style="margin-top:8px;">Which panel shows when the display first loads or returns from EXIT.</div>
+    </div>
+    <div style="padding-top:14px;">
+      <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;">
+        <span style="font-size:11px;color:var(--text-3);min-height:16px;" id="scrapeSettingsStatus"></span>
+        <button class="sb-btn" onclick="scrapeSaveSettings()">Save SCRAP•E Settings</button>
+      </div>
+    </div>
+  </div>
+
   <!-- QUICK MESSAGE -->
   <div class="sb-box" id="section-messages">
     <div class="sb-box-hd">
@@ -795,6 +827,7 @@ async function unlockAdmin(){
   await loadBoards();
   await loadDisplayControls();
   orbLoadSettings();
+  scrapeLoadSettings();
   if(dcDirty){
     var toSave=Object.assign({},dcCats);toSave.display_order=dcOrder.slice();
     await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
@@ -1369,6 +1402,39 @@ async function orbSaveSettings(){
   }else{toast('Save failed',true);}
 }
   
+// ── SCRAP•E SETTINGS ──
+function scrapeLoadSettings(){
+  var cats=dcSettings?(dcSettings.global_categories||{}):{};
+  var lapOn=cats.scrape_lunch_lap!==false;
+  var defaultCrt=cats.scrape_default_crt||'timer';
+  var btn=document.getElementById('scrapeLunchLapBtn');
+  if(btn){btn.textContent=lapOn?'✓ On':'✗ Off';btn.className=lapOn?'btn accent':'btn danger';}
+  document.querySelectorAll('input[name="scrape-crt"]').forEach(function(r){r.checked=(r.value===defaultCrt);});
+}
+function scrapeToggleLunchLap(){
+  if(!dcSettings){toast('Log in first',true);return;}
+  var current=dcCats.scrape_lunch_lap!==false;
+  dcCats.scrape_lunch_lap=!current;
+  var btn=document.getElementById('scrapeLunchLapBtn');
+  if(btn){btn.textContent=!current?'✓ On':'✗ Off';btn.className=!current?'btn accent':'btn danger';}
+  dcDirty=true;dcUpdateDirty();
+}
+async function scrapeSaveSettings(){
+  if(!dcSettings){toast('Load settings first',true);return;}
+  var selectedCrt='timer';
+  document.querySelectorAll('input[name="scrape-crt"]').forEach(function(r){if(r.checked)selectedCrt=r.value;});
+  var toSave=Object.assign({},dcCats);
+  toSave.display_order=dcOrder.slice();
+  toSave.scrape_default_crt=selectedCrt;
+  var ok=await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
+  if(ok){
+    dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
+    var status=document.getElementById('scrapeSettingsStatus');
+    if(status){status.textContent='✓ Saved';setTimeout(function(){status.textContent='';},2500);}
+    toast('SCRAP•E settings saved — updates within 60s');
+  }else{toast('Save failed',true);}
+}
+
 // ── TOAST ──
 function toast(msg,isErr){var el=document.getElementById('toast');el.textContent=msg;el.className='show'+(isErr?' err':'');clearTimeout(el._t);el._t=setTimeout(function(){el.className='';},2500);}
 document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===document.getElementById('modal-overlay'))closeModal();});
