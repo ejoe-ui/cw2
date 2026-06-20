@@ -4453,8 +4453,10 @@ async function loadAll(){
     var countEl  = document.getElementById('lunch-count');
     if(!overlay || !quipEl || !countEl) return;
 
-    // Switch to watch pane and reset the stopwatch
-    if(typeof setCRTMode === 'function') setCRTMode('watch');
+    // Switch to watch pane via activateTool so _toolActive is set
+    // (prevents the CRT controller from overriding mode back to news during lunch)
+    if(typeof window.activateTool === 'function') window.activateTool('watch');
+    else if(typeof setCRTMode === 'function') setCRTMode('watch');
     if(typeof window._watchReset === 'function') window._watchReset();
 
     // Show quip
@@ -4479,10 +4481,12 @@ async function loadAll(){
           setTimeout(function(){
             overlay.style.display = 'none';
             if(typeof window._watchStart === 'function') window._watchStart();
-            // Run for 60 seconds, then return to previous mode
+            // Run for 60 seconds, then hand control back to the CRT controller
             setTimeout(function(){
               if(typeof window._watchPause === 'function') window._watchPause();
-              if(typeof setCRTMode === 'function') setCRTMode(prevMode);
+              // activateTool('exit') clears _toolActive → CRT controller resumes
+              if(typeof window.activateTool === 'function') window.activateTool('exit');
+              else if(typeof setCRTMode === 'function') setCRTMode(prevMode);
               // Reschedule for tomorrow (wait 12h so we don't double-fire today)
               setTimeout(_scheduleLunchLap, 12 * 3600000);
             }, 60000);
