@@ -384,25 +384,25 @@ html, body {
 #watch-overlay {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
+  align-items: center; justify-content: center; gap: 12px;
   pointer-events: none;
 }
 #watch-overlay > * { pointer-events: auto; }
 #watch-lbl {
   font-family: var(--font-mono); font-size: 10px;
-  letter-spacing: 0.22em; color: var(--cw-copper);
+  letter-spacing: 0.22em; color: #8a6030;
 }
 #watch-display {
-  font-family: var(--font-crt); font-size: 62px; line-height: 1;
-  color: var(--cw-green); letter-spacing: 0.05em;
-  text-shadow: 0 0 18px var(--cw-green), 0 0 36px rgba(0,255,68,0.25);
+  font-family: var(--font-crt); font-size: 96px; line-height: 1;
+  color: #00ff44; letter-spacing: 0.05em;
+  text-shadow: 0 0 24px #00ff44, 0 0 48px rgba(0,255,68,0.3);
 }
-#watch-btns { display: flex; gap: 8px; }
+#watch-btns { display: flex; gap: 10px; }
 #watch-marks {
-  font-family: var(--font-mono); font-size: 10px;
-  color: var(--cw-dim); letter-spacing: 0.1em;
-  text-align: center; max-height: 60px; overflow: hidden;
-  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: rgba(200,168,64,0.5); letter-spacing: 0.1em;
+  text-align: center; max-height: 66px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 3px;
 }
 
 /* ── PICKER PANE ── */
@@ -3677,8 +3677,6 @@ async function loadAll(){
   var _wsAccum   = 0;   // ms accumulated before pause
   var _wsRAF     = null;
   var _wsMarks   = [];  // {label, ms}
-  var _wsDotPos  = 0;   // 0..1 fraction around perimeter
-  var _wsLastDotUpdate = 0;
 
   function _wsElapsed(){ return _wsRunning ? _wsAccum + (Date.now()-_wsStart) : _wsAccum; }
 
@@ -3689,104 +3687,87 @@ async function loadAll(){
     return (m<10?'0':'')+m+':'+(s<10?'0':'')+s+'.'+t;
   }
 
-  /* ── Canvas draw ── */
-  function drawWatch(canvas, elapsedMs, dotPos){
+  /* ── Canvas draw — 60 ticks = 1 full circuit = 1 minute ── */
+  function drawWatch(canvas, elapsedMs){
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0,0,W,H);
 
-    var TICK_W = 14;  // px width of tick zone along each edge
-    var AMBER  = 'rgba(200,168,64,';
-    var GREEN  = 'rgba(0,255,68,';
-
-    var totalTicks = 60; // one per second of a minute, or just decorative
+    var INSET  = 26;   // distance from canvas edge to tick centre — keeps marks fully visible
+    var TOTAL  = 60;   // one tick per second, one circuit per minute
+    var hasStarted = elapsedMs > 0 || _wsRunning;
     var elapsedSec = elapsedMs / 1000;
+    var currentTick = Math.floor(elapsedSec) % TOTAL; // 0-59, choppy
 
-    // Build perimeter path array: ticks along top, right, bottom, left edges
-    // Each tick is a rect placed along the border
-    var TICK_PX = 6; // each "pixel" block
-    var GAP = 2;
-    var ticksTop    = Math.floor(W / (TICK_PX + GAP));
-    var ticksRight  = Math.floor(H / (TICK_PX + GAP));
-    var ticksBottom = ticksTop;
-    var ticksLeft   = ticksRight;
-    var totalT      = ticksTop + ticksRight + ticksBottom + ticksLeft;
+    // ── Build 60 tick positions proportionally around perimeter ──
+    var effW = W - 2*INSET;
+    var effH = H - 2*INSET;
+    var perim = 2*(effW + effH);
+    var spacing = perim / TOTAL;
 
-    // current second index drives which ticks are "lit"
-    var secMod = Math.floor(elapsedSec) % totalT;
-    // "progress" within current second (0..1) for dot sub-step
-    var fracSec = (elapsedMs % 1000) / 1000;
-
-    function drawTick(x, y, w, h, lit, isMajor){
-      var baseAlpha = lit ? 0.85 : 0.18;
-      ctx.fillStyle = lit ? (GREEN+baseAlpha+')') : (AMBER+baseAlpha+')');
-      ctx.fillRect(x, y, w, h);
-      if(lit && isMajor){
-        ctx.fillStyle = GREEN+'0.3)';
-        ctx.fillRect(x-2, y-2, w+4, h+4);
-      }
-    }
-
-    var i;
-    // Top edge (left→right)
-    for(i=0; i<ticksTop; i++){
-      var tx = i*(TICK_PX+GAP);
-      var ty = TICK_W - TICK_PX;
-      var isMaj = (i % Math.round(ticksTop/6) === 0);
-      var ph = isMaj ? TICK_PX+3 : TICK_PX;
-      var lit = _wsRunning && (i <= secMod % ticksTop || secMod >= ticksTop);
-      drawTick(tx, TICK_W - ph, TICK_PX, ph, lit, isMaj);
-    }
-    // Right edge (top→bottom)
-    var rBase = ticksTop;
-    for(i=0; i<ticksRight; i++){
-      var ry = i*(TICK_PX+GAP);
-      var isMaj = (i % Math.round(ticksRight/6) === 0);
-      var pw = isMaj ? TICK_PX+3 : TICK_PX;
-      var lit = _wsRunning && (secMod >= rBase && i <= (secMod - rBase) % ticksRight);
-      drawTick(W - TICK_W, ry, pw, TICK_PX, lit, isMaj);
-    }
-    // Bottom edge (right→left)
-    var bBase = rBase + ticksRight;
-    for(i=0; i<ticksBottom; i++){
-      var bx = W - i*(TICK_PX+GAP) - TICK_PX;
-      var isMaj = (i % Math.round(ticksBottom/6) === 0);
-      var ph = isMaj ? TICK_PX+3 : TICK_PX;
-      var lit = _wsRunning && (secMod >= bBase && i <= (secMod - bBase) % ticksBottom);
-      drawTick(bx, H - TICK_W, TICK_PX, ph, lit, isMaj);
-    }
-    // Left edge (bottom→top)
-    var lBase = bBase + ticksBottom;
-    for(i=0; i<ticksLeft; i++){
-      var ly = H - i*(TICK_PX+GAP) - TICK_PX;
-      var isMaj = (i % Math.round(ticksLeft/6) === 0);
-      var pw = isMaj ? TICK_PX+3 : TICK_PX;
-      var lit = _wsRunning && (secMod >= lBase && i <= (secMod - lBase) % ticksLeft);
-      drawTick(0, ly, pw, TICK_PX, lit, isMaj);
-    }
-
-    // Chunky jumping dot — moves 1 tick per second (choppy)
-    if(_wsRunning || elapsedMs > 0){
-      var dotIdx = Math.floor(elapsedSec) % totalT;
-      var dx, dy;
-      if(dotIdx < ticksTop){
-        dx = dotIdx*(TICK_PX+GAP) + TICK_PX/2;
-        dy = TICK_W;
-      } else if(dotIdx < rBase + ticksRight){
-        dx = W - TICK_W - TICK_PX/2;
-        dy = (dotIdx-rBase)*(TICK_PX+GAP) + TICK_PX/2;
-      } else if(dotIdx < bBase + ticksBottom){
-        dx = W - (dotIdx-bBase)*(TICK_PX+GAP) - TICK_PX/2;
-        dy = H - TICK_W;
+    var ticks = [];
+    for(var i=0; i<TOTAL; i++){
+      var dist = i * spacing;
+      var tx, ty, isVert;
+      if(dist <= effW){
+        tx = INSET + dist;        ty = INSET;        isVert = true;  // top
+      } else if(dist <= effW + effH){
+        tx = INSET + effW;        ty = INSET + (dist - effW);  isVert = false; // right
+      } else if(dist <= 2*effW + effH){
+        tx = INSET + effW - (dist - effW - effH);  ty = INSET + effH;  isVert = true; // bottom
       } else {
-        dx = TICK_W;
-        dy = H - (dotIdx-lBase)*(TICK_PX+GAP) - TICK_PX/2;
+        tx = INSET;  ty = INSET + effH - (dist - 2*effW - effH);  isVert = false; // left
       }
-      ctx.fillStyle = '#c8a840';
-      ctx.shadowColor = '#c8a840';
-      ctx.shadowBlur = 10;
-      ctx.fillRect(dx-5, dy-5, 10, 10);
+      ticks.push({x:tx, y:ty, v:isVert, i:i});
+    }
+
+    // ── Draw each tick ──
+    ticks.forEach(function(t){
+      var isMaj15 = (t.i % 15 === 0);
+      var isMaj5  = (t.i % 5  === 0) && !isMaj15;
+      var isLit   = hasStarted && (t.i <= currentTick);
+
+      // Tick rectangle dimensions (perpendicular to edge)
+      var thick = isMaj15 ? 7 : (isMaj5 ? 5 : 3);
+      var len   = isMaj15 ? 22 : (isMaj5 ? 15 : 9);
+
+      // Color
+      var color;
+      if(!isLit){
+        color = isMaj15 ? 'rgba(255,255,255,0.12)' :
+                isMaj5  ? 'rgba(200,168,64,0.14)'  :
+                          'rgba(0,200,50,0.12)';
+      } else {
+        color = isMaj15 ? '#ffffff' :
+                isMaj5  ? '#c8a840' :
+                          '#00cc44';
+      }
+
+      ctx.fillStyle = color;
+      if(isLit){
+        ctx.shadowColor = color;
+        ctx.shadowBlur  = isMaj15 ? 12 : (isMaj5 ? 8 : 4);
+      } else { ctx.shadowBlur = 0; }
+
+      // Draw — vertical tick (top/bottom) = tall rect; horizontal (left/right) = wide rect
+      if(t.v){
+        ctx.fillRect(t.x - thick/2, t.y - len/2, thick, len);
+      } else {
+        ctx.fillRect(t.x - len/2, t.y - thick/2, len, thick);
+      }
       ctx.shadowBlur = 0;
+    });
+
+    // ── Amber jumping dot at current tick (choppy — jumps 1 position per second) ──
+    if(hasStarted){
+      var dot = ticks[currentTick];
+      if(dot){
+        ctx.fillStyle   = '#c8a840';
+        ctx.shadowColor = '#c8a840';
+        ctx.shadowBlur  = 18;
+        ctx.fillRect(dot.x - 7, dot.y - 7, 14, 14);
+        ctx.shadowBlur = 0;
+      }
     }
   }
 
