@@ -270,6 +270,29 @@ html, body {
   line-height: 1.5;
   animation: scrapeGlow 2.2s ease-in-out infinite;
 }
+/* ── SCRAP•E ARM ── */
+#scrap-hand {
+  position: absolute;
+  left: 279px; top: 615px;
+  width: 84px; height: 130px;
+  transform-origin: 11px 118px;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes scrapeWave {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(-18deg); }
+  30%  { transform: rotate(4deg); }
+  45%  { transform: rotate(-20deg); }
+  60%  { transform: rotate(3deg); }
+  75%  { transform: rotate(-14deg); }
+  88%  { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+#scrap-hand.waving {
+  animation: scrapeWave 1.4s ease-in-out forwards;
+}
+
 /* ── NAV HOTSPOTS — transparent click zones over chassis image elements ── */
 #orb-hotspot, #cw-hotspot {
   position: absolute;
@@ -1164,6 +1187,11 @@ html, body {
         <div id="honor-inner"></div>
       </div>
     </div>
+
+    <!-- SCRAP•E ARM — separate layer, pivot at elbow (11px,118px from top-left of image) -->
+    <!-- PSD: x223,y492,w67,h104 × 1.25 → display: left279,top615,w84,h130 -->
+    <!-- pivot: PSD x232,y586 → display x290,y732 → relative to element: 11px,118px -->
+    <img id="scrap-hand" src="scrap-hand.png" alt="">
 
     <!-- SCRAP-E EYES -->
     <!-- scrap-float: animates eyes up/down to give idle life — no separate PSD layer needed -->
@@ -2530,6 +2558,56 @@ function playLaugh(){
   }, 1600);
 }
 window.SCRAP_laugh = playLaugh;
+
+/* ── Wave easter egg ────────────────────────────────────── */
+var _waveTimer = null;
+function playWave(){
+  if(_waveTimer) return;
+  var hand = document.getElementById('scrap-hand');
+  if(!hand) return;
+  hand.classList.remove('waving');
+  /* force reflow so animation restarts cleanly */
+  void hand.offsetWidth;
+  hand.classList.add('waving');
+  _waveTimer = setTimeout(function(){
+    hand.classList.remove('waving');
+    _waveTimer = null;
+    /* innocent eyes: pupils drift upward for ~2s then release */
+    var pl = document.getElementById('pupil-left');
+    var pr = document.getElementById('pupil-right');
+    if(pl && pr){
+      pl.style.transform = 'translate(-50%, calc(-50% - 7px))';
+      pr.style.transform = 'translate(-50%, calc(-50% - 7px))';
+      setTimeout(function(){
+        pl.style.transform = '';
+        pr.style.transform = '';
+      }, 2000);
+    }
+  }, 1500);
+}
+window.SCRAP_wave = playWave;
+
+/* Schedule 1-2 waves per period, only during school hours */
+(function scheduleWaves(){
+  var now = new Date();
+  var nm  = now.getHours()*60 + now.getMinutes();
+  var schoolStart = 7*60+45, schoolEnd = 15*60+30;
+  if(nm < schoolStart || nm >= schoolEnd){
+    /* check again next minute */
+    setTimeout(scheduleWaves, 60000); return;
+  }
+  var periodLen = 50; /* minutes — rough period length */
+  var wavesThisPeriod = Math.random() < 0.5 ? 1 : 2;
+  for(var i=0; i<wavesThisPeriod; i++){
+    /* fire somewhere in a random slice of the period, not in first 5 min */
+    var minDelay = (5 + i*20) * 60 * 1000;
+    var maxDelay = (periodLen - 5) / wavesThisPeriod * (i+1) * 60 * 1000;
+    var delay = minDelay + Math.random() * Math.max(0, maxDelay - minDelay);
+    setTimeout(playWave, delay);
+  }
+  /* reschedule for the next period */
+  setTimeout(scheduleWaves, periodLen * 60 * 1000);
+})();
 
 /* ── Blink / wink scheduler ────────────────────────────── */
 function _doBlink(left, right, dur){
