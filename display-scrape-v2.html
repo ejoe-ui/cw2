@@ -473,7 +473,7 @@ html, body {
 #pick-highlight {
   position: absolute; left: 0; right: 0;
   top: 50%; transform: translateY(-50%);
-  height: 46px;
+  height: 60px;
   background: rgba(200,168,64,0.1);
   box-shadow: 0 0 20px rgba(200,168,64,0.3);
   pointer-events: none; z-index: 2;
@@ -488,15 +488,17 @@ html, body {
   display: flex; flex-direction: column; align-items: center;
 }
 .pick-name {
-  height: 46px; line-height: 46px;
-  font-family: var(--font-crt); font-size: 22px;
+  height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-crt); font-size: 14px;
   letter-spacing: 0.08em; text-align: center;
   color: rgba(200,168,64,0.45); width: 100%;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   padding: 0 12px; box-sizing: border-box;
+  transition: font-size 0.08s, opacity 0.08s;
 }
 .pick-name.pick-selected {
-  color: var(--cw-highlight); font-size: 26px;
+  color: var(--cw-highlight);
   text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.5);
   opacity: 1;
 }
@@ -4192,7 +4194,7 @@ async function loadAll(){
   var _spRunning  = false;
   var _spPicked   = [];    // picked this session/period
   var _spReelY    = 0;
-  var _spItemH    = 46;
+  var _spItemH    = 60;
   var _spSpeed    = 0;
   var _spPhase    = 'idle';
   var _spTarget   = null;
@@ -4276,6 +4278,29 @@ async function loadAll(){
     return a;
   }
 
+  // 3D perspective — font sizes and opacities by slot distance from center
+  // slot 0=center(biggest), 1=±1, 2=±2, 3=±3(smallest)
+  var _3D_SIZES = [44, 30, 20, 14];
+  var _3D_OPACS = [1.0, 0.70, 0.45, 0.22];
+
+  function _apply3D(){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    var winH = win.offsetHeight;
+    var centerY = winH / 2;
+    var items = reel.querySelectorAll('.pick-name');
+    items.forEach(function(el){
+      var itemCenter = _spReelY + el.offsetTop + _spItemH / 2;
+      var slotDist = (itemCenter - centerY) / _spItemH;
+      var absDist = Math.round(Math.abs(slotDist));
+      if(Math.abs(slotDist) >= 5){ el.style.fontSize='10px'; el.style.opacity='0.08'; return; }
+      var idx = Math.min(absDist, _3D_SIZES.length - 1);
+      el.style.fontSize = _3D_SIZES[idx] + 'px';
+      el.style.opacity  = _3D_OPACS[idx];
+    });
+  }
+
   function _buildReel(names){
     var reel = document.getElementById('pick-reel');
     if(!reel) return;
@@ -4290,16 +4315,17 @@ async function loadAll(){
     });
     _spReelY = 0;
     reel.style.top = '0px';
+    _apply3D();
   }
 
   function _scrollReel(step){
     var reel = document.getElementById('pick-reel');
     var win  = document.getElementById('pick-window');
     if(!reel || !win) return;
-    var winH = win.offsetHeight || 200;
-    var midY = winH/2 - _spItemH/2;
-    _spReelY -= step * _spItemH;
+    // += scrolls downward (names enter from top, exit at bottom)
+    _spReelY += step * _spItemH;
     reel.style.top = _spReelY + 'px';
+    _apply3D();
   }
 
   function _centerOnTarget(){
@@ -4308,10 +4334,11 @@ async function loadAll(){
     if(!reel || !win) return;
     var items = reel.querySelectorAll('.pick-name');
     var winH = win.offsetHeight || 200;
+    // For downward scroll we want the target in the FIRST third
+    // (we start at bottom of reel and scroll up toward lower indices)
     var midRow = -1;
     for(var i=0;i<items.length;i++){
       if(items[i].textContent === _spTarget){
-        // pick one in the second third to avoid starting position
         if(i > Math.floor(items.length/3) && i < Math.floor(2*items.length/3)){
           midRow = i; break;
         }
@@ -4322,7 +4349,7 @@ async function loadAll(){
     reel.style.transition = 'top 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
     reel.style.top = _spReelY + 'px';
     setTimeout(function(){
-      if(reel) reel.style.transition = '';
+      if(reel){ reel.style.transition = ''; _apply3D(); }
     }, 380);
   }
 
@@ -4413,8 +4440,15 @@ async function loadAll(){
     // choose target
     _spTarget = available[Math.floor(Math.random() * available.length)];
 
-    // build reel
+    // build reel then set start position at BOTTOM for downward scroll
     _buildReel(names);
+    var _winEl = document.getElementById('pick-window');
+    var _winH  = _winEl ? _winEl.offsetHeight : 200;
+    var _reelEl = document.getElementById('pick-reel');
+    var _totalItems = _reelEl ? _reelEl.children.length : 0;
+    _spReelY = -(_totalItems * _spItemH) + _winH;
+    if(_reelEl){ _reelEl.style.top = _spReelY + 'px'; }
+    _apply3D();
 
     _spRunning = true;
     _spPhase   = 'spin';
