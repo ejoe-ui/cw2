@@ -4221,6 +4221,7 @@ async function loadAll(){
   var _spSpeed    = 0;
   var _spPhase    = 'idle';
   var _spTarget   = null;
+  var _spTargetY  = null;  // pre-calc'd reel Y for target slot
   var _spStepT    = null;
 
   function _pickKey(){ return 'scrape_picked_'+ROOM+'_P'+(_pickPeriod||'X')+'_'+(new Date().toDateString()); }
@@ -4311,8 +4312,7 @@ async function loadAll(){
     var win  = document.getElementById('pick-window');
     if(!reel || !win) return;
     var winH = win.offsetHeight;
-    // Bias center slightly upward to compensate for downward-scroll visual lag
-    var centerY = winH / 2 - _spItemH * 0.18;
+    var centerY = winH / 2;
     var items = reel.querySelectorAll('.pick-name');
     items.forEach(function(el){
       var itemCenter = _spReelY + el.offsetTop + _spItemH / 2;
@@ -4421,50 +4421,102 @@ async function loadAll(){
 
   function _spinStep(){
     var reel = document.getElementById('pick-reel');
-    if(!reel) return;
+    if(!reel || !_spRunning) return;
 
     if(_spPhase === 'spin'){
       _scrollReel(1);
-      if(_spSpeed < 150) _spSpeed += 5;
+      if(_spSpeed > 80) _spSpeed -= 4; // ramp to peak 80ms
+      clearInterval(_spStepT);
+      _spStepT = setInterval(_spinStep, _spSpeed);
+
     } else if(_spPhase === 'slow'){
-      _scrollReel(1);
-      _spSpeed += 11; // gentle ramp — takes ~5s to decelerate
-      if(_spSpeed >= 440){
-        _spPhase = 'done';
+      // Calculate exact target on first slow step (window is now fully expanded)
+      if(_spTargetY === null){
+        var win = document.getElementById('pick-window');
+        var winH = win ? win.offsetHeight : 200;
+        var allItems = reel.querySelectorAll('.pick-name');
+        var midRow = -1;
+        for(var i=0;i<allItems.length;i++){
+          if(allItems[i].textContent === _spTarget){
+            if(i > Math.floor(allItems.length/3) && i < Math.floor(2*allItems.length/3)){
+              midRow = i; break;
+            }
+          }
+        }
+        if(midRow < 0) midRow = Math.floor(allItems.length/2);
+        _spTargetY = -(midRow * _spItemH) + (winH/2 - _spItemH/2);
+      }
+
+      var remaining = _spTargetY - _spReelY;
+
+      // Within final slot — land it (tiny sub-slot snap, barely visible)
+      if(remaining <= _spItemH * 0.65){
+        _spPhase = 'done'; _spRunning = false;
         clearInterval(_spStepT); _spStepT = null;
-        _centerOnTarget();
-        setTimeout(_onPicked, 420);
+        _spReelY = _spTargetY;
+        reel.style.top = _spReelY + 'px';
+        _apply3D();
+        setTimeout(_onPicked, 250);
         return;
       }
+
+      _scrollReel(1); // one slot toward target
+      var slotsLeft = (_spTargetY - _spReelY) / _spItemH;
+
+      // Speed curve — creeps slower as it approaches target
+      var next;
+      if(slotsLeft > 14)     next = 95;
+      else if(slotsLeft > 10) next = 155;
+      else if(slotsLeft > 7)  next = 260;
+      else if(slotsLeft > 5)  next = 420;
+      else if(slotsLeft > 3)  next = 680;
+      else if(slotsLeft > 2)  next = 1000;
+      else if(slotsLeft > 1)  next = 1500;
+      else                    next = 2200; // last slot — max suspense
+
+      clearInterval(_spStepT);
+      _spStepT = setInterval(_spinStep, next);
     }
-    // reschedule with new speed
-    clearInterval(_spStepT);
-    _spStepT = setInterval(_spinStep, _spSpeed);
   }
 
   function _onPicked(){
     _spRunning = false;
-    _pickSetSpinMode(false);
     _spPicked.push(_spTarget);
     _savePicked();
     _highlightSelected();
+    _apply3D();
 
-    // remaining roster count
     var remaining = _getNames().filter(function(n){ return _spPicked.indexOf(n) < 0; }).length;
-
     _setStatus('PARTICIPATION PROTOCOL ENGAGED');
     _setSub(_spTarget + ' — SELECTED');
 
     var btn = document.getElementById('pick-btn');
-    if(btn){ btn.textContent = remaining > 0 ? 'ENGAGE REEL' : 'RESET ROSTER'; }
+    if(btn){ btn.textContent = remaining > 0 ? 'ENGAGE REEL' : 'RESET ROSTER'; btn.disabled = false; }
 
-    // personality reactions
     setTimeout(function(){ if(window.SCRAP_wave) window.SCRAP_wave(); }, 300);
     setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, 2000);
 
-    // reset blink speed (was fast during spin)
     var eyes = document.getElementById('p-eyes');
     if(eyes) eyes.classList.remove('emo-excited');
+
+    // Hold expanded view so name shows centered, then contract + reposition
+    setTimeout(function(){
+      _pickSetSpinMode(false);
+      // After CSS collapse completes, re-center reel in the smaller window
+      setTimeout(function(){
+        var reel2 = document.getElementById('pick-reel');
+        var win2  = document.getElementById('pick-window');
+        if(!reel2 || !win2) return;
+        var sel = reel2.querySelector('.pick-selected');
+        if(!sel) return;
+        var idx = Array.prototype.indexOf.call(reel2.children, sel);
+        _spReelY = -(idx * _spItemH) + (win2.offsetHeight/2 - _spItemH/2);
+        reel2.style.transition = 'top 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
+        reel2.style.top = _spReelY + 'px';
+        _apply3D();
+        setTimeout(function(){ reel2.style.transition = ''; }, 420);
+      }, 340); // wait for contract CSS transition
+    }, 900); // show result in full expanded view first
   }
 
   function _startSpin(){
@@ -4494,9 +4546,10 @@ async function loadAll(){
     if(_reelEl){ _reelEl.style.top = _spReelY + 'px'; }
     _apply3D();
 
-    _spRunning = true;
-    _spPhase   = 'spin';
-    _spSpeed   = 40;  // ms per step — fast start
+    _spRunning  = true;
+    _spPhase    = 'spin';
+    _spSpeed    = 160; // start moderate — will ramp to 80ms peak
+    _spTargetY  = null; // calculated in first slow step after expansion
 
     // eyes excited during spin
     var eyes = document.getElementById('p-eyes');
@@ -4516,18 +4569,15 @@ async function loadAll(){
 
     _spStepT = setInterval(_spinStep, _spSpeed);
 
-    // switch to slow phase after random spin time (1.8–3.2s)
-    var spinTime = 1800 + Math.random() * 1400;
+    // Short fast phase (0.6–1.1s) — the SLOW CREEP is the main event
+    var spinTime = 600 + Math.random() * 500;
     setTimeout(function(){
       if(_spPhase === 'spin'){
         _spPhase = 'slow';
-        _spSpeed = 180;
+        _spTargetY = null; // will be measured after expansion
+        _spSpeed = 95;
       }
     }, spinTime);
-
-    setTimeout(function(){
-      if(btn) btn.disabled = false;
-    }, 4500);
   }
 
   function _pickerOnShow(){
