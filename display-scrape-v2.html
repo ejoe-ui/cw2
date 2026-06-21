@@ -588,6 +588,19 @@ html, body {
 #scrap-hand.waving {
   animation: scrapeWave 1.4s ease-in-out forwards;
 }
+/* Spin-the-wheel arm: slow wind-up, fast downward thrust, settle */
+@keyframes scrapeSpinArm {
+  0%   { transform: rotate(0deg); }      /* rest */
+  44%  { transform: rotate(-34deg); }    /* max pullback — slow draw */
+  60%  { transform: rotate(32deg); }     /* fast thrust downward — WHEEL STARTS HERE */
+  72%  { transform: rotate(-12deg); }    /* overshoot rebound */
+  83%  { transform: rotate(7deg); }      /* settle */
+  92%  { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }      /* back to rest */
+}
+#scrap-hand.spin-arm {
+  animation: scrapeSpinArm 1.7s linear forwards;
+}
 
 /* ── NAV HOTSPOTS — transparent click zones over chassis image elements ── */
 #orb-hotspot, #cw-hotspot {
@@ -3020,6 +3033,38 @@ function playWave(){
 }
 window.SCRAP_wave = playWave;
 
+/* ── Spin-wheel arm action ───────────────────────────────── */
+var _spinArmTimer = null;
+function playSpinArm(onThrust){
+  var hand = document.getElementById('scrap-hand');
+  if(!hand) return;
+  // Cancel any current arm animation
+  hand.classList.remove('waving', 'spin-arm');
+  void hand.offsetWidth; // force reflow so animation restarts
+  hand.classList.add('spin-arm');
+
+  // Look determined during wind-up
+  var eyes = document.getElementById('p-eyes');
+  if(eyes){
+    ['emo-idle','emo-happy','emo-concerned','emo-laugh','emo-sleepy','emo-excited']
+      .forEach(function(c){ eyes.classList.remove(c); });
+    eyes.classList.add('emo-squint');
+  }
+
+  // Reel fires at 60% of 1.7s = ~1.02s (max thrust point)
+  clearTimeout(_spinArmTimer);
+  _spinArmTimer = setTimeout(function(){
+    if(typeof onThrust === 'function') onThrust();
+  }, 1020);
+
+  // Clean up class after animation finishes
+  setTimeout(function(){
+    if(hand) hand.classList.remove('spin-arm');
+    _spinArmTimer = null;
+  }, 1750);
+}
+window.SCRAP_spinArm = playSpinArm;
+
 /* Schedule 1-2 waves per period, only during school hours */
 (function scheduleWaves(){
   var now = new Date();
@@ -4493,8 +4538,14 @@ async function loadAll(){
     var btn = document.getElementById('pick-btn');
     if(btn){ btn.textContent = remaining > 0 ? 'ENGAGE REEL' : 'RESET ROSTER'; btn.disabled = false; }
 
-    setTimeout(function(){ if(window.SCRAP_wave) window.SCRAP_wave(); }, 300);
-    setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, 2000);
+    // 5% chance wave — rare enough to feel special
+    if(Math.random() < 0.05){
+      setTimeout(function(){ if(window.SCRAP_wave) window.SCRAP_wave(); }, 400);
+    }
+    // 30% chance laugh
+    if(Math.random() < 0.30){
+      setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, 1800);
+    }
 
     var eyes = document.getElementById('p-eyes');
     if(eyes) eyes.classList.remove('emo-excited');
@@ -4607,7 +4658,15 @@ async function loadAll(){
         _spPicked = []; _savePicked();
         _pickerOnShow(); return;
       }
-      _startSpin();
+      // Disable button immediately — arm wind-up in progress
+      btn.disabled = true;
+      btn.textContent = 'WINDING UP...';
+      // SCRAP•E winds up and thrusts at the reel — spin starts at thrust peak
+      if(window.SCRAP_spinArm){
+        window.SCRAP_spinArm(function(){ _startSpin(); });
+      } else {
+        _startSpin();
+      }
     });
   });
 
