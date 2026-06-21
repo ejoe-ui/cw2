@@ -458,11 +458,34 @@ html, body {
   letter-spacing: 0.2em; color: var(--cw-amber);
   text-align: center; flex-shrink: 0;
   text-shadow: 0 0 8px rgba(200,168,64,0.4);
+  max-height: 60px; overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
 }
 #pick-sub {
   font-family: var(--font-mono); font-size: 9px;
   letter-spacing: 0.18em; color: var(--cw-dim);
   text-align: center; flex-shrink: 0;
+  max-height: 40px; overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+#pick-status {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 30px; overflow: hidden;
+}
+#pick-btn {
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+  max-height: 60px; overflow: hidden;
+}
+/* Spinning state — collapse chrome, give reel all the space */
+#crt-pane-pick.pick-spinning #pick-hdr,
+#crt-pane-pick.pick-spinning #pick-period-row,
+#crt-pane-pick.pick-spinning #pick-sub,
+#crt-pane-pick.pick-spinning #pick-status,
+#crt-pane-pick.pick-spinning #pick-btn {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0 !important; margin-bottom: 0 !important;
+  padding-top: 0 !important; padding-bottom: 0 !important;
 }
 #pick-window {
   flex: 1; width: 100%; position: relative;
@@ -4288,17 +4311,39 @@ async function loadAll(){
     var win  = document.getElementById('pick-window');
     if(!reel || !win) return;
     var winH = win.offsetHeight;
-    var centerY = winH / 2;
+    // Bias center slightly upward to compensate for downward-scroll visual lag
+    var centerY = winH / 2 - _spItemH * 0.18;
     var items = reel.querySelectorAll('.pick-name');
     items.forEach(function(el){
       var itemCenter = _spReelY + el.offsetTop + _spItemH / 2;
-      var slotDist = (itemCenter - centerY) / _spItemH;
-      var absDist = Math.round(Math.abs(slotDist));
-      if(Math.abs(slotDist) >= 5){ el.style.fontSize='10px'; el.style.opacity='0.08'; return; }
-      var idx = Math.min(absDist, _3D_SIZES.length - 1);
-      el.style.fontSize = _3D_SIZES[idx] + 'px';
-      el.style.opacity  = _3D_OPACS[idx];
+      var dist = Math.abs(itemCenter - centerY) / _spItemH;
+      if(dist >= 5){ el.style.fontSize='10px'; el.style.opacity='0.08'; return; }
+      // Smooth interpolation between size/opacity stops
+      var fontSize, opacity;
+      if(dist < 0.5){
+        fontSize = 44; opacity = 1.0;
+      } else if(dist < 1.5){
+        var t = dist - 0.5;
+        fontSize = 44 - t * (44 - 30); opacity = 1.0 - t * 0.30;
+      } else if(dist < 2.5){
+        var t = dist - 1.5;
+        fontSize = 30 - t * (30 - 20); opacity = 0.70 - t * 0.25;
+      } else if(dist < 3.5){
+        var t = dist - 2.5;
+        fontSize = 20 - t * (20 - 14); opacity = 0.45 - t * 0.23;
+      } else {
+        fontSize = 10; opacity = 0.08;
+      }
+      el.style.fontSize = Math.round(fontSize) + 'px';
+      el.style.opacity  = opacity.toFixed(2);
     });
+  }
+
+  function _pickSetSpinMode(on){
+    var pane = document.getElementById('crt-pane-pick');
+    if(!pane) return;
+    if(on) pane.classList.add('pick-spinning');
+    else   pane.classList.remove('pick-spinning');
   }
 
   function _buildReel(names){
@@ -4380,13 +4425,11 @@ async function loadAll(){
 
     if(_spPhase === 'spin'){
       _scrollReel(1);
-      // gradually slow down — after ~40 steps start slowing
-      if(_spSpeed < 180) _spSpeed += 6;
+      if(_spSpeed < 150) _spSpeed += 5;
     } else if(_spPhase === 'slow'){
       _scrollReel(1);
-      _spSpeed += 20;
-      if(_spSpeed >= 350){
-        // land it
+      _spSpeed += 11; // gentle ramp — takes ~5s to decelerate
+      if(_spSpeed >= 440){
         _spPhase = 'done';
         clearInterval(_spStepT); _spStepT = null;
         _centerOnTarget();
@@ -4401,6 +4444,7 @@ async function loadAll(){
 
   function _onPicked(){
     _spRunning = false;
+    _pickSetSpinMode(false);
     _spPicked.push(_spTarget);
     _savePicked();
     _highlightSelected();
@@ -4462,6 +4506,7 @@ async function loadAll(){
       eyes.classList.add('emo-excited');
     }
 
+    _pickSetSpinMode(true);
     _setStatus('SCANNING ROSTER...');
     _setSub('STUDENT REEL ACTIVE');
 
