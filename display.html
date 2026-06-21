@@ -2036,8 +2036,8 @@ function applyDisplayMode(idx, animate) {
 function setDialMode(idx) {
   var mode = DISPLAY_MODES[idx];
   if (mode && mode.redirect) {
-    if (mode.key === 'scrape') location.href = '/display-scrape-v2.html';
-    else location.href = '/display-orb.html';
+    if (mode.key === 'scrape') location.href = '/display-scrape-v2.html?room='+ROOM;
+    else location.href = '/display-orb.html?room='+ROOM;
     return;
   }
   dialModeIdx = idx;

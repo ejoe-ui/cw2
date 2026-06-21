@@ -1620,10 +1620,10 @@ window.addEventListener('resize', function(){
 
 /* ── NAV HOTSPOT CLICKS ── */
 document.getElementById('orb-hotspot').addEventListener('click', function(){
-  window.location.href = '/display-orb.html';
+  window.location.href = '/display-orb.html' + (ROOM ? '?room='+ROOM : '');
 });
 document.getElementById('cw-hotspot').addEventListener('click', function(){
-  window.location.href = '/display.html';
+  window.location.href = '/display.html' + (ROOM ? '?room='+ROOM : '');
 });
 
 /* ═══════════════════════════════════════════════════════════
@@ -1666,6 +1666,7 @@ async function loadNoMedia(){
 
 /* ROOM CONFIG */
 async function loadRoomConfig(){
+  if(!ROOM){ CLASSROOM=null; SETTINGS=null; return; }
   var cls = await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');
   var stg = await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=*');
   CLASSROOM = (cls&&cls[0]) ? cls[0] : null;
@@ -1826,6 +1827,7 @@ function getUpcomingEvents(ds){
 /* BIRTHDAYS */
 var CW_BIRTHDAYS = [];
 async function loadBirthdays(){
+  if(!ROOM){ CW_BIRTHDAYS=[]; return; }
   var rows=await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&select=*');
   CW_BIRTHDAYS=rows||[];
 }
