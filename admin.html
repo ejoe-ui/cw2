@@ -460,6 +460,24 @@ html,body{min-height:100vh;background:var(--bg);color:var(--text);font-family:'I
     </div>
   </div>
 
+  <!-- PICKER SETTINGS -->
+  <div class="sb-box" id="section-picker-settings">
+    <div class="sb-box-hd">
+      <div><span>🎲 Picker Settings</span><div style="font-size:10px;font-weight:400;color:var(--text-3);margin-top:1px;text-transform:none;letter-spacing:0;">Applies to student picker in both ORB and SCRAP•E displays</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+      <div>
+        <div style="font-size:13px;font-weight:600;">Include No-Media Students</div>
+        <div style="font-size:11px;color:var(--text-3);margin-top:2px;max-width:480px;line-height:1.5;">When ON, no-media students appear in the picker just like everyone else. Recommended — prevents other students from noticing who's missing from the list.</div>
+      </div>
+      <button class="btn" id="pickerNoMediaBtn" onclick="pickerToggleNoMedia()" style="min-width:64px;flex-shrink:0;margin-left:16px;">Loading...</button>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;align-items:center;padding-top:8px;border-top:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--text-3);min-height:16px;" id="pickerSettingsStatus"></span>
+      <button class="sb-btn" onclick="pickerSaveSettings()">Save Picker Settings</button>
+    </div>
+  </div>
+
   <!-- QUICK MESSAGE -->
   <div class="sb-box" id="section-messages">
     <div class="sb-box-hd">
@@ -829,6 +847,7 @@ async function unlockAdmin(){
   await loadDisplayControls();
   orbLoadSettings();
   scrapeLoadSettings();
+  pickerLoadSettings();
   if(dcDirty){
     var toSave=Object.assign({},dcCats);toSave.display_order=dcOrder.slice();
     await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
@@ -1433,6 +1452,34 @@ async function scrapeSaveSettings(){
     var status=document.getElementById('scrapeSettingsStatus');
     if(status){status.textContent='✓ Saved';setTimeout(function(){status.textContent='';},2500);}
     toast('SCRAP•E settings saved — updates within 60s');
+  }else{toast('Save failed',true);}
+}
+
+// ── PICKER SETTINGS ──
+function pickerLoadSettings(){
+  var cats=dcSettings?(dcSettings.global_categories||{}):{};
+  var incl=cats.picker_include_no_media===true;
+  var btn=document.getElementById('pickerNoMediaBtn');
+  if(btn){btn.textContent=incl?'✓ On':'✗ Off';btn.className=incl?'btn accent':'btn danger';}
+}
+function pickerToggleNoMedia(){
+  if(!dcSettings){toast('Log in first',true);return;}
+  var current=dcCats.picker_include_no_media===true;
+  dcCats.picker_include_no_media=!current;
+  var btn=document.getElementById('pickerNoMediaBtn');
+  if(btn){btn.textContent=!current?'✓ On':'✗ Off';btn.className=!current?'btn accent':'btn danger';}
+  dcDirty=true;dcUpdateDirty();
+}
+async function pickerSaveSettings(){
+  if(!dcSettings){toast('Load settings first',true);return;}
+  var toSave=Object.assign({},dcCats);
+  toSave.display_order=dcOrder.slice();
+  var ok=await sbPatch('cw2_settings?id=eq.'+dcSettings.id,{global_categories:toSave});
+  if(ok){
+    dcCats=toSave;dcSettings.global_categories=toSave;dcDirty=false;dcUpdateDirty();
+    var status=document.getElementById('pickerSettingsStatus');
+    if(status){status.textContent='✓ Saved';setTimeout(function(){status.textContent='';},2500);}
+    toast('Picker settings saved — updates within 60s');
   }else{toast('Save failed',true);}
 }
 

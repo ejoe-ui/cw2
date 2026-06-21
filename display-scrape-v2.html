@@ -507,6 +507,24 @@ html, body {
 }
 @keyframes pickCursor { 0%,100%{opacity:1} 50%{opacity:0} }
 #pick-cursor { animation: pickCursor 1s step-end infinite; }
+#pick-period-row {
+  display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; min-height: 22px;
+}
+.pick-period-btn {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px;
+  border: 1px solid rgba(200,168,64,0.3); background: transparent;
+  color: var(--cw-dim); cursor: pointer; transition: all 0.15s;
+}
+.pick-period-btn:hover { border-color: var(--cw-amber); color: var(--cw-amber); }
+.pick-period-btn.active {
+  background: rgba(200,168,64,0.15); border-color: var(--cw-amber);
+  color: var(--cw-amber); text-shadow: 0 0 6px rgba(200,168,64,0.4);
+}
+.pick-period-note {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
+  color: var(--cw-dim); text-align: center; padding: 3px 0;
+}
 /* ── SCRAP-E SAYS pane ── */
 #crt-pane-scrape {
   align-items: center; justify-content: center;
@@ -1428,7 +1446,8 @@ html, body {
       <!-- PANE: STUDENT PICKER -->
       <div id="crt-pane-pick">
         <div id="pick-hdr">SCRAP&#8226;E STUDENT SELECTOR</div>
-        <div id="pick-sub">ROSTER REEL ACTIVE</div>
+        <div id="pick-period-row"></div>
+        <div id="pick-sub"></div>
         <div id="pick-window">
           <div id="pick-highlight"></div>
           <div id="pick-reel"></div>
@@ -1613,7 +1632,7 @@ document.getElementById('cw-hotspot').addEventListener('click', function(){
 var SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
 var CAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD96rQC0gMI_vOU1SXdxpvcHtIo4tnXH3w_xpHOY50HnrJtCxNPQcSkNbdBVUgPE9SZg/exec';
-var ROOM = '27';
+var ROOM = new URLSearchParams(location.search).get('room') || '';
 var SETTINGS = null, CLASSROOM = null;
 
 async function sbFetch(table, query){
@@ -3413,6 +3432,7 @@ async function loadAll(){
   await loadCwEvents();
   await loadCwCalendar();
   await loadBirthdays();
+  await loadPickRoster();
   await loadSportDays();
   await loadInspiration();
   await loadWeather();
@@ -4155,38 +4175,95 @@ async function loadAll(){
 })();
 
 /* ═══════════════════════════════════════════════════════════════
-   TOOL: STUDENT PICKER — slot machine reel
+   TOOL: STUDENT PICKER — slot machine reel (reads cw2_roster)
    ═══════════════════════════════════════════════════════════════ */
 (function(){
+  // ── Roster state ──────────────────────────────────────────────
+  var _pickRoster  = {};   // { period: [{name, grade}] }
+  var _pickPeriods = [];   // sorted period keys
+  var _pickPeriod  = null; // currently selected period
+  var _pickPool    = [];   // names for current period (no-media filtered)
+  var _pickLoaded  = false;
+  var _pickLoading = false;
+
+  // ── Spin state ────────────────────────────────────────────────
   var _spRunning  = false;
-  var _spInterval = null;
-  var _spNames    = [];    // roster from CW_BIRTHDAYS
-  var _spPicked   = [];    // already picked this session (from sessionStorage)
-  var _spReelY    = 0;     // current CSS top of reel (px)
-  var _spItemH    = 46;    // matches .pick-name height
-  var _spSpeed    = 0;     // ms per step (lower = faster)
-  var _spPhase    = 'idle';// idle | spin | slow | done
-  var _spTarget   = null;  // name chosen
+  var _spPicked   = [];    // picked this session/period
+  var _spReelY    = 0;
+  var _spItemH    = 46;
+  var _spSpeed    = 0;
+  var _spPhase    = 'idle';
+  var _spTarget   = null;
   var _spStepT    = null;
 
-  var PICK_KEY = 'scrape_picked_' + (new Date().toDateString());
+  function _pickKey(){ return 'scrape_picked_'+ROOM+'_P'+(_pickPeriod||'X')+'_'+(new Date().toDateString()); }
+  function _loadPicked(){ try{ var d=sessionStorage.getItem(_pickKey()); _spPicked=d?JSON.parse(d):[]; }catch(e){ _spPicked=[]; } }
+  function _savePicked(){ try{ sessionStorage.setItem(_pickKey(), JSON.stringify(_spPicked)); }catch(e){} }
 
-  function _loadPicked(){
+  // ── Roster loading ────────────────────────────────────────────
+  window.loadPickRoster = async function(){
+    if(!ROOM){ _pickLoaded=true; _renderPeriodRow(); return; }
+    _pickLoading=true; _renderPeriodRow();
     try{
-      var d = sessionStorage.getItem(PICK_KEY);
-      _spPicked = d ? JSON.parse(d) : [];
-    }catch(e){ _spPicked = []; }
+      var rows = await sbFetch('cw2_roster','room=eq.'+ROOM+'&active=eq.true&order=student_name.asc');
+      var _gc = (window.SETTINGS && window.SETTINGS.global_categories) ? window.SETTINGS.global_categories : {};
+      var _includeNoMedia = _gc.picker_include_no_media === true;
+      _pickRoster = {};
+      (rows||[]).forEach(function(r){
+        if(!_includeNoMedia && cwBlocked(r.student_name)) return;
+        if(!_pickRoster[r.period]) _pickRoster[r.period]=[];
+        _pickRoster[r.period].push({ name:r.student_name, grade:r.grade||'' });
+      });
+      _pickPeriods = Object.keys(_pickRoster).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+      _pickLoading=false; _pickLoaded=true;
+      if(_pickPeriods.length){
+        var startP = (_pickPeriod && _pickRoster[_pickPeriod]) ? _pickPeriod : _pickPeriods[0];
+        _pickSelectPeriod(startP);
+      } else {
+        _renderPeriodRow();
+        _setStatus('NO ROSTER FOUND');
+        _setSub('UPLOAD VIA PICKER.HTML?ROOM='+ROOM);
+      }
+    }catch(e){ _pickLoading=false; _pickLoaded=true; _renderPeriodRow(); }
+  };
+
+  function _pickSelectPeriod(p){
+    _pickPeriod = p;
+    _pickPool = (_pickRoster[p]||[]).map(function(s){ return s.name.toUpperCase(); });
+    _loadPicked();
+    _renderPeriodRow();
+    var avail = _pickPool.filter(function(n){ return _spPicked.indexOf(n)<0; });
+    if(!avail.length){
+      _setStatus('ALL STUDENTS SELECTED — RESET TO CONTINUE');
+      _setSub('PERIOD '+p+' · '+_pickPool.length+' TOTAL');
+    } else {
+      _setStatus('READY — PRESS ENGAGE');
+      _setSub('PERIOD '+p+' · '+avail.length+'/'+_pickPool.length+' REMAINING');
+    }
+    _buildReel(_pickPool.length ? _pickPool : ['WAITING']);
+    var btn=document.getElementById('pick-btn');
+    if(btn){ btn.textContent='ENGAGE REEL'; btn.disabled=false; }
+  }
+  window._pickSelectPeriod = _pickSelectPeriod;
+
+  function _renderPeriodRow(){
+    var row = document.getElementById('pick-period-row');
+    if(!row) return;
+    if(_pickLoading){
+      row.innerHTML='<span class="pick-period-note">LOADING ROSTER…</span>'; return;
+    }
+    if(!_pickLoaded || !_pickPeriods.length){
+      row.innerHTML = ROOM
+        ? '<span class="pick-period-note">NO ROSTER · UPLOAD IN PICKER.HTML</span>'
+        : '<span class="pick-period-note">ADD ?ROOM=XX TO URL</span>';
+      return;
+    }
+    row.innerHTML = _pickPeriods.map(function(p){
+      return '<button class="pick-period-btn'+(_pickPeriod===p?' active':'')+'" onclick="window._pickSelectPeriod(\''+p+'\')">P'+p+'</button>';
+    }).join('');
   }
 
-  function _savePicked(){
-    try{ sessionStorage.setItem(PICK_KEY, JSON.stringify(_spPicked)); }catch(e){}
-  }
-
-  function _getNames(){
-    var raw = (typeof CW_BIRTHDAYS !== 'undefined') ? CW_BIRTHDAYS : [];
-    if(!raw || !raw.length) return ['STUDENT A','STUDENT B','STUDENT C','STUDENT D','STUDENT E'];
-    return raw.map(function(r){ return (r.name||'').toUpperCase().trim(); }).filter(Boolean);
-  }
+  function _getNames(){ return _pickPool.length ? _pickPool : []; }
 
   function _shuffle(arr){
     var a = arr.slice();
@@ -4300,7 +4377,7 @@ async function loadAll(){
     _highlightSelected();
 
     // remaining roster count
-    var remaining = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; }).length;
+    var remaining = _getNames().filter(function(n){ return _spPicked.indexOf(n) < 0; }).length;
 
     _setStatus('PARTICIPATION PROTOCOL ENGAGED');
     _setSub(_spTarget + ' — SELECTED');
@@ -4320,14 +4397,14 @@ async function loadAll(){
   function _startSpin(){
     if(_spRunning) return;
     _loadPicked();
-    _spNames = _getNames();
+    var names = _getNames();
+    if(!names.length) return;
 
     // check if all picked
-    var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+    var available = names.filter(function(n){ return _spPicked.indexOf(n) < 0; });
     if(!available.length){
-      // reset
       _spPicked = []; _savePicked();
-      available = _spNames.slice();
+      available = names.slice();
       _setStatus('ROSTER RESET — ALL STUDENTS CLEARED');
     }
 
@@ -4335,7 +4412,7 @@ async function loadAll(){
     _spTarget = available[Math.floor(Math.random() * available.length)];
 
     // build reel
-    _buildReel(_spNames);
+    _buildReel(names);
 
     _spRunning = true;
     _spPhase   = 'spin';
@@ -4373,29 +4450,28 @@ async function loadAll(){
   }
 
   function _pickerOnShow(){
+    _renderPeriodRow();
+    if(!_pickPool.length){ _setStatus('NO ROSTER LOADED'); _setSub(''); return; }
     _loadPicked();
-    _spNames = _getNames();
-    var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
-    var remaining = available.length;
-    _setSub('ROSTER: '+ _spNames.length +' / PICKED: '+ _spPicked.length);
-    if(remaining <= 0){
+    var names = _getNames();
+    var available = names.filter(function(n){ return _spPicked.indexOf(n)<0; });
+    _setSub('PERIOD '+(_pickPeriod||'?')+' · '+available.length+'/'+names.length+' REMAINING');
+    if(!available.length){
       _setStatus('ALL STUDENTS SELECTED — RESET TO CONTINUE');
     } else {
       _setStatus('READY — PRESS ENGAGE');
     }
     var reelEl = document.getElementById('pick-reel');
-    if(reelEl && !reelEl.children.length){
-      _buildReel(_spNames);
-    }
+    if(reelEl && !reelEl.children.length){ _buildReel(names); }
   }
 
   document.addEventListener('DOMContentLoaded', function(){
     var btn = document.getElementById('pick-btn');
     if(btn) btn.addEventListener('click', function(){
-      // if all picked, act as reset
+      if(!_pickPool.length) return;
       _loadPicked();
-      _spNames = _getNames();
-      var available = _spNames.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+      var names = _getNames();
+      var available = names.filter(function(n){ return _spPicked.indexOf(n)<0; });
       if(!available.length){
         _spPicked = []; _savePicked();
         _pickerOnShow(); return;
