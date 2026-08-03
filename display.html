@@ -1,13 +1,3 @@
-<!--
-  Cowboy Wire 2.0 — Riverdale High School, Room 27
-  FILE:    display.html
-  ROUTE:   /display.html?room=XX
-  PURPOSE: Main/default display skin — formal multi-panel flip board. Live bell schedule,
-           objectives, birthdays, honor roll, weather, news feed. Dial switches to ORB/SCRAP•E.
-  REPO:    cw2-azure.vercel.app
-  BACKEND: Supabase (cw2_roster, cw2_settings, cw2_birthdays, cw2_messages, etc.)
-  UPDATED: 2026-06-20
--->
 <!DOCTYPE html>
 <html lang="en" data-theme="retro-dark">
 <head>
@@ -712,11 +702,37 @@ const SCHEDULES = {
 };
 
 const NO_SCHOOL = [
-  '2026-09-07','2026-11-11','2026-11-26','2026-11-27',
-  '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
+  '2026-09-07',                                                        // Labor Day
+  '2026-10-12',                                                        // Non-School Day
+  '2026-11-11',                                                        // Veterans Day
+  '2026-11-23','2026-11-24','2026-11-25','2026-11-26','2026-11-27',   // Thanksgiving Break
+  '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',   // Winter Break
   '2026-12-28','2026-12-29','2026-12-30','2026-12-31',
-  '2027-01-01','2027-01-18','2027-02-15','2027-04-05',
-  '2027-04-06','2027-04-07','2027-04-08','2027-04-09',
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06','2027-01-07','2027-01-08',
+  '2027-01-11',                                                        // Non-Student Day
+  '2027-01-18',                                                        // MLK Day
+  '2027-02-08',                                                        // Lincoln's Birthday
+  '2027-02-15',                                                        // President's Day
+  '2027-03-22','2027-03-23','2027-03-24','2027-03-25','2027-03-26','2027-03-29', // Spring Break
+  '2027-04-26',                                                        // Non-School Day
+  '2027-05-31',                                                        // Memorial Day
+];
+const EARLY_RELEASE = [
+  '2026-08-17','2026-08-24','2026-08-31',
+  '2026-09-14','2026-09-21','2026-09-28',
+  '2026-10-05','2026-10-19','2026-10-26',
+  '2026-11-02','2026-11-16','2026-11-30',
+  '2026-12-07',
+  '2027-01-25',
+  '2027-02-01','2027-02-22',
+  '2027-03-01','2027-03-08',
+  '2027-04-05','2027-04-12','2027-04-19',
+  '2027-05-03','2027-05-10','2027-05-17','2027-05-24',
+];
+const MIN_DAYS = [
+  '2026-12-16','2026-12-17','2026-12-18', // 1st Semester Finals
+  '2027-03-19',                           // Minimum Day
+  '2027-06-08','2027-06-09','2027-06-10', // 2nd Semester Finals / Last Day
 ];
 
 const DATE_OVERRIDES = {};
@@ -763,14 +779,18 @@ function getSchedule() {
     .filter(function(e) { return e.start && e.start.substring(0,10) === ds; })
     .map(function(e) { return (e.title || '').toLowerCase(); });
   var has = function(kw) { return todayTitles.some(function(t) { return t.includes(kw); }); };
-  if (has('foggy') || has('late arrival'))  return SCHEDULES.foggy;
-  if (has('minimum'))                        return SCHEDULES.minimum;
-  if (has('code day'))                       return SCHEDULES.codeDay;
-  if (has('activity'))                       return SCHEDULES.activity;
-  if (has('early release'))                  return SCHEDULES.earlyRelease;
+  var fullWeek = schoolDaysThisWeek(now) === 5;
+  if (has('foggy') || has('late arrival')) {
+    if (fullWeek && dow === 3) return SCHEDULES.foggyBlockWed;
+    if (fullWeek && dow === 4) return SCHEDULES.foggyBlockThu;
+    return SCHEDULES.foggy;
+  }
+  if (has('minimum') || MIN_DAYS.includes(ds))  return SCHEDULES.minimum;
+  if (has('code day'))                           return SCHEDULES.codeDay;
+  if (has('activity'))                           return SCHEDULES.activity;
+  if (EARLY_RELEASE.includes(ds) || has('early release')) return SCHEDULES.earlyRelease;
+  if (!fullWeek)                                 return SCHEDULES.regular;
   if (has('block')) { return dow === 3 ? SCHEDULES.blockWed : SCHEDULES.blockThu; }
-  if (schoolDaysThisWeek(now) <= 4) return SCHEDULES.regular;
-  if (dow === 1) return SCHEDULES.earlyRelease;
   if (dow === 3) return SCHEDULES.blockWed;
   if (dow === 4) return SCHEDULES.blockThu;
   return SCHEDULES.regular;
@@ -1288,14 +1308,18 @@ function getScheduleForDate(date) {
     .filter(function(e) { return e.start_date && e.start_date.substring(0,10) === ds; })
     .map(function(e) { return (e.title || '').toLowerCase(); });
   var has = function(kw) { return titles.some(function(t) { return t.includes(kw); }); };
-  if (has('foggy') || has('late arrival')) return 'foggy';
-  if (has('minimum'))       return 'minimum';
-  if (has('code day'))      return 'codeDay';
-  if (has('activity'))      return 'activity';
-  if (has('early release')) return 'earlyRelease';
+  var fullWeek = schoolDaysThisWeek(date) === 5;
+  if (has('foggy') || has('late arrival')) {
+    if (fullWeek && dow === 3) return 'foggyBlockWed';
+    if (fullWeek && dow === 4) return 'foggyBlockThu';
+    return 'foggy';
+  }
+  if (has('minimum') || MIN_DAYS.includes(ds))           return 'minimum';
+  if (has('code day'))                                    return 'codeDay';
+  if (has('activity'))                                    return 'activity';
+  if (EARLY_RELEASE.includes(ds) || has('early release')) return 'earlyRelease';
+  if (!fullWeek)                                          return 'regular';
   if (has('block')) return dow === 3 ? 'blockWed' : 'blockThu';
-  if (schoolDaysThisWeek(date) <= 4) return 'regular';
-  if (dow === 1) return 'earlyRelease';
   if (dow === 3) return 'blockWed';
   if (dow === 4) return 'blockThu';
   return 'regular';
@@ -2046,8 +2070,8 @@ function applyDisplayMode(idx, animate) {
 function setDialMode(idx) {
   var mode = DISPLAY_MODES[idx];
   if (mode && mode.redirect) {
-    if (mode.key === 'scrape') location.href = '/display-scrape-v2.html?room='+ROOM;
-    else location.href = '/display-orb.html?room='+ROOM;
+    if (mode.key === 'scrape') location.href = '/display-scrape.html?room=' + ROOM;
+    else location.href = '/display-eve.html?room=' + ROOM;
     return;
   }
   dialModeIdx = idx;
