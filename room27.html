@@ -3,9 +3,10 @@
   FILE:    room27.html
   ROUTE:   /room27.html
   PURPOSE: Room 27 launcher — quick-access cards for all CW2 displays (Display, SCRAP•E,
-           ORB, Switchboard) and PassAble tools (Relay Station, Kiosk, Admin, Pass Log).
+           ORB, Switchboard, Name Picker, Sport Schedule Uploader) and PassAble tools
+           (Relay Station, Kiosk, Admin, Pass Log).
   REPO:    cw2-azure.vercel.app
-  UPDATED: 2026-06-20
+  UPDATED: 2026-08-04
 -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -271,6 +272,18 @@
     </div>
     <div class="card-grid" id="passable-grid"></div>
   </div>
+
+  <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">CheckMate</div>
+        <div class="section-sub">Equipment Checkout System</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="checkmate-grid"></div>
+  </div>
 </main>
 
 <footer>
@@ -303,7 +316,7 @@ const COWBOY = [
   {
     icon: '📺', name: 'Cowboy Wire',
     desc: 'The main classroom wall display. Live bell schedule, boards, birthdays, honor roll, weather, and news feed.',
-    url: 'https://cw2-azure.vercel.app/display.html',
+    url: 'https://cw2-azure.vercel.app/display.html?room=27',
     badge: 'TV · Live',
     light: { bg:'#e6f0ed', fg:'#005640', br:'#b8d8ce', ac:'#005640' },
     dark:  { bg:'#002a1a', fg:'#00a86b', br:'#00562a', ac:'#00a86b' },
@@ -329,6 +342,22 @@ const COWBOY = [
     desc: 'Teacher dashboard — manage boards, birthdays, quick messages, display controls, ORB and SCRAP•E settings, and schedule overrides.',
     url: 'https://cw2-azure.vercel.app/admin.html',
     badge: 'Teacher Only',
+    light: { bg:'#fdf8e8', fg:'#7a5a00', br:'#ddc870', ac:'#7a5a00' },
+    dark:  { bg:'#1a1400', fg:'#ccaa00', br:'#7a6200', ac:'#ccaa00' },
+  },
+  {
+    icon: '🎯', name: 'Name Picker',
+    desc: 'Standalone spin-the-wheel student picker — roster upload, session history, and printable participation summaries.',
+    url: 'https://cw2-azure.vercel.app/picker.html?room=27',
+    badge: 'Tool',
+    light: { bg:'#f3e8fd', fg:'#5a1a8a', br:'#d0a8e0', ac:'#7c3aed' },
+    dark:  { bg:'#1e0a2e', fg:'#c4b5fd', br:'#5a2a8a', ac:'#a78bfa' },
+  },
+  {
+    icon: '🏈', name: 'Sport Schedule Uploader',
+    desc: 'Upload game schedules from Excel, CSV, or PDF and push them straight into the athletics / early-release feed.',
+    url: 'https://cw2-azure.vercel.app/sport-schedule-uploader.html',
+    badge: 'Admin Tool',
     light: { bg:'#fdf8e8', fg:'#7a5a00', br:'#ddc870', ac:'#7a5a00' },
     dark:  { bg:'#1a1400', fg:'#ccaa00', br:'#7a6200', ac:'#ccaa00' },
   },
@@ -369,15 +398,36 @@ const PASSABLE = [
   },
 ];
 
+const CHECKMATE = [
+  {
+    icon: '🧰', name: 'CheckMate Kiosk',
+    desc: 'Self-checkout kiosk for classroom equipment — tap an NFC badge to check tools/devices in or out.',
+    url: 'https://checkmate-eosin-sigma.vercel.app/',
+    badge: 'Kiosk · Student',
+    light: { bg:'#e6f0ed', fg:'#005640', br:'#b8d8ce', ac:'#005640' },
+    dark:  { bg:'#002a1a', fg:'#00a86b', br:'#00562a', ac:'#00a86b' },
+  },
+  {
+    icon: '🗂', name: 'CheckMate Admin',
+    desc: 'Manage inventory, view who has what checked out, and review checkout history and agreements.',
+    url: 'https://checkmate-eosin-sigma.vercel.app/admin',
+    badge: 'Teacher Only',
+    light: { bg:'#fdf8e8', fg:'#7a5a00', br:'#ddc870', ac:'#7a5a00' },
+    dark:  { bg:'#1a1400', fg:'#ccaa00', br:'#7a6200', ac:'#ccaa00' },
+  },
+];
+
 let qc = 0;
 
 function renderCards() {
   const th = document.documentElement.getAttribute('data-theme') || 'light';
   const cg = document.getElementById('cowboy-grid');
   const pg = document.getElementById('passable-grid');
-  cg.innerHTML = ''; pg.innerHTML = '';
-  COWBOY.forEach(p   => cg.appendChild(buildCard(p, th)));
-  PASSABLE.forEach(p => pg.appendChild(buildCard(p, th)));
+  const kg = document.getElementById('checkmate-grid');
+  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = '';
+  COWBOY.forEach(p    => cg.appendChild(buildCard(p, th)));
+  PASSABLE.forEach(p  => pg.appendChild(buildCard(p, th)));
+  CHECKMATE.forEach(p => kg.appendChild(buildCard(p, th)));
 }
 
 function buildCard(p, th) {
