@@ -3788,6 +3788,52 @@ html, body { background:#050302 !important; }
 </div>
 
 </div><!-- /app -->
+
+<!-- ══ RESTORED LEGACY TOOLS: arm, side rail, timer/watch overlay, lunch lap ══ -->
+<div id="scrap-hand"><img src="scrap-hand.png" alt=""></div>
+
+<div id="legacy-tool-rail">
+  <div class="legacy-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
+  <div class="legacy-tog" id="tog-watch" data-tip="WATCH" onclick="activateTool('watch')"></div>
+  <div class="legacy-tog" id="tog-pick" data-tip="PICK" onclick="window.open('picker.html?room='+ROOM,'_blank')"></div>
+  <div class="legacy-tog legacy-exit" id="tog-exit" data-tip="EXIT" onclick="activateTool('exit')"></div>
+</div>
+
+<div id="legacy-tool-overlay">
+  <div class="lt-pane" id="lt-pane-timer">
+    <div class="lt-label">Classroom Timer</div>
+    <div class="lt-canvas-wrap"><canvas id="timer-canvas"></canvas></div>
+    <div id="timer-display">5:00</div>
+    <div class="lt-presets">
+      <div class="lt-preset" data-secs="180">3 MIN</div>
+      <div class="lt-preset lt-preset-active" data-secs="300">5 MIN</div>
+      <div class="lt-preset" data-secs="600">10 MIN</div>
+    </div>
+    <div id="timer-custom">
+      <input type="number" id="timer-custom-input" placeholder="MIN" min="1">
+      <div class="lt-btn" id="timer-custom-go">SET</div>
+    </div>
+    <div class="lt-btns">
+      <div class="lt-btn" id="timer-start">START</div>
+      <div class="lt-btn" id="timer-reset">RESET</div>
+    </div>
+  </div>
+  <div class="lt-pane" id="lt-pane-watch">
+    <div class="lt-label">Stopwatch</div>
+    <div class="lt-canvas-wrap"><canvas id="watch-canvas"></canvas></div>
+    <div id="watch-display">0:00.00</div>
+    <div class="lt-btns">
+      <div class="lt-btn" id="watch-start">START</div>
+      <div class="lt-btn" id="watch-reset">RESET</div>
+    </div>
+  </div>
+</div>
+
+<div id="lunch-overlay">
+  <div id="lunch-quip"></div>
+  <div id="lunch-count"></div>
+</div>
+
 </div><!-- /stage -->
 
 <script>
@@ -12824,5 +12870,491 @@ body #sd-cards > .sd-card > .sd-days {
     update();
   }
   init();
+})();
+</script>
+
+<style id="restore-legacy-scrape-tools">
+/* ══════════════ RESTORED LEGACY TOOLS (Timer / Stopwatch / Lunch Lap / Arm / Photo) ══════════════ */
+
+/* ---- ARM ---- */
+#scrap-hand{
+  position:absolute; left:14.53vw; top:56.94vh;
+  width:4.375vw; height:12.04vh;
+  transform-origin: 13% 91%;
+  pointer-events:none; z-index:6;
+}
+#scrap-hand img{width:100%;height:100%;display:block;object-fit:contain;}
+@keyframes scrapeWave{
+  0%{transform:rotate(0deg)}
+  15%{transform:rotate(-18deg)}
+  30%{transform:rotate(8deg)}
+  45%{transform:rotate(-14deg)}
+  60%{transform:rotate(6deg)}
+  75%{transform:rotate(-8deg)}
+  100%{transform:rotate(0deg)}
+}
+#scrap-hand.waving{animation:scrapeWave 1.4s ease-in-out forwards;}
+@keyframes scrapeSpinArm{
+  0%{transform:rotate(0deg)}
+  44%{transform:rotate(-34deg)}
+  60%{transform:rotate(32deg)}
+  100%{transform:rotate(0deg)}
+}
+#scrap-hand.spin-arm{animation:scrapeSpinArm 1.7s linear forwards;}
+
+/* Minute-lap eye flash (stopwatch) */
+@keyframes eyeMinuteLap{
+  0%{filter:none;}
+  15%{filter:hue-rotate(35deg) brightness(1.6);}
+  50%{filter:hue-rotate(35deg) brightness(1.9);}
+  85%{filter:hue-rotate(35deg) brightness(1.6);}
+  100%{filter:none;}
+}
+#scrape-live-eyes .scrape-eye.lap-flash{animation:eyeMinuteLap 1.8s ease-in-out forwards !important;}
+
+/* ---- SIDE TOOL RAIL ---- */
+#legacy-tool-rail{
+  position:absolute; right:2.6vw; top:38vh;
+  width:1.4vw; height:16vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:space-around;
+  z-index:400;
+}
+.legacy-tog{
+  width:1.1vw; height:1.1vw; max-width:16px; max-height:16px; min-width:9px; min-height:9px;
+  border-radius:50%;
+  background:rgba(200,168,64,0.14);
+  border:1px solid rgba(200,168,64,0.4);
+  cursor:pointer; position:relative; transition:all .2s;
+}
+.legacy-tog:hover{background:rgba(200,168,64,.3); box-shadow:0 0 6px rgba(200,168,64,.5);}
+.legacy-tog.active{background:rgba(0,255,68,.28); border-color:#00ff44; box-shadow:0 0 8px #00ff44,0 0 16px rgba(0,255,68,.3);}
+.legacy-tog.legacy-exit{border-color:rgba(200,168,64,.55);}
+.legacy-tog::before{
+  content:attr(data-tip); position:absolute; right:130%; top:50%; transform:translateY(-50%);
+  font-family:var(--font-mono,monospace); font-size:9px; letter-spacing:.12em;
+  color:rgba(232,214,106,.85); background:rgba(10,8,5,.85); border:1px solid rgba(200,168,64,.3);
+  padding:2px 6px; border-radius:3px; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s;
+}
+.legacy-tog:hover::before{opacity:1;}
+
+/* ---- FULLSCREEN TOOL OVERLAY (shared by Timer + Stopwatch) ---- */
+#legacy-tool-overlay{
+  position:absolute; inset:0; z-index:500; display:none;
+  align-items:center; justify-content:center;
+  background:rgba(6,5,3,.94);
+  font-family:'Courier New',monospace;
+}
+#legacy-tool-overlay.open{display:flex;}
+.lt-pane{display:none; flex-direction:column; align-items:center; gap:1.4cqh; padding:2cqh;}
+.lt-pane.lt-active{display:flex;}
+.lt-canvas-wrap{position:relative; width:min(46vh,40vw); height:min(46vh,40vw);}
+.lt-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;}
+#timer-display, #watch-display{
+  font-family:inherit; font-size:clamp(28px,5.4cqw,72px); line-height:1;
+  color:#c8a840; text-shadow:0 0 18px #c8a840, 0 0 36px rgba(200,168,64,.3); letter-spacing:.05em;
+}
+.lt-label{font-size:clamp(9px,1cqw,13px); letter-spacing:.22em; color:rgba(200,168,64,.6); text-transform:uppercase;}
+.lt-presets{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(46vh,40vw);}
+.lt-preset{font-size:clamp(10px,1cqw,14px); letter-spacing:.05em; color:rgba(200,168,64,.5);
+  border:1px solid rgba(200,168,64,.3); padding:6px 4px; text-align:center; cursor:pointer; transition:.15s;}
+.lt-preset:hover,.lt-preset.lt-preset-active{color:#c8a840;border-color:rgba(200,168,64,.7);background:rgba(200,168,64,.12);}
+.lt-btns{display:flex;gap:10px;}
+.lt-btn{font-size:clamp(10px,1cqw,14px);letter-spacing:.1em;color:rgba(200,168,64,.6);
+  border:1px solid rgba(200,168,64,.35);padding:8px 18px;cursor:pointer;transition:.15s;text-transform:uppercase;background:rgba(200,168,64,.05);}
+.lt-btn:hover{color:#c8a840;border-color:#c8a840;background:rgba(200,168,64,.15);}
+.lt-btn:disabled{opacity:.3;cursor:default;}
+#timer-custom{display:flex;gap:8px;align-items:center;}
+#timer-custom-input{font-family:inherit;font-size:14px;color:#c8a840;background:rgba(200,168,64,.06);
+  border:1px solid rgba(200,168,64,.3);padding:6px 10px;width:80px;text-align:center;}
+
+/* ---- LUNCH LAP OVERLAY ---- */
+#lunch-overlay{
+  display:none; position:absolute; inset:0; z-index:600;
+  flex-direction:column; align-items:center; justify-content:center;
+  background:rgba(6,5,3,.92); text-align:center; padding:2cqh; gap:1cqh;
+}
+#lunch-overlay.open{display:flex;}
+#lunch-quip{color:#c8a840;font-size:clamp(12px,1.6cqw,20px);letter-spacing:.1em;
+  text-shadow:0 0 14px #c8a840,0 0 28px rgba(200,168,64,.3);line-height:1.5;max-width:60cqw;text-transform:uppercase;}
+#lunch-count{color:#d49240;font-family:inherit;font-size:clamp(40px,9cqw,100px);
+  text-shadow:0 0 28px #d49240,0 0 56px rgba(212,146,64,.4);min-height:1em;line-height:1;}
+@keyframes lunchCountPop{0%{transform:scale(1.4);opacity:.6;}100%{transform:scale(1);opacity:1;}}
+.lunch-count-pop{animation:lunchCountPop .25s ease-out both;}
+</style>
+
+
+<script id="restore-legacy-scrape-tools-js">
+(function(){
+  /* ============ PHOTO CAROUSEL LOADER ============ */
+  var DRIVE_PHOTO_URL='https://script.google.com/macros/s/AKfycbwFbF2ssCZFxwYYf2ziZBA7gQ9ZEpITFGL5W5clMuYaquxWiAxlh1Kqicc60Ztn68ts/exec';
+  function loadLegacyPhotos(){
+    fetch(DRIVE_PHOTO_URL).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
+      .then(function(data){
+        var urls=(data&&Array.isArray(data.photos))?data.photos.filter(Boolean):[];
+        if(urls.length&&window.loadPhotoBayFromDriveList) window.loadPhotoBayFromDriveList(urls);
+      })
+      .catch(function(e){ console.warn('[CW2 Photos] Drive fetch failed:',e.message); setTimeout(loadLegacyPhotos,30000); });
+  }
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(loadLegacyPhotos,1500); setInterval(loadLegacyPhotos,600000); });
+
+  /* ============ ARM WAVE / SPIN ============ */
+  function playWave(){
+    var hand=document.getElementById('scrap-hand');
+    if(!hand)return;
+    hand.classList.remove('waving','spin-arm');
+    void hand.offsetWidth;
+    hand.classList.add('waving');
+    setTimeout(function(){hand.classList.remove('waving');},1450);
+  }
+  function playSpinArm(onThrust){
+    var hand=document.getElementById('scrap-hand');
+    if(!hand){ if(onThrust)onThrust(); return; }
+    hand.classList.remove('waving','spin-arm');
+    void hand.offsetWidth;
+    hand.classList.add('spin-arm');
+    if(onThrust) setTimeout(onThrust, 950);
+    setTimeout(function(){hand.classList.remove('spin-arm');},1750);
+  }
+  window.SCRAP_wave=playWave;
+  window.SCRAP_spinArm=playSpinArm;
+  window.playSpinArm=playSpinArm;
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(playWave,1500); });
+
+  /* ============ TOOL RAIL / OVERLAY CONTROLLER ============ */
+  function activateTool(key){
+    var overlay=document.getElementById('legacy-tool-overlay');
+    document.querySelectorAll('.legacy-tog').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.lt-pane').forEach(function(p){p.classList.remove('lt-active');});
+    if(key==='exit'||!key){
+      if(overlay)overlay.classList.remove('open');
+      return;
+    }
+    if(overlay)overlay.classList.add('open');
+    var tog=document.getElementById('tog-'+key);
+    if(tog)tog.classList.add('active');
+    var pane=document.getElementById('lt-pane-'+key);
+    if(pane)pane.classList.add('lt-active');
+    if(key==='timer'&&window._timerOnShow)window._timerOnShow();
+    if(key==='watch'&&window._watchOnShow)window._watchOnShow();
+  }
+  window.activateTool=activateTool;
+
+  /* ============ TIMER (HOURGLASS) ============ */
+  (function(){
+    var _tDuration=0,_tRemain=0,_tRunning=false,_tInterval=null;
+    var _tMaxScale=1.0,_SAND_REF=900;
+    var _sandPtcl=[{t:0.05},{t:0.18},{t:0.31},{t:0.44},{t:0.57},{t:0.70},{t:0.83},{t:0.96}];
+
+    function fmtTime(s){
+      s=Math.max(0,Math.ceil(s));
+      var m=Math.floor(s/60),sec=s%60;
+      return m+':'+String(sec).padStart(2,'0');
+    }
+
+    function drawHourglass(canvas,pct,scale){
+      scale=(scale===undefined)?1:scale;
+      var ctx=canvas.getContext('2d');
+      var W=canvas.width,H=canvas.height;
+      ctx.clearRect(0,0,W,H);
+      var progress=1-pct;
+      var cx=W/2,LX=W*0.115,RX=W-W*0.115;
+      var topY=H*0.09,botY=H-H*0.09;
+      var chamberH=H*0.29;
+      var topRectBotY=topY+chamberH,botRectTopY=botY-chamberH;
+      var neckW=W*0.05,neckH=H*0.05;
+      var neckTopY=H/2-neckH/2, neckBotY=H/2+neckH/2;
+      var neckLX=cx-neckW/2, neckRX=cx+neckW/2;
+      var COL='#c8a840';
+
+      function topChamber(){ ctx.beginPath();ctx.moveTo(LX,topY);ctx.lineTo(RX,topY);ctx.lineTo(RX,topRectBotY);ctx.lineTo(neckRX,neckTopY);ctx.lineTo(neckLX,neckTopY);ctx.lineTo(LX,topRectBotY);ctx.closePath(); }
+      function botChamber(){ ctx.beginPath();ctx.moveTo(neckLX,neckBotY);ctx.lineTo(neckRX,neckBotY);ctx.lineTo(RX,botRectTopY);ctx.lineTo(RX,botY);ctx.lineTo(LX,botY);ctx.lineTo(LX,botRectTopY);ctx.closePath(); }
+      function glassOutline(){
+        ctx.beginPath();
+        ctx.moveTo(neckLX,neckTopY); ctx.lineTo(LX,topRectBotY); ctx.lineTo(LX,topY); ctx.lineTo(RX,topY);
+        ctx.lineTo(RX,topRectBotY); ctx.lineTo(neckRX,neckTopY); ctx.closePath();
+        ctx.moveTo(neckLX,neckBotY); ctx.lineTo(LX,botRectTopY); ctx.lineTo(LX,botY); ctx.lineTo(RX,botY);
+        ctx.lineTo(RX,botRectTopY); ctx.lineTo(neckRX,neckBotY); ctx.closePath();
+      }
+
+      ctx.save(); topChamber(); ctx.clip();
+      var topFillFrac=Math.max(0,scale-progress*scale);
+      var topFillH=chamberH*(topFillFrac/Math.max(scale,0.0001));
+      ctx.fillStyle=COL; ctx.globalAlpha=0.85;
+      ctx.fillRect(LX,topRectBotY-topFillH,RX-LX,topFillH);
+      ctx.restore();
+
+      ctx.save(); botChamber(); ctx.clip();
+      var botFillFrac=Math.min(scale,progress*scale);
+      var botFillH=chamberH*(botFillFrac/Math.max(scale,0.0001));
+      ctx.fillStyle=COL; ctx.globalAlpha=0.85;
+      ctx.fillRect(LX,botY-botFillH,RX-LX,botFillH);
+      ctx.restore();
+
+      if(progress>0 && progress<1){
+        ctx.fillStyle=COL; ctx.globalAlpha=0.9;
+        ctx.fillRect(cx-1,neckTopY,2,neckH);
+        _sandPtcl.forEach(function(p){
+          var life=(Date.now()/300+p.t*10)%1;
+          var py=neckBotY+((botY-botFillH)-neckBotY)*life;
+          ctx.globalAlpha=0.5+0.4*Math.sin(life*Math.PI);
+          ctx.beginPath(); ctx.arc(cx,py,Math.max(1,W*0.008),0,Math.PI*2); ctx.fill();
+        });
+      }
+      ctx.globalAlpha=1;
+      ctx.strokeStyle='rgba(200,168,64,0.55)'; ctx.lineWidth=Math.max(1,W*0.012);
+      glassOutline(); ctx.stroke();
+    }
+
+    var canvasEl=null,dispEl=null;
+    function _tUpdateUI(){
+      if(dispEl) dispEl.textContent=(_tRemain<=0&&_tDuration>0)?"TIME'S UP":fmtTime(_tRemain);
+      if(canvasEl){
+        var pct=_tDuration>0?(_tRemain/_tDuration):1;
+        drawHourglass(canvasEl,pct,_tMaxScale);
+      }
+    }
+    function _tTick(){
+      _tRemain--;
+      if(_tRemain<=0){ _tRemain=0; _tUpdateUI(); _tPause(); return; }
+      _tUpdateUI();
+    }
+    function _tStart(){
+      if(_tRunning||_tRemain<=0) return;
+      _tRunning=true;
+      _tInterval=setInterval(_tTick,1000);
+      var btn=document.getElementById('timer-start'); if(btn) btn.textContent='PAUSE';
+    }
+    function _tPause(){
+      _tRunning=false;
+      clearInterval(_tInterval);
+      var btn=document.getElementById('timer-start'); if(btn) btn.textContent=_tRemain<=0?'START':'RESUME';
+    }
+    function _tReset(){
+      _tPause();
+      _tRemain=_tDuration;
+      _tUpdateUI();
+      var btn=document.getElementById('timer-start'); if(btn) btn.textContent='START';
+    }
+    function _tSetDuration(secs,scale){
+      _tDuration=secs; _tRemain=secs; _tMaxScale=scale||Math.min(1,secs/_SAND_REF)||1;
+      _tPause();
+      _tUpdateUI();
+    }
+    function _timerOnShow(){
+      canvasEl=document.getElementById('timer-canvas');
+      dispEl=document.getElementById('timer-display');
+      if(canvasEl){ canvasEl.width=canvasEl.clientWidth*2||300; canvasEl.height=canvasEl.clientHeight*2||300; }
+      if(_tDuration===0) _tSetDuration(300,Math.min(1,300/_SAND_REF));
+      _tUpdateUI();
+    }
+    document.addEventListener('click',function(e){
+      var presetEl=e.target.closest && e.target.closest('.lt-preset[data-secs]');
+      if(presetEl){
+        document.querySelectorAll('#lt-pane-timer .lt-preset').forEach(function(p){p.classList.remove('lt-preset-active');});
+        presetEl.classList.add('lt-preset-active');
+        var secs=parseInt(presetEl.getAttribute('data-secs'),10);
+        _tSetDuration(secs,Math.min(1,secs/_SAND_REF));
+      }
+      if(e.target && e.target.id==='timer-start'){ _tRunning?_tPause():_tStart(); }
+      if(e.target && e.target.id==='timer-reset'){ _tReset(); }
+      if(e.target && e.target.id==='timer-custom-go'){
+        var inp=document.getElementById('timer-custom-input');
+        var m=parseInt(inp.value,10);
+        if(m>0){ _tSetDuration(m*60,Math.min(1,(m*60)/_SAND_REF)); }
+      }
+    });
+    window._timerOnShow=_timerOnShow;
+  })();
+
+  /* ============ STOPWATCH (RUNNING TRACK) ============ */
+  (function(){
+    var _wsRunning=false,_wsStart=0,_wsAccum=0,_wsRAF=null,_wsLastMin=-1;
+    function _wsElapsed(){ return _wsRunning?_wsAccum+(Date.now()-_wsStart):_wsAccum; }
+    function _fmtWatch(ms){
+      var totalSec=Math.floor(ms/1000);
+      var m=Math.floor(totalSec/60),s=totalSec%60,cs=Math.floor((ms%1000)/10);
+      return m+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0');
+    }
+    function _wsMinuteLap(){
+      var eyes=document.querySelectorAll('#scrape-live-eyes .scrape-eye');
+      eyes.forEach(function(el){
+        el.classList.remove('lap-flash'); void el.offsetWidth; el.classList.add('lap-flash');
+        setTimeout(function(){el.classList.remove('lap-flash');},1900);
+      });
+    }
+    function drawWatch(canvas,elapsedMs){
+      var ctx=canvas.getContext('2d');
+      var W=canvas.width,H=canvas.height;
+      ctx.clearRect(0,0,W,H);
+      var INSET=W*0.08;
+      var effW=W-2*INSET, effH=H-2*INSET;
+      var TOTAL=240;
+      var currentTick=Math.floor(elapsedMs/250)%TOTAL;
+      ctx.strokeStyle='rgba(200,168,64,0.28)'; ctx.lineWidth=Math.max(1,W*0.006);
+      ctx.strokeRect(INSET,INSET,effW,effH);
+
+      var perimeter=2*(effW+effH);
+      var ticks=[];
+      for(var i=0;i<TOTAL;i++){
+        var dist=(i/TOTAL)*perimeter;
+        var tx,ty,edge;
+        if(dist<effW){ tx=INSET+dist; ty=INSET; edge='top'; }
+        else if(dist<effW+effH){ tx=INSET+effW; ty=INSET+(dist-effW); edge='right'; }
+        else if(dist<2*effW+effH){ tx=INSET+effW-(dist-effW-effH); ty=INSET+effH; edge='bottom'; }
+        else { tx=INSET; ty=INSET+effH-(dist-2*effW-effH); edge='left'; }
+        ticks.push({i:i,x:tx,y:ty,edge:edge});
+      }
+      var hasStarted=elapsedMs>0;
+      ticks.forEach(function(t){
+        var isLit=hasStarted&&(t.i<=currentTick);
+        var big=t.i%40===0, med=t.i%20===0, sm=t.i%4===0;
+        var r=big?W*0.014:med?W*0.010:sm?W*0.007:W*0.004;
+        ctx.beginPath(); ctx.arc(t.x,t.y,r,0,Math.PI*2);
+        ctx.fillStyle=isLit?'#c8a840':'rgba(200,168,64,0.15)';
+        ctx.fill();
+      });
+
+      var dot=ticks[currentTick];
+      if(dot){
+        ctx.save();
+        ctx.translate(dot.x,dot.y);
+        var hatR=W*0.032;
+        var showBack=(dot.edge==='left'||dot.edge==='right');
+        ctx.fillStyle='#0a0a0a';
+        ctx.beginPath(); ctx.arc(0,-hatR*0.4,hatR*0.62,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#2a1c0c';
+        ctx.beginPath(); ctx.ellipse(0,-hatR*0.75,hatR*0.95,hatR*0.28,0,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle='#3a2810';
+        ctx.beginPath(); ctx.ellipse(0,-hatR*1.05,hatR*0.5,hatR*0.32,0,0,Math.PI*2); ctx.fill();
+        if(!showBack){
+          ctx.fillStyle='#00ff44';
+          ctx.beginPath(); ctx.arc(-hatR*0.22,-hatR*0.4,hatR*0.11,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(hatR*0.22,-hatR*0.4,hatR*0.11,0,Math.PI*2); ctx.fill();
+        }
+        ctx.restore();
+      }
+    }
+
+    var canvasEl=null,dispEl=null;
+    function _wsUpdateUI(){
+      var ms=_wsElapsed();
+      if(dispEl) dispEl.textContent=_fmtWatch(ms);
+      if(canvasEl) drawWatch(canvasEl,ms);
+    }
+    function _wsLoop(){
+      _wsUpdateUI();
+      var completedMin=Math.floor(_wsElapsed()/60000);
+      if(completedMin>0&&completedMin!==_wsLastMin){ _wsLastMin=completedMin; _wsMinuteLap(); }
+      if(_wsRunning) _wsRAF=requestAnimationFrame(_wsLoop);
+    }
+    function _watchStart(){
+      if(_wsRunning) return;
+      _wsRunning=true; _wsStart=Date.now();
+      var btn=document.getElementById('watch-start'); if(btn) btn.textContent='PAUSE';
+      _wsLoop();
+    }
+    function _watchPause(){
+      if(!_wsRunning) return;
+      _wsRunning=false; _wsAccum+=Date.now()-_wsStart;
+      if(_wsRAF) cancelAnimationFrame(_wsRAF);
+      var btn=document.getElementById('watch-start'); if(btn) btn.textContent='RESUME';
+    }
+    function _watchReset(){
+      _wsRunning=false; _wsAccum=0; _wsLastMin=-1;
+      if(_wsRAF) cancelAnimationFrame(_wsRAF);
+      _wsUpdateUI();
+      var btn=document.getElementById('watch-start'); if(btn) btn.textContent='START';
+    }
+    function _watchOnShow(){
+      canvasEl=document.getElementById('watch-canvas');
+      dispEl=document.getElementById('watch-display');
+      if(canvasEl){ canvasEl.width=canvasEl.clientWidth*2||300; canvasEl.height=canvasEl.clientHeight*2||300; }
+      _wsUpdateUI();
+    }
+    document.addEventListener('click',function(e){
+      if(e.target && e.target.id==='watch-start'){ _wsRunning?_watchPause():_watchStart(); }
+      if(e.target && e.target.id==='watch-reset'){ _watchReset(); }
+    });
+    window._watchOnShow=_watchOnShow;
+    window._watchStart=_watchStart;
+    window._watchPause=_watchPause;
+    window._watchReset=_watchReset;
+  })();
+
+  /* ============ LUNCH LAP ============ */
+  (function(){
+    var QUIPS=[
+      'I ate so much — I need to exercise!',
+      'Time for my midday lap...',
+      'I need to stretch my legs... err, gears!',
+      'Exercise is good for me... AND YOU!',
+      'These copper gears will not oil themselves!',
+      'Calculating optimal lap route... DONE. Engaging thrusters.',
+      'My circuits need cooling — running helps!',
+      'One does not simply sit during lunch...',
+      'Motion is lotion. Even for robots.',
+      "Pony Express Rule #1: Always keep moving."
+    ];
+    function _pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+    function _toMinutes(t){ var p=t.split(':'); return parseInt(p[0],10)*60+parseInt(p[1],10); }
+
+    function _scheduleLunchLap(){
+      var sched=(typeof getSchedule==='function')?getSchedule():null;
+      if(!sched||!sched.periods) return;
+      var lunchP=null;
+      sched.periods.forEach(function(p){ if(p.id==='lunch'||p.id==='brunch') lunchP=p; });
+      if(!lunchP) return;
+      var offsetMin=6+Math.floor(Math.random()*17);
+      var fireMin=_toMinutes(lunchP.start)+offsetMin;
+      var now=new Date();
+      var nowMinNow=now.getHours()*60+now.getMinutes();
+      var delayMs=(fireMin-nowMinNow)*60000-now.getSeconds()*1000;
+      if(delayMs>0&&delayMs<8*3600000){ setTimeout(_runLunchLap,delayMs); }
+    }
+
+    function _runLunchLap(){
+      var overlay=document.getElementById('lunch-overlay');
+      var quipEl=document.getElementById('lunch-quip');
+      var countEl=document.getElementById('lunch-count');
+      if(!overlay||!quipEl||!countEl) return;
+
+      window.activateTool('watch');
+      window._watchReset();
+
+      quipEl.textContent=_pick(QUIPS);
+      countEl.textContent='';
+      overlay.classList.add('open');
+
+      setTimeout(function(){
+        var counts=['3','2','1','GO!'];
+        var ci=0;
+        function tick(){
+          countEl.className='';
+          void countEl.offsetWidth;
+          countEl.textContent=counts[ci];
+          countEl.className='lunch-count-pop';
+          ci++;
+          if(ci<counts.length){ setTimeout(tick,900); }
+          else{
+            setTimeout(function(){
+              overlay.classList.remove('open');
+              window._watchStart();
+              if(window.playSpinArm) window.playSpinArm();
+              setTimeout(function(){
+                window._watchPause();
+                window.activateTool('exit');
+                setTimeout(_scheduleLunchLap,12*3600000);
+              },60000);
+            },700);
+          }
+        }
+        tick();
+      },3500);
+    }
+
+    document.addEventListener('DOMContentLoaded',function(){ setTimeout(_scheduleLunchLap,3000); });
+    window._runLunchLap=_runLunchLap;
+  })();
+
 })();
 </script>
