@@ -3791,6 +3791,7 @@ html, body { background:#050302 !important; }
 
 <!-- ══ RESTORED LEGACY TOOLS: arm, side rail, timer/watch overlay, lunch lap ══ -->
 <div id="scrap-hand"><img src="scrap-hand.png" alt=""></div>
+<div id="orb-hotspot" title="Go to ORB"></div>
 
 <div id="legacy-tool-rail">
   <div class="legacy-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
@@ -12902,6 +12903,15 @@ body #sd-cards > .sd-card > .sd-days {
 }
 #scrap-hand.spin-arm{animation:scrapeSpinArm 1.7s linear forwards;}
 
+/* ---- ORB HOTSPOT ----
+   Invisible clickable zone over the "OO / ORB" plaque graphic baked into
+   chassis-bg.png (top-right). Measured directly against the live rendered
+   page: plaque sits at ~79vw/1vh, ~6.7vw x 11.5vh. */
+#orb-hotspot{
+  position:absolute; left:78.9vw; top:1vh; width:6.7vw; height:11.5vh;
+  z-index:50; cursor:pointer;
+}
+
 /* Minute-lap eye flash (stopwatch) */
 @keyframes eyeMinuteLap{
   0%{filter:none;}
@@ -13023,6 +13033,16 @@ body #sd-cards > .sd-card > .sd-days {
   window.SCRAP_spinArm=playSpinArm;
   window.playSpinArm=playSpinArm;
   document.addEventListener('DOMContentLoaded',function(){ setTimeout(playWave,1500); });
+
+  /* ============ ORB HOTSPOT LINK ============ */
+  document.addEventListener('DOMContentLoaded',function(){
+    var orbHotspot=document.getElementById('orb-hotspot');
+    if(orbHotspot){
+      orbHotspot.addEventListener('click',function(){
+        location.href='display-orb.html?room='+ROOM;
+      });
+    }
+  });
 
   /* ============ TOOL RAIL / OVERLAY CONTROLLER ============ */
   /* Positions #legacy-tool-overlay to exactly cover .crt-screen's current
