@@ -1,0 +1,4816 @@
+<!--
+  Cowboy Wire 2.0 — Riverdale High School, Room 27
+  FILE:    display-scrape-v2.html
+  ROUTE:   /display-scrape-v2.html?room=XX
+  PURPOSE: SCRAP•E display skin — retro steampunk, CRT panes (Timer, Stopwatch,
+           Student Picker slot machine, Lunch Lap). One of three live display skins.
+  REPO:    cw2-azure.vercel.app
+  BACKEND: Supabase (cw2_roster, cw2_settings, cw2_birthdays, cw2_messages, etc.)
+  UPDATED: 2026-06-20
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>Cowboy Wire · SCRAP-E LEGACY · Room 27</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Share+Tech+Mono&family=Oswald:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ── RESET ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ── STEAMPUNK PALETTE ── */
+:root {
+  --cw-bg:          #0a0a08;
+  --cw-amber:       #c8a840;
+  --cw-amber-warm:  #d49530;   /* more orange-amber for names/titles */
+  --cw-amber-bright:#e8c050;   /* lighter amber for secondary accents */
+  --cw-highlight:   #f0d060;
+  --cw-dim:         #8a7a40;
+  --cw-copper:      #b87040;
+  --cw-rust:        #7a3a10;
+  --cw-green:       #00ff44;
+  --cw-green-dim:   #00cc33;
+  --cw-green-glow:  rgba(0,255,68,0.55);
+  --cw-panel:       rgba(4,4,2,0.88);
+  --font-crt:       'VT323', monospace;
+  --font-type:      'Special Elite', serif;
+  --font-mono:      'Share Tech Mono', monospace;
+}
+
+/* ── ROOT ── */
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+/* ── STAGE: fixed 1920×1080, scales to fit window ── */
+#stage {
+  position: absolute;
+  width: 1920px;
+  height: 1080px;
+  transform-origin: top left;
+  overflow: hidden;
+}
+
+/* ── LAYER 1: BACKGROUND IMAGE ── */
+#layer-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background: url('chassis-bg.png') 0 0 / 1920px 1080px no-repeat;
+}
+
+/* ── LAYER 2: CONTENT PANELS ── */
+#layer-panels {
+  position: absolute; inset: 0; z-index: 1;
+}
+
+/* ── LAYER 3: FOREGROUND OVERLAY ── */
+#layer-fg {
+  position: absolute; inset: 0; z-index: 10;
+  background: url('chassis-overlay.png') 0 0 / 1920px 1080px no-repeat;
+  pointer-events: none;
+}
+
+/* ── PANEL BASE ── */
+.panel {
+  position: absolute;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════════════════════════════
+   PANEL STYLES — one block per panel, no cascade
+   ══════════════════════════════════════════════════════ */
+
+/* HEADER */
+#p-header {
+  left: 178px; top: 20px; width: 349px; height: 86px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 700;
+  letter-spacing: 0.18em; color: #100c04;
+  text-align: center; text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/* CLOCK */
+#p-clock {
+  left: 1662px; top: 32px; width: 158px; height: 68px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-crt); font-size: 30px;
+  letter-spacing: 0.06em; color: var(--cw-highlight);
+  text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.3);
+}
+
+/* EVENTS LIST — PSD coords 199,124,290,365 × 1.25 = 249,155,363,456 */
+#p-events {
+  left: 249px; top: 155px; width: 363px; height: 456px;
+  padding: 8px 14px 8px 12px;
+  display: flex; flex-direction: column;
+}
+#events-title {
+  font-family: var(--font-mono); font-size: 19px;
+  letter-spacing: 0.16em; color: var(--cw-amber);
+  text-transform: uppercase; text-align: center;
+  padding-bottom: 7px;
+  border-bottom: 1px solid rgba(200,168,64,0.28);
+  margin-bottom: 4px; flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(200,168,64,0.3);
+}
+#events-list { display: flex; flex-direction: column; flex: 1; justify-content: flex-start; gap: 0px; overflow: hidden; }
+.ev-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(200,168,64,0.12);
+}
+.ev-item:last-child { border-bottom: none; }
+.ev-left { display: flex; flex-direction: column; align-items: center; min-width: 52px; }
+.ev-days-num {
+  font-family: var(--font-crt); font-size: 30px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 10px rgba(240,208,96,0.5);
+}
+.ev-days-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.1em; color: var(--cw-dim);
+  text-transform: uppercase; line-height: 1;
+}
+.ev-right { flex: 1; min-width: 0; }
+.ev-title {
+  font-family: var(--font-mono); font-size: 15px;
+  letter-spacing: 0.03em; color: var(--cw-amber-warm);
+  text-transform: uppercase; line-height: 1.25;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.ev-date {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); margin-top: 1px;
+  letter-spacing: 0.04em;
+}
+.ev-empty {
+  font-family: var(--font-mono); font-size: 14px;
+  color: rgba(200,168,64,0.3); letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 20px 0;
+}
+
+/* SCRAP-E SIGNAL INTERCEPT */
+#p-crt {
+  left: 700px; top: 172px; width: 566px; height: 388px;
+  padding: 0;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+/* CRT scanlines — visible but not harsh */
+#p-crt::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 4px,
+    rgba(0,0,0,0.14) 4px, rgba(0,0,0,0.14) 5px
+  );
+}
+/* CRT phosphor glow + subtle vignette */
+#p-crt::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(200,168,64,0.07), transparent 68%),
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.35) 100%);
+}
+#crt-header {
+  display: flex; align-items: center; gap: 8px;
+  position: relative; z-index: 1;
+}
+#crt-led {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--cw-green);
+  box-shadow: 0 0 6px var(--cw-green), 0 0 12px var(--cw-green-glow);
+  animation: ledPulse 2.4s ease-in-out infinite;
+}
+@keyframes ledPulse { 0%,100%{opacity:1;box-shadow:0 0 6px var(--cw-green),0 0 12px var(--cw-green-glow)} 50%{opacity:0.5;box-shadow:0 0 3px var(--cw-green)} }
+#crt-label-text {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.26em; color: var(--cw-dim);
+  text-transform: uppercase;
+}
+#crt-divider {
+  height: 1px; background: linear-gradient(90deg, transparent, var(--cw-amber), transparent);
+  opacity: 0.3; position: relative; z-index: 1;
+}
+#crt-headline {
+  font-family: var(--font-type); font-size: 25px; line-height: 1.28;
+  color: var(--cw-highlight); letter-spacing: 0.02em;
+  /* cap at 3 lines max so short headlines give body more room */
+  max-height: 3.9em; overflow: hidden;
+  position: relative; z-index: 1;
+}
+/* typewriter cursor */
+#crt-cursor {
+  display: inline-block; width: 2px; height: 1.1em;
+  background: var(--cw-highlight); vertical-align: text-bottom;
+  margin-left: 2px; animation: cursorBlink 0.8s step-end infinite;
+  position: relative; z-index: 1;
+}
+@keyframes cursorBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+#crt-body {
+  flex: 1; font-family: var(--font-mono); font-size: 15px; line-height: 1.5;
+  color: var(--cw-amber); overflow: hidden; position: relative; z-index: 1;
+  opacity: 0.9;
+}
+#crt-footer {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  position: relative; z-index: 1; gap: 8px;
+}
+#crt-source {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+  text-transform: uppercase; padding-bottom: 4px;
+}
+/* QR code — amber-on-dark steampunk treatment */
+#crt-qr {
+  width: 78px; height: 78px; flex-shrink: 0;
+  background: #060604;
+  border: 1px solid rgba(200,168,64,0.30);
+  border-radius: 3px;
+  box-shadow: 0 0 6px rgba(200,168,64,0.12);
+  overflow: hidden;
+  padding: 3px;
+}
+#crt-qr img, #crt-qr canvas {
+  width: 72px !important; height: 72px !important;
+  display: block !important;
+  image-rendering: pixelated;
+}
+
+/* ── CRT MULTI-PANE SYSTEM ── */
+#crt-pane-news, #crt-pane-bell, #crt-pane-standby, #crt-pane-data, #crt-pane-scrape,
+#crt-pane-timer, #crt-pane-watch, #crt-pane-pick {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+#crt-pane-news { padding: 12px 26px 8px 30px; gap: 6px; }
+#crt-pane-bell { padding: 12px 18px 8px 18px; gap: 0; }
+#crt-pane-standby { padding: 0; }
+#crt-pane-data { padding: 24px 28px; justify-content: center; }
+/* Active pane */
+#p-crt.crt-news #crt-pane-news,
+#p-crt.crt-bell #crt-pane-bell,
+#p-crt.crt-standby #crt-pane-standby,
+#p-crt.crt-data #crt-pane-data,
+#p-crt.crt-scrape #crt-pane-scrape,
+#p-crt.crt-timer #crt-pane-timer,
+#p-crt.crt-watch #crt-pane-watch,
+#p-crt.crt-pick  #crt-pane-pick {
+  opacity: 1; pointer-events: auto;
+}
+
+/* ── CRT TOOL TOGGLES ── */
+#crt-toggles {
+  position: absolute;
+  left: 1284px; top: 365px;
+  width: 18px; height: 184px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: space-around;
+  z-index: 11;
+}
+.crt-tog {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(200,168,64,0.12);
+  border: 1px solid rgba(200,168,64,0.35);
+  cursor: pointer; position: relative;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.crt-tog:hover { background: rgba(200,168,64,0.28); box-shadow: 0 0 5px rgba(200,168,64,0.4); }
+.crt-tog.active {
+  background: rgba(0,255,68,0.25);
+  border-color: var(--cw-green);
+  box-shadow: 0 0 7px var(--cw-green), 0 0 14px rgba(0,255,68,0.25);
+}
+.crt-tog.tog-exit { border-color: rgba(200,168,64,0.5); }
+.crt-tog.tog-exit:hover { box-shadow: 0 0 5px rgba(200,168,64,0.5); }
+.crt-tog.tog-exit.active {
+  background: rgba(200,168,64,0.2);
+  border-color: var(--cw-amber);
+  box-shadow: 0 0 7px var(--cw-amber);
+}
+.crt-tog::before {
+  content: attr(data-tip);
+  position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono); font-size: 8px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+  white-space: nowrap; opacity: 0; pointer-events: none;
+  transition: opacity 0.15s; background: rgba(0,0,0,0.7);
+  padding: 2px 4px;
+}
+.crt-tog:hover::before { opacity: 1; }
+
+/* ── SHARED TOOL STYLES ── */
+.t-btn {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #c8a840; background: rgba(200,168,64,0.08);
+  border: 1px solid rgba(200,168,64,0.3);
+  padding: 8px 18px; cursor: pointer; transition: all 0.15s;
+}
+.t-btn:hover:not(:disabled) {
+  background: rgba(200,168,64,0.2); border-color: var(--cw-amber);
+  color: var(--cw-highlight);
+}
+.t-btn:disabled { opacity: 0.28; cursor: default; }
+.t-btn.t-active {
+  background: rgba(200,168,64,0.22); border-color: var(--cw-highlight);
+  color: var(--cw-highlight);
+}
+
+/* ── TIMER PANE ── */
+#crt-pane-timer {
+  padding: 12px 14px 10px; gap: 6px;
+  background: rgba(0,0,0,0.45);
+}
+#timer-hdr {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.22em; color: var(--cw-copper);
+  text-align: center; flex-shrink: 0;
+}
+#timer-body {
+  flex: 1; display: flex; gap: 14px; min-height: 0;
+}
+#timer-hglass { flex-shrink: 0; display: block; pointer-events: none; }
+#timer-right {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: space-evenly; gap: 8px;
+  min-width: 0;
+}
+#timer-status-txt {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; color: var(--cw-copper);
+  text-align: center; min-height: 14px; flex-shrink: 0;
+}
+#timer-display {
+  font-family: var(--font-crt); font-size: 72px; line-height: 1;
+  color: #c8a840; text-align: center;
+  text-shadow: 0 0 18px #c8a840, 0 0 36px rgba(200,168,64,0.3);
+  letter-spacing: 0.05em; flex-shrink: 0;
+}
+#timer-display.warn { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
+#timer-display.crit { color: #c8a840; text-shadow: 0 0 18px #c8a840; }
+/* ── LUNCH LAP overlay ── */
+#lunch-overlay {
+  display: none; position: absolute; inset: 0; z-index: 300;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(6,5,3,0.90);
+  font-family: var(--font-mono); text-align: center; padding: 24px; gap: 14px;
+}
+#lunch-quip {
+  color: #c8a840; font-size: 16px; letter-spacing: 0.13em;
+  text-shadow: 0 0 14px #c8a840, 0 0 28px rgba(200,168,64,0.3);
+  line-height: 1.55; max-width: 340px; text-transform: uppercase;
+}
+#lunch-scrap-label {
+  color: #7a5228; font-size: 10px; letter-spacing: 0.18em;
+  margin-bottom: 4px;
+}
+#lunch-count {
+  color: #d49240; font-family: var(--font-crt); font-size: 100px;
+  text-shadow: 0 0 28px #d49240, 0 0 56px rgba(212,146,64,0.4);
+  min-height: 110px; line-height: 1;
+}
+@keyframes lunchCountPop {
+  0%   { transform: scale(1.4); opacity: 0.6; }
+  100% { transform: scale(1);   opacity: 1;   }
+}
+.lunch-count-pop { animation: lunchCountPop 0.25s ease-out both; }
+
+#timer-presets {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 6px; flex-shrink: 0; width: 100%;
+}
+.t-preset {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.05em; color: rgba(200,168,64,0.45);
+  border: 1px solid rgba(200,168,64,0.25); padding: 6px 4px;
+  cursor: pointer; transition: all 0.15s; user-select: none;
+  text-align: center;
+}
+.t-preset:hover { color: #c8a840; border-color: rgba(200,168,64,0.6); background: rgba(200,168,64,0.1); }
+.t-preset.t-pre-active { color: #c8a840; border-color: rgba(200,168,64,0.7); background: rgba(200,168,64,0.15); }
+#timer-custom {
+  display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+}
+#timer-custom-input {
+  font-family: var(--font-mono); font-size: 13px;
+  letter-spacing: 0.1em; color: #c8a840;
+  background: rgba(200,168,64,0.06);
+  border: 1px solid rgba(200,168,64,0.3);
+  padding: 6px 10px; width: 80px; text-align: center;
+  outline: none;
+}
+#timer-custom-input::placeholder { color: rgba(200,168,64,0.3); }
+#timer-custom-input:focus { border-color: rgba(200,168,64,0.6); background: rgba(200,168,64,0.1); }
+#timer-btns { display: flex; gap: 10px; flex-shrink: 0; }
+
+/* ── STOPWATCH PANE ── */
+#crt-pane-watch { padding: 0; }
+#watch-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+#watch-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  pointer-events: none;
+}
+#p-crt.crt-watch #watch-overlay > * { pointer-events: auto; }
+#watch-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.22em; color: rgba(200,168,64,0.55);
+}
+#watch-display {
+  font-family: var(--font-crt); font-size: 112px; line-height: 1;
+  color: #c8a840; letter-spacing: 0.05em;
+  text-shadow: 0 0 22px #c8a840, 0 0 44px rgba(200,168,64,0.35);
+}
+#watch-btns { display: flex; gap: 10px; }
+/* Watch buttons — amber to match dot and display */
+#watch-btns .t-btn {
+  color: rgba(200,168,64,0.55);
+  background: rgba(200,168,64,0.04);
+  border-color: rgba(200,168,64,0.22);
+}
+#watch-btns .t-btn:hover:not(:disabled) {
+  color: #c8a840; background: rgba(200,168,64,0.10);
+  border-color: rgba(200,168,64,0.5);
+}
+#watch-btns .t-btn:disabled {
+  color: rgba(200,168,64,0.18);
+  border-color: rgba(200,168,64,0.10);
+  background: transparent;
+}
+#watch-marks {
+  font-family: var(--font-mono); font-size: 11px;
+  color: rgba(200,168,64,0.5); letter-spacing: 0.1em;
+  text-align: center; max-height: 66px; overflow: hidden;
+  display: flex; flex-direction: column; gap: 3px;
+}
+
+/* ── PICKER PANE ── */
+#crt-pane-pick {
+  padding: 14px 20px 14px; gap: 6px;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+}
+#pick-hdr {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.2em; color: var(--cw-amber);
+  text-align: center; flex-shrink: 0;
+  text-shadow: 0 0 8px rgba(200,168,64,0.4);
+  max-height: 60px; overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+}
+#pick-sub {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.18em; color: var(--cw-dim);
+  text-align: center; flex-shrink: 0;
+  max-height: 40px; overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+#pick-status {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 30px; overflow: hidden;
+}
+#pick-btn {
+  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s ease, margin 0.3s ease;
+  max-height: 60px; overflow: hidden;
+}
+/* Spinning state — collapse chrome, give reel all the space */
+#crt-pane-pick.pick-spinning #pick-hdr,
+#crt-pane-pick.pick-spinning #pick-period-row,
+#crt-pane-pick.pick-spinning #pick-sub,
+#crt-pane-pick.pick-spinning #pick-status,
+#crt-pane-pick.pick-spinning #pick-btn {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0 !important; margin-bottom: 0 !important;
+  padding-top: 0 !important; padding-bottom: 0 !important;
+}
+#pick-window {
+  flex: 1; width: 100%; position: relative;
+  overflow: hidden;
+  border-top: 1px solid rgba(200,168,64,0.25);
+  border-bottom: 1px solid rgba(200,168,64,0.25);
+}
+#pick-highlight {
+  position: absolute; left: 0; right: 0;
+  top: 50%; transform: translateY(-50%);
+  height: 60px;
+  background: rgba(200,168,64,0.1);
+  box-shadow: 0 0 20px rgba(200,168,64,0.3);
+  pointer-events: none; z-index: 2;
+}
+#pick-highlight::before, #pick-highlight::after {
+  content: ''; position: absolute; left: 0; right: 0; height: 1px;
+  background: rgba(200,168,64,0.4);
+}
+#pick-highlight::before { top: 0; } #pick-highlight::after { bottom: 0; }
+#pick-reel {
+  position: absolute; width: 100%; top: 0;
+  display: flex; flex-direction: column; align-items: center;
+}
+.pick-name {
+  height: 60px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-crt); font-size: 14px;
+  letter-spacing: 0.08em; text-align: center;
+  color: rgba(200,168,64,0.45); width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  padding: 0 12px; box-sizing: border-box;
+  transition: font-size 0.08s, opacity 0.08s;
+}
+.pick-name.pick-selected {
+  color: var(--cw-highlight);
+  text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.5);
+  opacity: 1;
+}
+#pick-status {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.16em; color: var(--cw-dim);
+  text-align: center; flex-shrink: 0; min-height: 14px;
+}
+@keyframes pickCursor { 0%,100%{opacity:1} 50%{opacity:0} }
+#pick-cursor { animation: pickCursor 1s step-end infinite; }
+#pick-period-row {
+  display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; flex-shrink: 0; min-height: 22px;
+}
+.pick-period-btn {
+  font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: 4px;
+  border: 1px solid rgba(200,168,64,0.3); background: transparent;
+  color: var(--cw-dim); cursor: pointer; transition: all 0.15s;
+}
+.pick-period-btn:hover { border-color: var(--cw-amber); color: var(--cw-amber); }
+.pick-period-btn.active {
+  background: rgba(200,168,64,0.15); border-color: var(--cw-amber);
+  color: var(--cw-amber); text-shadow: 0 0 6px rgba(200,168,64,0.4);
+}
+.pick-period-note {
+  font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.1em;
+  color: var(--cw-dim); text-align: center; padding: 3px 0;
+}
+/* ── SCRAP-E SAYS pane ── */
+#crt-pane-scrape {
+  align-items: center; justify-content: center;
+  padding: 24px 36px; text-align: center;
+  background: rgba(0,0,0,0.55);
+}
+@keyframes scrapeGlow {
+  0%,100%{ text-shadow: 0 0 14px var(--cw-green), 0 0 28px rgba(96,200,96,0.4); opacity:1; }
+  50%     { text-shadow: 0 0 22px var(--cw-green), 0 0 48px rgba(96,200,96,0.6); opacity:0.88; }
+}
+#scrape-says-txt {
+  font-family: var(--font-crt); font-size: 34px;
+  color: var(--cw-green); letter-spacing: 0.1em;
+  line-height: 1.5;
+  animation: scrapeGlow 2.2s ease-in-out infinite;
+}
+/* ── SCRAP•E ARM ── */
+#scrap-hand {
+  position: absolute;
+  left: 279px; top: 615px;
+  width: 84px; height: 130px;
+  transform-origin: 11px 118px;
+  pointer-events: none;
+  z-index: 3;
+}
+@keyframes scrapeWave {
+  0%   { transform: rotate(0deg); }
+  15%  { transform: rotate(-18deg); }
+  30%  { transform: rotate(4deg); }
+  45%  { transform: rotate(-20deg); }
+  60%  { transform: rotate(3deg); }
+  75%  { transform: rotate(-14deg); }
+  88%  { transform: rotate(2deg); }
+  100% { transform: rotate(0deg); }
+}
+#scrap-hand.waving {
+  animation: scrapeWave 1.4s ease-in-out forwards;
+}
+/* Spin-the-wheel arm: slow wind-up, fast downward thrust, settle */
+@keyframes scrapeSpinArm {
+  0%   { transform: rotate(0deg); }      /* rest */
+  44%  { transform: rotate(-34deg); }    /* max pullback — slow draw */
+  60%  { transform: rotate(32deg); }     /* fast thrust downward — WHEEL STARTS HERE */
+  72%  { transform: rotate(-12deg); }    /* overshoot rebound */
+  83%  { transform: rotate(7deg); }      /* settle */
+  92%  { transform: rotate(-3deg); }
+  100% { transform: rotate(0deg); }      /* back to rest */
+}
+#scrap-hand.spin-arm {
+  animation: scrapeSpinArm 1.7s linear forwards;
+}
+
+/* ── NAV HOTSPOTS — transparent click zones over chassis image elements ── */
+#orb-hotspot, #cw-hotspot {
+  position: absolute;
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s;
+}
+#orb-hotspot {
+  left: 1509px; top: 26px; width: 108px; height: 101px;
+  border-radius: 50%;
+}
+#cw-hotspot {
+  left: 635px; top: 23px; width: 256px; height: 73px;
+  border-radius: 4px;
+}
+#orb-hotspot:hover, #cw-hotspot:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── STAMP MOOD GLOW — overlay on SCRAP-E APPROVED in chassis image ── */
+#stamp-glow {
+  position: absolute;
+  left: 65px; top: 422px; width: 148px; height: 118px;
+  border-radius: 6px; pointer-events: none; z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 0;
+  transition: opacity 2s ease, background 2s ease;
+}
+@keyframes stampPulse { 0%,100%{opacity:0.9} 50%{opacity:0.45} }
+#stamp-glow.glow-open {
+  background: radial-gradient(ellipse at 50% 55%, rgba(80,200,80,0.28) 0%, transparent 70%);
+  opacity: 1; animation: stampPulse 4s ease-in-out infinite;
+}
+#stamp-glow.glow-warn {
+  background: radial-gradient(ellipse at 50% 55%, rgba(200,168,40,0.24) 0%, transparent 70%);
+  opacity: 1; animation: stampPulse 3s ease-in-out infinite;
+}
+#stamp-glow.glow-restricted {
+  background: radial-gradient(ellipse at 50% 55%, rgba(180,40,28,0.20) 0%, transparent 70%);
+  opacity: 0.8; animation: stampPulse 4.5s ease-in-out infinite;
+}
+/* ── BELL SCHEDULE PANE ── */
+#crt-bell-hdr {
+  font-family: var(--font-mono); font-size: 16px;
+  letter-spacing: 0.22em; color: var(--cw-amber);
+  text-align: center; text-transform: uppercase;
+  padding-bottom: 7px; margin-bottom: 6px;
+  border-bottom: 1px solid rgba(200,168,64,0.3);
+  flex-shrink: 0;
+  text-shadow: 0 0 10px rgba(200,168,64,0.3);
+  position: relative; z-index: 1;
+}
+#crt-bell-rows {
+  display: flex; flex-direction: column;
+  flex: 1; justify-content: space-between;
+  overflow: hidden; position: relative; z-index: 1;
+}
+.crt-br {
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 6px; border-radius: 3px;
+  font-family: var(--font-crt);
+  border-bottom: 1px solid rgba(200,168,64,0.07);
+}
+.crt-br.is-now {
+  background: rgba(200,168,64,0.09);
+  border-bottom-color: rgba(200,168,64,0.15);
+}
+.crt-br.is-brk { opacity: 0.6; }
+.crt-brl {
+  flex: 1; font-size: 21px; letter-spacing: 0.06em;
+  color: var(--cw-amber-warm);
+  white-space: nowrap; overflow: hidden;
+}
+.crt-br.is-now .crt-brl { color: var(--cw-highlight); }
+.crt-brt {
+  font-size: 18px; color: var(--cw-dim); letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.crt-br.is-now .crt-brt { color: var(--cw-amber); }
+.crt-brsep {
+  color: var(--cw-dim); opacity: 0.35;
+  margin: 0 3px; font-size: 15px; font-family: var(--font-crt);
+}
+/* ── STANDBY PANE ── */
+#crt-standby-img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+/* ── DATA ACCESS PANE ── */
+#crt-data-lines {
+  display: flex; flex-direction: column; gap: 10px;
+  position: relative; z-index: 1;
+}
+.crt-dl {
+  font-family: var(--font-mono); font-size: 15px;
+  letter-spacing: 0.1em; color: var(--cw-amber);
+  opacity: 0; transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  text-transform: uppercase;
+}
+.crt-dl.vis { opacity: 1; transform: translateX(0); }
+.crt-dl.ok { color: var(--cw-highlight); }
+.crt-dl.dim { color: var(--cw-dim); }
+
+/* STATUS — 3-zone strip */
+#p-status {
+  left: 673px; top: 627px; width: 616px; height: 90px;
+  padding: 0;
+  display: flex; align-items: stretch;
+}
+/* Thin vertical dividers between zones */
+.st-div {
+  width: 1px; flex-shrink: 0;
+  background: linear-gradient(180deg, transparent, rgba(200,168,64,0.22), transparent);
+  margin: 10px 0;
+}
+/* LEFT — period label + end time */
+#st-left {
+  flex: 0 0 188px; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 18px 0 20px;
+}
+#st-period {
+  font-family: var(--font-crt); font-size: 24px;
+  color: var(--cw-highlight); letter-spacing: 0.06em;
+  text-shadow: 0 0 10px rgba(240,208,96,0.4);
+  line-height: 1.1; white-space: nowrap;
+}
+#st-ends {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); letter-spacing: 0.1em;
+  text-transform: uppercase; margin-top: 4px;
+  white-space: nowrap;
+}
+/* MIDDLE — large countdown stacked */
+#st-mid {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 4px 8px; gap: 2px;
+}
+#st-mins-num {
+  font-family: var(--font-crt); font-size: 38px;
+  color: var(--cw-highlight); line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 14px rgba(240,208,96,0.5);
+}
+#st-mins-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); letter-spacing: 0.12em;
+  text-transform: uppercase; text-align: center;
+  line-height: 1.5;
+}
+/* Secondary countdown — end-of-period, shown alongside passes-open during firstFifteen */
+#st-mid2 {
+  flex: 0 0 auto; min-width: 120px;
+  display: none; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 4px 8px; gap: 2px;
+}
+#st-mins2-num {
+  font-family: var(--font-crt); font-size: 28px;
+  color: var(--cw-amber); line-height: 1;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 10px rgba(200,168,64,0.4);
+}
+#st-mins2-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--cw-dim); letter-spacing: 0.12em;
+  text-transform: uppercase; text-align: center;
+  line-height: 1.5;
+}
+/* 1-minute warning flash */
+@keyframes minWarn { 0%,100%{opacity:1} 50%{opacity:0.15} }
+.flashing { animation: minWarn 1.4s ease-in-out infinite; }
+/* Active pip gentle pulse */
+@keyframes pipPulse { 0%,100%{opacity:0.78} 50%{opacity:0.48} }
+/* RIGHT — pass policy */
+#st-right {
+  flex: 0 0 188px; display: flex; flex-direction: column;
+  justify-content: center; padding: 0 20px 0 18px;
+  align-items: flex-end;
+}
+#st-pass-lbl {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.2em; color: var(--cw-dim);
+  text-transform: uppercase; margin-bottom: 5px;
+}
+#st-pass-val {
+  display: flex; align-items: center; gap: 7px;
+}
+#st-pass-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  transition: background 0.6s, box-shadow 0.6s;
+}
+#st-pass-dot.open {
+  background: var(--cw-green);
+  box-shadow: 0 0 6px var(--cw-green), 0 0 12px var(--cw-green-glow);
+  animation: ledPulse 2.4s ease-in-out infinite;
+}
+#st-pass-dot.warn {
+  background: #c8a020;
+  box-shadow: 0 0 6px rgba(200,160,32,0.9), 0 0 12px rgba(200,160,32,0.4);
+  animation: ledPulse 1.2s ease-in-out infinite;
+}
+#st-pass-dot.restricted {
+  background: #b83020;
+  box-shadow: 0 0 6px rgba(184,48,32,0.9), 0 0 12px rgba(184,48,32,0.4);
+  animation: none;
+}
+#st-pass-dot.grey {
+  background: rgba(200,168,64,0.35);
+  box-shadow: none; animation: none;
+}
+#st-pass-dot.off {
+  background: rgba(200,168,64,0.15); box-shadow: none; animation: none;
+}
+#st-pass-txt {
+  font-family: var(--font-crt); font-size: 21px;
+  letter-spacing: 0.08em; color: var(--cw-amber-warm);
+  white-space: nowrap;
+}
+
+/* SOUND LEVEL */
+#p-sound {
+  left: 1341px; top: 186px; width: 445px; height: 161px;
+  padding: 12px 20px 10px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#sound-bars {
+  flex: 1; position: relative; overflow: hidden;
+}
+#sound-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+}
+/* Sound meter interactive controls */
+#snd-toggle-btn, #snd-style-btn {
+  cursor: pointer; transition: color 0.2s;
+}
+#snd-toggle-btn:hover { color: var(--cw-highlight); }
+#snd-style-btn { color: var(--cw-dim); }
+#snd-style-btn:hover { color: var(--cw-highlight); }
+.snd-sep { color: var(--cw-dim); opacity: 0.5; margin: 0 5px; }
+.snd-ctrl {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-amber); letter-spacing: 0.1em;
+  cursor: pointer; margin-left: auto;
+  border: 1px solid rgba(200,168,64,0.28);
+  padding: 1px 7px; border-radius: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.snd-ctrl:hover { color: var(--cw-highlight); border-color: rgba(200,168,64,0.6); }
+.s-bar {
+  flex: 1; border-radius: 2px 2px 0 0;
+  background: rgba(200,168,64,0.15);
+  min-height: 4px;
+  transition: height 0.1s ease, background 0.12s ease;
+}
+.s-bar.lit  { background: var(--cw-amber); }
+.s-bar.hot  { background: var(--cw-copper); box-shadow: 0 0 6px rgba(184,112,64,0.5); }
+.s-bar.peak { background: #ff6040; box-shadow: 0 0 8px rgba(255,96,64,0.6); }
+#sound-readout {
+  display: flex; align-items: baseline; justify-content: flex-end; gap: 6px;
+}
+#sound-db-num {
+  font-family: var(--font-crt); font-size: 28px; color: var(--cw-amber);
+  line-height: 1;
+}
+#sound-db-unit {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.12em; color: var(--cw-dim);
+}
+#sound-status-txt {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.18em; color: var(--cw-dim);
+  text-transform: uppercase; text-align: right;
+}
+
+/* BIRTHDAYS */
+#p-birthdays {
+  left: 1341px; top: 409px; width: 409px; height: 154px;
+  padding: 8px 16px 6px;
+  display: flex; flex-direction: column; justify-content: flex-start; gap: 3px;
+}
+.bd-row {
+  display: flex; align-items: center; gap: 7px;
+}
+.bd-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cw-copper);
+  box-shadow: 0 0 5px rgba(184,112,64,0.7);
+  flex-shrink: 0;
+}
+.bd-name {
+  flex: 1; min-width: 0;
+  font-family: var(--font-mono); font-size: 14px;
+  letter-spacing: 0.03em; color: var(--cw-amber-warm);
+  text-transform: uppercase;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bd-date {
+  font-family: var(--font-crt); font-size: 18px;
+  color: var(--cw-highlight); flex-shrink: 0;
+  text-shadow: 0 0 6px rgba(240,208,96,0.4);
+}
+.bd-days {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); letter-spacing: 0.05em;
+  flex-shrink: 0; min-width: 46px; text-align: right;
+}
+.bd-today-banner {
+  margin-top: 5px; padding-top: 5px;
+  border-top: 1px solid rgba(200,168,64,0.18);
+  font-family: var(--font-crt); font-size: 24px;
+  letter-spacing: 0.07em; color: var(--cw-highlight);
+  text-align: center; line-height: 1.1;
+  text-shadow: 0 0 14px rgba(240,208,96,0.55);
+  animation: bdToday 2.2s ease-in-out infinite;
+}
+@keyframes bdToday { 0%,100%{opacity:1} 50%{opacity:0.55} }
+.bd-empty {
+  font-family: var(--font-mono); font-size: 13px;
+  color: rgba(200,168,64,0.3); letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* WEATHER */
+#p-weather {
+  left: 1340px; top: 639px; width: 408px; height: 110px;
+  padding: 8px 16px;
+  display: flex; align-items: center; gap: 16px;
+}
+#wx-temp-big {
+  font-family: var(--font-crt); font-size: 56px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 14px rgba(240,208,96,0.4);
+  flex-shrink: 0;
+}
+#wx-mid { flex: 1; }
+#wx-cond-lbl {
+  font-family: var(--font-mono); font-size: 16px;
+  color: var(--cw-amber); text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+#wx-feels-lbl {
+  font-family: var(--font-mono); font-size: 12px;
+  color: var(--cw-dim); letter-spacing: 0.04em;
+  margin-top: 2px;
+}
+#wx-aqi-lbl {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.06em; margin-top: 3px;
+}
+#wx-fc { display: flex; gap: 10px; }
+.wx-day { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.wx-day-name { font-family: var(--font-mono); font-size: 10px; color: var(--cw-dim); letter-spacing: 0.1em; }
+.wx-day-hi { font-family: var(--font-crt); font-size: 20px; color: var(--cw-amber); }
+.wx-day-lo { font-family: var(--font-mono); font-size: 11px; color: var(--cw-dim); }
+
+/* PHOTO SLIDESHOW */
+/* PHOTO — PSD 330,648,131,132 × 1.25 = 413,810,164,165 */
+#p-photo {
+  left: 413px; top: 810px; width: 164px; height: 165px;
+  background: var(--cw-panel);
+  border-radius: 26px;
+  overflow: hidden;
+}
+#p-photo img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  transition: opacity 1.2s ease;
+  filter: grayscale(1) sepia(.80) hue-rotate(-16deg) saturate(1.1) brightness(.70) contrast(1.15);
+}
+/* warm tint + dark vignette */
+#p-photo::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.82) 100%),
+    radial-gradient(ellipse at 75% 25%, rgba(230,155,30,.28), transparent 70%),
+    linear-gradient(180deg, rgba(220,170,40,.15) 0%, rgba(200,130,20,.12) 55%, rgba(0,0,0,.22) 100%);
+}
+/* scanlines — barely-there, just texture */
+#p-photo::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 4; pointer-events: none; opacity: .13;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.7) 0px, rgba(0,0,0,.7) 1px, transparent 1px, transparent 10px);
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN EFFECTS — old display vibes per panel
+   ══════════════════════════════════════════════════════ */
+
+/* STATUS + BIRTHDAYS + WEATHER + SPORT CARDS: subtle scanlines */
+#p-status::after,
+#p-birthdays::after,
+#p-weather::after,
+.sd-card::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px, transparent 5px,
+    rgba(0,0,0,.07) 5px, rgba(0,0,0,.07) 6px
+  );
+}
+
+/* STATUS: amber phosphor vignette — like a small readout screen */
+#p-status::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgba(200,168,64,.05), transparent 72%),
+              radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,.28) 100%);
+}
+
+/* SOUND LEVEL: coordinate graph grid — fits the VU meter aesthetic */
+#p-sound::after {
+  content: '';
+  position: absolute; inset: 0; z-index: 5; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(200,168,64,.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,168,64,.04) 1px, transparent 1px);
+  background-size: 100% 20px, 22px 100%;
+}
+
+/* WEATHER: faint dot-matrix overlay — like an LCD readout */
+#p-weather::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image: radial-gradient(circle, rgba(200,168,64,.06) 1px, transparent 1px);
+  background-size: 5px 5px;
+}
+
+/* BIRTHDAYS: slight green-tinted phosphor vignette */
+#p-birthdays::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,.22) 100%);
+}
+
+/* SPORT CARDS: screen vignette — like mini monitors */
+.sd-card::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, rgba(200,168,64,.04), transparent 65%),
+              radial-gradient(ellipse at 50% 50%, transparent 48%, rgba(0,0,0,.30) 100%);
+}
+
+/* SPORT DAY SUB-CARDS */
+.sd-card {
+  position: absolute;
+  padding: 6px 8px 5px 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: flex-start;
+  gap: 3px; text-align: center;
+}
+#sd-1 { left: 624px;  top: 813px; width: 156px; height: 168px; }
+#sd-2 { left: 795px;  top: 811px; width: 160px; height: 166px; }
+#sd-3 { left: 969px;  top: 813px; width: 159px; height: 169px; }
+#sd-4 { left: 1146px; top: 814px; width: 166px; height: 169px; }
+.sd-top-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; width: 100%; margin-top: 2px;
+}
+.sd-icon { width: 36px; height: 36px; flex-shrink: 0; }
+.sd-icon svg { width: 100%; height: 100%; }
+.sd-countdown { display: flex; flex-direction: column; align-items: center; }
+.sd-days-num {
+  font-family: var(--font-crt); font-size: 38px; line-height: 1;
+  color: var(--cw-highlight);
+  text-shadow: 0 0 10px rgba(240,208,96,0.5);
+}
+.sd-days-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; color: var(--cw-dim);
+  text-transform: uppercase; line-height: 1; margin-top: -2px;
+}
+.sd-divider { width: 80%; height: 1px; background: rgba(200,168,64,0.2); margin: 2px 0; }
+.sd-opponent {
+  font-family: var(--font-mono); font-size: 13px;
+  color: var(--cw-amber-warm); text-transform: uppercase;
+  letter-spacing: 0.03em; line-height: 1.15;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  width: 100%;
+}
+.sd-meta {
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--cw-dim); line-height: 1.4; width: 100%;
+}
+.sd-ha {
+  display: inline-block; padding: 0 5px;
+  border: 1px solid rgba(200,168,64,0.35); border-radius: 2px;
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.1em; color: var(--cw-copper);
+  text-transform: uppercase; margin-bottom: 2px;
+}
+.sd-empty {
+  font-family: var(--font-mono); font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(200,168,64,0.2); margin: auto;
+}
+
+/* WORDS OF WISDOM — PSD 1125,637,282,152 × 1.25 = 1406,796,353,190 */
+#p-wisdom {
+  left: 1406px; top: 796px; width: 353px; height: 190px;
+  padding: 10px 16px 8px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+#wisdom-cat {
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.22em; color: var(--cw-copper);
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+}
+#wisdom-text {
+  flex: 1; display: flex; align-items: flex-start;
+  font-family: var(--font-type); font-size: 19px; line-height: 1.4;
+  color: #1c0a04;
+  font-style: italic;
+  text-shadow: 0 1px 1px rgba(255,200,130,0.2);
+  overflow: hidden;
+  transition: opacity 0.6s ease;
+}
+#wisdom-text.fade { opacity: 0; }
+
+/* HONOR ROLL TICKER */
+#p-honor {
+  left: 320px; top: 1002px; width: 1546px; height: 63px;
+  display: flex; align-items: center; overflow: hidden;
+}
+#honor-track {
+  flex: 1; overflow: hidden; height: 100%; position: relative;
+}
+#honor-inner {
+  display: inline-flex; align-items: center; height: 100%;
+  white-space: nowrap;
+  animation: ticker 380s linear infinite;
+}
+@keyframes ticker { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+.hn-name {
+  font-family: var(--font-mono); font-size: 16px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--cw-amber); padding: 0 14px;
+}
+.hn-sep { color: var(--cw-copper); opacity: 0.6; }
+
+/* SCRAP-E EYES
+   The #p-eyes container sits at left:139px, top:668px (display coords).
+   Head tilts LEFT side UP — counter-clockwise = negative degrees.
+   rotate(-7deg): left side of container rises, right side drops.
+   #eye-left  = LEFT eye on screen → sits HIGHER (top: -5px)
+   #eye-right = RIGHT eye on screen → sits LOWER  (top: +5px) */
+#p-eyes {
+  left: 139px; top: 668px; width: 109px; height: 63px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; z-index: 2;
+  transform: rotate(-7deg);
+}
+#eye-left  { position: relative; top: 0; }
+#eye-right { position: relative; top: 0; }
+.scrap-eye {
+  width: 30px; height: 20px;
+  background: var(--cw-green);
+  border-radius: 5px;
+  position: relative;
+  transition: transform 0.3s ease;
+  box-shadow:
+    0 0 8px var(--cw-green),
+    0 0 18px var(--cw-green-glow),
+    0 0 32px rgba(0,255,68,0.25),
+    inset 0 0 8px rgba(0,255,68,0.4);
+  animation: eyeGlow 3.5s ease-in-out infinite;
+}
+.scrap-eye.right { animation-delay: 0.2s; }
+/* inner scanline on eye */
+.scrap-eye::after {
+  content: '';
+  position: absolute; left: 20%; right: 20%; top: 30%; bottom: 30%;
+  background: rgba(0,0,0,0.25); border-radius: 1px;
+}
+@keyframes eyeGlow {
+  0%,100% {
+    box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), 0 0 32px rgba(0,255,68,0.25), inset 0 0 8px rgba(0,255,68,0.4);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 12px var(--cw-green), 0 0 26px var(--cw-green-glow), 0 0 48px rgba(0,255,68,0.35), inset 0 0 12px rgba(0,255,68,0.55);
+    opacity: 0.92;
+  }
+}
+.scrap-eye.blink { transform: scaleY(0.08) !important; transition: transform 0.06s ease; }
+/* Minute-lap flash — eyes go amber for 1.8s */
+@keyframes eyeMinuteLap {
+  0%   { background: var(--cw-green);
+         box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), inset 0 0 8px rgba(0,255,68,0.4); }
+  15%  { background: #c8a840;
+         box-shadow: 0 0 18px #c8a840, 0 0 40px rgba(200,168,64,0.6), 0 0 80px rgba(200,168,64,0.3), inset 0 0 14px rgba(200,168,64,0.5); }
+  35%  { background: #ffd060;
+         box-shadow: 0 0 24px #ffd060, 0 0 56px rgba(255,208,96,0.7), 0 0 100px rgba(255,208,96,0.4), inset 0 0 18px rgba(255,208,96,0.6); }
+  65%  { background: #c8a840;
+         box-shadow: 0 0 18px #c8a840, 0 0 40px rgba(200,168,64,0.5), inset 0 0 14px rgba(200,168,64,0.45); }
+  100% { background: var(--cw-green);
+         box-shadow: 0 0 8px var(--cw-green), 0 0 18px var(--cw-green-glow), inset 0 0 8px rgba(0,255,68,0.4); }
+}
+.scrap-eye.lap-flash {
+  animation: eyeMinuteLap 1.8s ease-in-out forwards !important;
+}
+/* eye pupil dot */
+.eye-pupil {
+  position: absolute; width: 8px; height: 8px;
+  background: rgba(0,0,0,0.6); border-radius: 50%;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  transition: transform 0.4s cubic-bezier(.45,0,.3,1);
+}
+
+/* ── SCRAP-E FLOAT ANIMATION ──
+   #scrap-float wraps #p-eyes so we can float the eyes independently
+   of #p-eyes' rotate(-7deg) transform without conflicting.         */
+@keyframes scrapeFloat {
+  0%,100% { transform: translateY(0px); }
+  35%      { transform: translateY(-4px) rotate(0.3deg); }
+  70%      { transform: translateY(-1.5px) rotate(-0.15deg); }
+}
+#scrap-float {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 2;
+  animation: scrapeFloat 4.5s ease-in-out infinite;
+}
+
+/* ── EYE EMOTION SHAPE SYSTEM ──
+   Applied as class on #p-eyes: emo-idle / emo-happy / emo-concerned
+                                  emo-sleepy / emo-excited / emo-squint
+   Eye COLOR never changes — only HEIGHT and BORDER-RADIUS shapes emotions. */
+.scrap-eye {
+  transition: height 0.5s cubic-bezier(.4,0,.2,1),
+              border-radius 0.5s ease,
+              box-shadow 0.6s ease,
+              opacity 0.6s ease;
+}
+/* HAPPY — tall wide-open, bright glow, gentle smile curve on bottom */
+#p-eyes.emo-happy .scrap-eye {
+  height: 26px;
+  border-radius: 5px 5px 11px 11px;
+  box-shadow:
+    0 0 14px var(--cw-green),
+    0 0 30px rgba(96,200,96,0.55),
+    0 0 52px rgba(96,200,96,0.3),
+    inset 0 0 14px rgba(0,255,68,0.6);
+}
+#p-eyes.emo-happy .scrap-eye::after { top: 14%; bottom: 42%; }
+
+/* CONCERNED — narrow band, tight glow, furrowed-brow energy */
+#p-eyes.emo-concerned .scrap-eye {
+  height: 12px;
+  border-radius: 3px;
+  box-shadow:
+    0 0 7px var(--cw-green),
+    0 0 14px rgba(96,200,96,0.25),
+    inset 0 0 5px rgba(0,255,68,0.28);
+}
+
+/* SLEEPY — heavy lidded, dim, slow glow pulse */
+#p-eyes.emo-sleepy .scrap-eye {
+  height: 9px;
+  border-radius: 3px 3px 6px 6px;
+  opacity: 0.42;
+  box-shadow:
+    0 0 5px var(--cw-green),
+    0 0 9px rgba(96,200,96,0.18),
+    inset 0 0 4px rgba(0,255,68,0.18);
+  animation: eyeGlow 9s ease-in-out infinite !important;
+}
+
+/* EXCITED — tall open eyes, gentle slow pulse, bright glow (Fridays) */
+@keyframes eyeExcited {
+  0%,100%{ height: 24px; }
+  50%     { height: 27px; }
+}
+#p-eyes.emo-excited .scrap-eye {
+  animation: eyeExcited 2.5s ease-in-out infinite,
+             eyeGlow 2s ease-in-out infinite !important;
+  border-radius: 5px 5px 11px 11px;
+  box-shadow:
+    0 0 16px var(--cw-green),
+    0 0 34px rgba(96,200,96,0.6),
+    0 0 58px rgba(96,200,96,0.32),
+    inset 0 0 16px rgba(0,255,68,0.65);
+}
+
+/* LAUGH — squinted + quick bounce on the float wrapper */
+@keyframes eyeLaughBounce {
+  0%       { transform: translateY(-28px); }
+  14%      { transform: translateY(-10px); }
+  28%      { transform: translateY(-26px); }
+  42%      { transform: translateY(-10px); }
+  56%      { transform: translateY(-22px); }
+  70%      { transform: translateY(-10px); }
+  84%      { transform: translateY(-16px); }
+  100%     { transform: translateY(0); }
+}
+#scrap-float.laughing {
+  animation: eyeLaughBounce 1.5s ease-in-out forwards !important;
+}
+#p-eyes.emo-laugh .scrap-eye {
+  height: 8px;
+  border-radius: 3px 3px 5px 5px;
+  opacity: 0.72;
+  animation: eyeGlow 0.35s ease-in-out infinite !important;
+}
+
+/* SQUINT — flat menacing locked stare (restricted pass zone) */
+#p-eyes.emo-squint .scrap-eye {
+  height: 7px;
+  border-radius: 2px;
+  box-shadow:
+    0 0 5px var(--cw-green),
+    0 0 10px rgba(96,200,96,0.15),
+    inset 0 0 3px rgba(0,255,68,0.22);
+  animation: none !important;
+}
+#p-eyes.emo-squint .eye-pupil { opacity: 0; }
+
+/* LIGHT BULBS */
+.bulb {
+  position: absolute;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2; pointer-events: none;
+}
+.bulb-crt {
+  width: 10px; height: 10px;
+  background: var(--cw-amber);
+  box-shadow: 0 0 6px var(--cw-amber), 0 0 12px rgba(200,168,64,0.4);
+  opacity: 0.12;
+  transition: opacity 3s ease-in-out;
+}
+/* burst mode: fast transition for random flicker */
+.bulb-crt.burst { transition: opacity 0.55s ease-in-out; }
+.bulb-sound {
+  width: 13px; height: 13px;
+  background: rgba(200,168,64,0.18);
+  box-shadow: none;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+.bulb-sound.lit {
+  background: var(--cw-amber);
+  box-shadow: 0 0 7px var(--cw-amber), 0 0 14px rgba(200,168,64,0.45);
+}
+.bulb-sound.hot {
+  background: var(--cw-copper);
+  box-shadow: 0 0 8px var(--cw-copper), 0 0 18px rgba(184,112,64,0.55);
+}
+/* SCRAP-E body light animations */
+@keyframes bodyMuted   { 0%,100%{opacity:0.60} 50%{opacity:0.28} }
+@keyframes bdayRainbow {
+  0%   { background: hsl(0,  90%,55%); box-shadow: 0 0 8px hsl(0,  80%,50%), 0 0 18px hsl(0,  70%,40%); }
+  16%  { background: hsl(35, 95%,55%); box-shadow: 0 0 8px hsl(35, 85%,50%), 0 0 18px hsl(35, 70%,40%); }
+  33%  { background: hsl(120,80%,45%); box-shadow: 0 0 8px hsl(120,80%,40%), 0 0 18px hsl(120,70%,30%); }
+  50%  { background: hsl(200,90%,55%); box-shadow: 0 0 8px hsl(200,80%,50%), 0 0 18px hsl(200,70%,40%); }
+  66%  { background: hsl(260,85%,65%); box-shadow: 0 0 8px hsl(260,75%,55%), 0 0 18px hsl(260,65%,45%); }
+  83%  { background: hsl(310,90%,60%); box-shadow: 0 0 8px hsl(310,80%,50%), 0 0 18px hsl(310,70%,40%); }
+  100% { background: hsl(0,  90%,55%); box-shadow: 0 0 8px hsl(0,  80%,50%), 0 0 18px hsl(0,  70%,40%); }
+}
+
+#bulb-big {
+  width: 26px; height: 26px;
+  /* initial amber — JS overrides once pass policy is known */
+  background: radial-gradient(circle at 38% 38%, #ffe090, var(--cw-amber) 55%, #c07020);
+  box-shadow: 0 0 8px rgba(200,168,64,0.50), 0 0 16px rgba(200,168,64,0.20);
+  animation: bodyMuted 5s ease-in-out infinite;
+}
+#bulb-small {
+  width: 12px; height: 12px;
+  background: var(--cw-amber);
+  box-shadow: 0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18);
+  animation: bodyMuted 5.5s ease-in-out infinite;
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- LAYER 1: BACKGROUND -->
+  <div id="layer-bg"></div>
+
+  <!-- LAYER 2: CONTENT PANELS -->
+  <div id="layer-panels">
+
+    <!-- HEADER -->
+    <div class="panel" id="p-header">RHS &middot; ROOM 27</div>
+
+    <!-- CLOCK -->
+    <div class="panel" id="p-clock">--:-- --</div>
+
+    <!-- EVENTS LIST -->
+    <div class="panel" id="p-events">
+      <div id="events-title">★ COUNTDOWN CALENDAR ★</div>
+      <div id="events-list"></div>
+    </div>
+
+    <!-- SCRAP-E CRT — multi-pane: news / bell / standby / data -->
+    <div class="panel crt-news" id="p-crt">
+      <!-- LUNCH LAP overlay — shown over all CRT panes during the midday run -->
+      <div id="lunch-overlay">
+        <div id="lunch-scrap-label">⚙ SCRAP-E SAYS ⚙</div>
+        <div id="lunch-quip"></div>
+        <div id="lunch-count"></div>
+      </div>
+      <!-- PANE: NEWS (signal intercept) -->
+      <div id="crt-pane-news">
+        <div id="crt-header">
+          <div id="crt-led"></div>
+          <div id="crt-label-text">SCRAP-E SIGNAL INTERCEPT</div>
+        </div>
+        <div id="crt-divider"></div>
+        <div id="crt-headline"><span id="crt-hl-text">SCANNING TRANSMISSIONS...</span><span id="crt-cursor"></span></div>
+        <div id="crt-body">Calibrating signal receiver. Stand by for incoming transmissions.</div>
+        <div id="crt-footer">
+          <div id="crt-source">SOURCE: —</div>
+          <div id="crt-qr" title="Scan to read full story"></div>
+        </div>
+      </div>
+      <!-- PANE: BELL SCHEDULE -->
+      <div id="crt-pane-bell">
+        <div id="crt-bell-hdr">★ BELL SCHEDULE ★</div>
+        <div id="crt-bell-rows"></div>
+      </div>
+      <!-- PANE: STANDBY IMAGE -->
+      <div id="crt-pane-standby">
+        <img id="crt-standby-img" src="scrape-standby.png" alt="SCRAP-E STAND BY" />
+      </div>
+      <!-- PANE: DATA ACCESS ANIMATION -->
+      <div id="crt-pane-data">
+        <div id="crt-data-lines"></div>
+      </div>
+      <!-- PANE: SCRAP-E SAYS interruption -->
+      <div id="crt-pane-scrape">
+        <div id="scrape-says-txt"></div>
+      </div>
+
+      <!-- PANE: TIMER -->
+      <div id="crt-pane-timer">
+        <div id="timer-hdr">COUNTDOWN SEQUENCE</div>
+        <div id="timer-body">
+          <canvas id="timer-hglass" width="210" height="350"></canvas>
+          <div id="timer-right">
+            <div id="timer-status-txt">SELECT DURATION</div>
+            <div id="timer-display">--:--</div>
+            <div id="timer-presets">
+              <span class="t-preset" data-m="3">3 MIN</span>
+              <span class="t-preset" data-m="10">10 MIN</span>
+              <span class="t-preset" data-m="15">15 MIN</span>
+            </div>
+            <div id="timer-custom">
+              <input type="text" id="timer-custom-input" placeholder="MM:SS" maxlength="5">
+              <button class="t-btn" id="timer-set-btn">SET</button>
+            </div>
+            <div id="timer-btns">
+              <button class="t-btn" id="timer-start-btn" disabled>START</button>
+              <button class="t-btn" id="timer-reset-btn" disabled>RESET</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE: STOPWATCH -->
+      <div id="crt-pane-watch">
+        <canvas id="watch-canvas"></canvas>
+        <div id="watch-overlay">
+          <div id="watch-lbl">ELAPSED TIME</div>
+          <div id="watch-display">00:00.0</div>
+          <div id="watch-btns">
+            <button class="t-btn" id="watch-start-btn">START</button>
+            <button class="t-btn" id="watch-mark-btn" disabled>MARK</button>
+            <button class="t-btn" id="watch-reset-btn" disabled>RESET</button>
+          </div>
+          <div id="watch-marks"></div>
+        </div>
+      </div>
+
+      <!-- PANE: STUDENT PICKER -->
+      <div id="crt-pane-pick">
+        <div id="pick-hdr">SCRAP&#8226;E STUDENT SELECTOR</div>
+        <div id="pick-period-row"></div>
+        <div id="pick-sub"></div>
+        <div id="pick-window">
+          <div id="pick-highlight"></div>
+          <div id="pick-reel"></div>
+        </div>
+        <div id="pick-status">AWAITING TRANSMISSION<span id="pick-cursor">_</span></div>
+        <button class="t-btn" id="pick-btn">ENGAGE REEL</button>
+      </div>
+    </div>
+
+    <!-- STATUS STRIP — period · countdown · pass policy -->
+    <div class="panel" id="p-status">
+      <!-- LEFT: period name + end time -->
+      <div id="st-left">
+        <div id="st-period">—</div>
+        <div id="st-ends">—</div>
+      </div>
+      <div class="st-div"></div>
+      <!-- MIDDLE: primary countdown (always) + secondary countdown (firstFifteen only) -->
+      <div id="st-mid">
+        <div id="st-mins-num">—</div>
+        <div id="st-mins-lbl">MIN LEFT</div>
+      </div>
+      <!-- secondary countdown — visible only during first 15 min of period -->
+      <div class="st-div" id="st-div2" style="display:none"></div>
+      <div id="st-mid2" style="display:none">
+        <div id="st-mins2-num">—</div>
+        <div id="st-mins2-lbl">MIN LEFT</div>
+      </div>
+      <div class="st-div"></div>
+      <!-- RIGHT: pass policy -->
+      <div id="st-right">
+        <div id="st-pass-lbl">PASS POLICY</div>
+        <div id="st-pass-val">
+          <span id="st-pass-dot" class="off"></span>
+          <span id="st-pass-txt">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOUND LEVEL -->
+    <div class="panel" id="p-sound">
+      <div id="sound-bars"><canvas id="sound-canvas"></canvas></div>
+      <div id="sound-readout">
+        <div id="sound-db-num">—</div>
+        <div id="sound-db-unit">dB</div>
+        <div id="snd-sens-btn" class="snd-ctrl" title="Cycle sensitivity">MED</div>
+      </div>
+      <div id="sound-status-txt">
+        <span id="snd-toggle-btn">METER OFF</span>
+        <span class="snd-sep">·</span>
+        <span id="snd-style-btn" title="Cycle style">BARS</span>
+      </div>
+    </div>
+
+    <!-- BIRTHDAYS -->
+    <div class="panel" id="p-birthdays">
+      <div id="bday-list"></div>
+    </div>
+
+    <!-- WEATHER -->
+    <div class="panel" id="p-weather">
+      <div id="wx-temp-big">—°</div>
+      <div id="wx-mid">
+        <div id="wx-cond-lbl">—</div>
+        <div id="wx-feels-lbl">—</div>
+        <div id="wx-aqi-lbl">AQI —</div>
+      </div>
+      <div id="wx-fc"></div>
+    </div>
+
+    <!-- PHOTO SLIDESHOW -->
+    <div class="panel" id="p-photo">
+      <img id="photo-img" src="" alt="" style="opacity:0">
+    </div>
+
+    <!-- SPORT DAY SUB-CARDS -->
+    <div class="panel sd-card" id="sd-1"></div>
+    <div class="panel sd-card" id="sd-2"></div>
+    <div class="panel sd-card" id="sd-3"></div>
+    <div class="panel sd-card" id="sd-4"></div>
+
+    <!-- WORDS OF WISDOM -->
+    <div class="panel" id="p-wisdom">
+      <div id="wisdom-cat">—</div>
+      <div id="wisdom-text">—</div>
+    </div>
+
+    <!-- HONOR ROLL TICKER -->
+    <div class="panel" id="p-honor">
+      <div id="honor-track">
+        <div id="honor-inner"></div>
+      </div>
+    </div>
+
+    <!-- SCRAP•E ARM — separate layer, pivot at elbow (11px,118px from top-left of image) -->
+    <!-- PSD: x223,y492,w67,h104 × 1.25 → display: left279,top615,w84,h130 -->
+    <!-- pivot: PSD x232,y586 → display x290,y732 → relative to element: 11px,118px -->
+    <img id="scrap-hand" src="scrap-hand.png" alt="">
+
+    <!-- SCRAP-E EYES -->
+    <!-- scrap-float: animates eyes up/down to give idle life — no separate PSD layer needed -->
+    <div id="scrap-float">
+      <div class="panel" id="p-eyes">
+        <div class="scrap-eye left" id="eye-left"><div class="eye-pupil" id="pupil-left"></div></div>
+        <div class="scrap-eye right" id="eye-right"><div class="eye-pupil" id="pupil-right"></div></div>
+      </div>
+    </div>
+
+    <!-- LIGHT BULBS: CRT top row (5)
+         PSD coords × 1.25 = display coords
+         731×1.25=914  761×1.25=951  787×1.25=984  814×1.25=1018  841×1.25=1051
+         93×1.25=116 -->
+    <div class="bulb bulb-crt" id="bcrt-1" style="left:914px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-2" style="left:951px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-3" style="left:984px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-4" style="left:1018px;top:116px"></div>
+    <div class="bulb bulb-crt" id="bcrt-5" style="left:1051px;top:116px"></div>
+
+    <!-- LIGHT BULBS: Sound level indicators (4) -->
+    <div class="bulb bulb-sound" id="bsnd-1" style="left:1806px;top:235px"></div>
+    <div class="bulb bulb-sound" id="bsnd-2" style="left:1806px;top:261px"></div>
+    <div class="bulb bulb-sound" id="bsnd-3" style="left:1806px;top:288px"></div>
+    <div class="bulb bulb-sound" id="bsnd-4" style="left:1806px;top:313px"></div>
+
+    <!-- STAMP MOOD GLOW — soft overlay on SCRAP-E APPROVED area, reacts to pass status -->
+    <div id="stamp-glow"></div>
+
+    <!-- ORB HOTSPOT — transparent click zone over the ORB module in the chassis image -->
+    <div id="orb-hotspot" title="Go to ORB's page"></div>
+
+    <!-- COWBOY WIRE HOTSPOT — click the header to go to the main display -->
+    <div id="cw-hotspot" title="Go to Cowboy Wire main display"></div>
+
+    <!-- LIGHT BULBS: SCRAP-E body -->
+    <div class="bulb" id="bulb-big"   style="left:218px;top:955px"></div>
+    <div class="bulb" id="bulb-small" style="left:268px;top:945px"></div>
+
+  </div>
+
+  <!-- LAYER 3: FOREGROUND OVERLAY -->
+  <div id="layer-fg"></div>
+
+  <!-- CRT TOOL TOGGLE BUTTONS — above overlay (z-index 11) -->
+  <div id="crt-toggles">
+    <div class="crt-tog" id="tog-timer" data-tip="TIMER" onclick="activateTool('timer')"></div>
+    <div class="crt-tog" id="tog-watch" data-tip="WATCH" onclick="activateTool('watch')"></div>
+    <div class="crt-tog" id="tog-pick"  data-tip="PICK"  onclick="activateTool('pick')"></div>
+    <div class="crt-tog tog-exit" id="tog-exit" data-tip="EXIT" onclick="activateTool('exit')"></div>
+  </div>
+
+</div>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   SCALE STAGE
+   ═══════════════════════════════════════════════════════════ */
+(function scaleStage(){
+  var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  var st = document.getElementById('stage');
+  st.style.transform = 'scale('+s+')';
+  st.style.left = Math.round((window.innerWidth  - 1920*s)/2)+'px';
+  st.style.top  = Math.round((window.innerHeight - 1080*s)/2)+'px';
+})();
+window.addEventListener('resize', function(){
+  var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+  var st = document.getElementById('stage');
+  st.style.transform = 'scale('+s+')';
+  st.style.left = Math.round((window.innerWidth  - 1920*s)/2)+'px';
+  st.style.top  = Math.round((window.innerHeight - 1080*s)/2)+'px';
+});
+
+/* ── NAV HOTSPOT CLICKS ── */
+document.getElementById('orb-hotspot').addEventListener('click', function(){
+  window.location.href = '/display-orb.html' + (ROOM ? '?room='+ROOM : '');
+});
+document.getElementById('cw-hotspot').addEventListener('click', function(){
+  window.location.href = '/display.html' + (ROOM ? '?room='+ROOM : '');
+});
+
+/* ═══════════════════════════════════════════════════════════
+   DATA LAYER — ported from display-orb.html
+   ═══════════════════════════════════════════════════════════ */
+var SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+var CAL_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzD96rQC0gMI_vOU1SXdxpvcHtIo4tnXH3w_xpHOY50HnrJtCxNPQcSkNbdBVUgPE9SZg/exec';
+var ROOM = new URLSearchParams(location.search).get('room') || '';
+var SETTINGS = null, CLASSROOM = null;
+
+async function sbFetch(table, query){
+  try {
+    var res = await fetch(SUPABASE_URL+'/rest/v1/'+table+'?'+query,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    if(!res.ok) return null;
+    return res.json();
+  } catch(e){ return null; }
+}
+
+/* NO-MEDIA LIST */
+var CW_NO_MEDIA = {};
+function cwNorm(s){
+  s = (s==null?'':String(s));
+  if(s.normalize) s=s.normalize('NFKD').replace(/[̀-ͯ]/g,'');
+  return s.toUpperCase().replace(/[^A-Z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function cwBlocked(name){ return !!CW_NO_MEDIA[cwNorm(name)]; }
+async function loadNoMedia(){
+  var rows = await sbFetch('cw2_no_media','select=norm_name,first_name,last_name');
+  CW_NO_MEDIA = {};
+  (rows||[]).forEach(function(r){
+    if(r.norm_name) CW_NO_MEDIA[r.norm_name]=true;
+    var first=(r.first_name==null?'':String(r.first_name)).trim().split(/\s+/)[0]||'';
+    var k=cwNorm(first+' '+(r.last_name==null?'':r.last_name));
+    if(k) CW_NO_MEDIA[k]=true;
+  });
+}
+
+/* ROOM CONFIG */
+async function loadRoomConfig(){
+  if(!ROOM){ CLASSROOM=null; SETTINGS=null; return; }
+  var cls = await sbFetch('cw2_classrooms','room=eq.'+ROOM+'&select=*');
+  var stg = await sbFetch('cw2_settings','room=eq.'+ROOM+'&select=*');
+  CLASSROOM = (cls&&cls[0]) ? cls[0] : null;
+  SETTINGS  = (stg&&stg[0]) ? stg[0] : null;
+}
+
+/* SCHEDULES */
+var SCHEDULES = {
+  regular:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'09:02'},
+    {id:'2',label:'P2',start:'09:06',end:'09:56'},
+    {id:'brunch',label:'Brunch',start:'09:56',end:'10:11',brk:true},
+    {id:'3',label:'P3',start:'10:15',end:'11:05'},
+    {id:'4',label:'P4',start:'11:09',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'5',label:'P5',start:'12:37',end:'13:27'},
+    {id:'6',label:'P6',start:'13:31',end:'14:21'},
+    {id:'7',label:'P7',start:'14:25',end:'15:15'},
+  ]},
+  blockWed:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'09:57'},
+    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',brk:true},
+    {id:'3',label:'P3',start:'10:16',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'5',label:'P5',start:'12:37',end:'14:20'},
+    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  ]},
+  blockThu:{ periods:[
+    {id:'2',label:'P2',start:'08:10',end:'09:57'},
+    {id:'brunch',label:'Brunch',start:'09:57',end:'10:12',brk:true},
+    {id:'4',label:'P4',start:'10:16',end:'11:59'},
+    {id:'lunch',label:'Lunch',start:'11:59',end:'12:33',brk:true},
+    {id:'6',label:'P6',start:'12:37',end:'14:20'},
+    {id:'7',label:'P7',start:'14:24',end:'15:15'},
+  ]},
+  minimum:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:46'},
+    {id:'2',label:'P2',start:'08:50',end:'09:23'},
+    {id:'3',label:'P3',start:'09:27',end:'10:00'},
+    {id:'4',label:'P4',start:'10:04',end:'10:37'},
+    {id:'brunch',label:'Lunch',start:'10:37',end:'11:10',brk:true},
+    {id:'5',label:'P5',start:'11:14',end:'11:47'},
+    {id:'6',label:'P6',start:'11:51',end:'12:24'},
+    {id:'7',label:'P7',start:'12:28',end:'13:01'},
+  ]},
+  earlyRelease:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:41'},
+    {id:'3',label:'P3',start:'09:45',end:'10:26'},
+    {id:'4',label:'P4',start:'10:30',end:'11:11'},
+    {id:'lunch',label:'Lunch',start:'11:11',end:'11:45',brk:true},
+    {id:'5',label:'P5',start:'11:49',end:'12:30'},
+    {id:'6',label:'P6',start:'12:34',end:'13:15'},
+    {id:'7',label:'P7',start:'13:19',end:'14:00'},
+  ]},
+  foggy:{ periods:[
+    {id:'1',label:'P1',start:'10:00',end:'10:44'},
+    {id:'2',label:'P2',start:'10:48',end:'11:28'},
+    {id:'3',label:'P3',start:'11:32',end:'12:12'},
+    {id:'lunch',label:'Lunch',start:'12:12',end:'12:49',brk:true},
+    {id:'4',label:'P4',start:'12:53',end:'13:33'},
+    {id:'5',label:'P5',start:'13:37',end:'14:17'},
+    {id:'6',label:'P6',start:'14:21',end:'15:01'},
+    {id:'7',label:'P7',start:'15:05',end:'15:45'},
+  ]},
+  activity:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:44'},
+    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',brk:true},
+    {id:'3',label:'P3',start:'10:03',end:'10:47'},
+    {id:'4',label:'P4',start:'10:51',end:'11:35'},
+    {id:'5',label:'P5',start:'11:39',end:'12:23'},
+    {id:'lunch',label:'Lunch',start:'12:23',end:'12:57',brk:true},
+    {id:'6',label:'P6',start:'13:01',end:'13:45'},
+    {id:'7',label:'P7',start:'13:49',end:'14:33'},
+    {id:'8',label:'P8 ACTIVITY',start:'14:37',end:'15:15'},
+  ]},
+  codeDay:{ periods:[
+    {id:'1',label:'P1',start:'08:10',end:'08:56'},
+    {id:'2',label:'P2',start:'09:00',end:'09:44'},
+    {id:'brunch',label:'Brunch',start:'09:44',end:'09:59',brk:true},
+    {id:'3',label:'P3',start:'10:03',end:'10:47'},
+    {id:'4',label:'P4',start:'10:51',end:'11:35'},
+    {id:'rally',label:'Rally',start:'11:39',end:'12:17',brk:true},
+    {id:'lunch',label:'Lunch',start:'12:17',end:'12:51',brk:true},
+    {id:'5',label:'P5',start:'12:55',end:'13:39'},
+    {id:'6',label:'P6',start:'13:43',end:'14:27'},
+    {id:'7',label:'P7',start:'14:31',end:'15:15'},
+  ]},
+};
+var NO_SCHOOL = [
+  '2026-09-07','2026-11-11','2026-11-26','2026-11-27',
+  '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
+  '2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-18','2027-02-15',
+  '2027-04-05','2027-04-06','2027-04-07','2027-04-08','2027-04-09'
+];
+
+function toMins(t){ var p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+function nowMins(){ var n=new Date(); return n.getHours()*60+n.getMinutes(); }
+function dateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+
+async function loadOverrides(){
+  var rows = await sbFetch('cw2_schedule_override','or=(room.eq.'+ROOM+',room.eq.global)&select=*');
+  var map={}; (rows||[]).forEach(function(r){ map[r.room+'|'+r.date]=r; });
+  window._cwOverrides=map;
+}
+function getSchedule(){
+  var now=new Date(), ds=dateStr(now), dow=now.getDay();
+  if(dow===0||dow===6||NO_SCHOOL.includes(ds)) return null;
+  var ovr=window._cwOverrides||{};
+  var hit=ovr[ROOM+'|'+ds]||ovr['global|'+ds];
+  if(hit){ if(hit.custom_periods) return {periods:hit.custom_periods}; if(hit.schedule_type&&SCHEDULES[hit.schedule_type]) return SCHEDULES[hit.schedule_type]; }
+  var events=window._cwCalEvents||[];
+  var titles=events.filter(function(e){return e.start&&e.start.substring(0,10)===ds;}).map(function(e){return(e.title||'').toLowerCase();});
+  var has=function(kw){return titles.some(function(t){return t.includes(kw);});};
+  if(has('foggy')||has('late arrival')) return SCHEDULES.foggy;
+  if(has('minimum')) return SCHEDULES.minimum;
+  if(has('code day')) return SCHEDULES.codeDay;
+  if(has('activity')) return SCHEDULES.activity;
+  if(has('early release')) return SCHEDULES.earlyRelease;
+  if(has('block')) return dow===3?SCHEDULES.blockWed:SCHEDULES.blockThu;
+  if(dow===1) return SCHEDULES.earlyRelease;
+  if(dow===3) return SCHEDULES.blockWed;
+  if(dow===4) return SCHEDULES.blockThu;
+  return SCHEDULES.regular;
+}
+
+/* EVENTS */
+var CW_EVENTS = [];
+async function loadCwEvents(){
+  var ds=dateStr(new Date());
+  var rows=await sbFetch('cw2_events','active=eq.true&end_date=gte.'+ds+'&order=start_date.asc');
+  CW_EVENTS=rows||[];
+}
+async function loadCwCalendar(){
+  try{
+    var res=await fetch(CAL_SCRIPT_URL,{cache:'no-store'}); if(!res.ok) throw 0;
+    var data=await res.json(); if(data.status!=='ok'||!data.events) throw 0;
+    window._cwCalEvents=data.events.map(function(e){ var s=e.start||''; return {title:e.title||'',start:s,start_date:s.slice(0,10)}; });
+  } catch(e){ if(!window._cwCalEvents) window._cwCalEvents=[]; }
+}
+function daysBetween(a,b){ return Math.round((new Date(a+'T00:00:00')-new Date(b+'T00:00:00'))/(24*60*60*1000)); }
+function monDay(ds){ var dt=new Date(ds+'T00:00:00'); var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']; return M[dt.getMonth()]+' '+dt.getDate(); }
+function getUpcomingEvents(ds){
+  var cutoff=new Date(ds+'T00:00:00'); cutoff.setDate(cutoff.getDate()+60); var cs=dateStr(cutoff);
+  var inW=function(d){return d&&d>=ds&&d<=cs;};
+  var curated=CW_EVENTS.filter(function(e){return inW(e.start_date);}).map(function(e){return{title:e.title,start_date:e.start_date};});
+  var feed=(window._cwCalEvents||[]).filter(function(e){return inW(e.start_date);}).map(function(e){return{title:e.title,start_date:e.start_date};});
+  var seen={}; var all=curated.concat(feed).filter(function(e){
+    if(!e.title||!e.title.trim()) return false;
+    var k=e.title.toUpperCase().trim()+'|'+e.start_date; if(seen[k]) return false; seen[k]=true; return true;
+  });
+  all.sort(function(a,b){return a.start_date<b.start_date?-1:a.start_date>b.start_date?1:0;});
+  return all;
+}
+
+/* BIRTHDAYS */
+var CW_BIRTHDAYS = [];
+async function loadBirthdays(){
+  if(!ROOM){ CW_BIRTHDAYS=[]; return; }
+  var rows=await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&select=*');
+  CW_BIRTHDAYS=rows||[];
+}
+function bdaysUntil(month,day){
+  var n=new Date(), y=n.getFullYear(); var b=new Date(y,month-1,day); var t=new Date(y,n.getMonth(),n.getDate());
+  if(b<t) b.setFullYear(y+1); return Math.round((b-t)/86400000);
+}
+
+/* SPORT DAYS */
+var CW_SPORT_DAYS = [];
+async function loadSportDays(){
+  var ds=dateStr(new Date());
+  var rows=await sbFetch('cw2_sport_days','active=eq.true&date=gte.'+ds+'&order=date.asc&limit=4');
+  CW_SPORT_DAYS=rows||[];
+}
+
+/* SVG SPORT ICONS — all amber-tinted, 48×48 viewBox */
+var SPORT_ICONS = {
+  football: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="24" cy="24" rx="18" ry="11" fill="#c8a840" opacity=".18" stroke="#c8a840" stroke-width="2"/><ellipse cx="24" cy="24" rx="18" ry="11" stroke="#c8a840" stroke-width="2.2" fill="none"/><line x1="24" y1="13.2" x2="24" y2="34.8" stroke="#c8a840" stroke-width="1.6"/><line x1="19" y1="21" x2="29" y2="21" stroke="#c8a840" stroke-width="1.4"/><line x1="19" y1="24" x2="29" y2="24" stroke="#c8a840" stroke-width="1.4"/><line x1="19" y1="27" x2="29" y2="27" stroke="#c8a840" stroke-width="1.4"/></svg>',
+
+  volleyball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M8.5 24 Q16 16 24 24 Q32 32 39.5 24" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M14 14 Q18 24 14 34" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M34 14 Q30 24 34 34" stroke="#c8a840" stroke-width="1.6" fill="none"/></svg>',
+
+  tennis: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><ellipse cx="21" cy="20" rx="14" ry="14" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M10 10 Q21 20 10 30" stroke="#c8a840" stroke-width="1.6" fill="none"/><path d="M32 10 Q21 20 32 30" stroke="#c8a840" stroke-width="1.6" fill="none"/><line x1="21" y1="34" x2="26" y2="42" stroke="#c8a840" stroke-width="2.8" stroke-linecap="round"/><line x1="26" y1="42" x2="36" y2="44" stroke="#c8a840" stroke-width="2.2" stroke-linecap="round"/></svg>',
+
+  cross_country: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 34 Q12 34 14 30 L20 18 Q22 14 26 14 L38 14" stroke="#c8a840" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M14 30 L14 42 Q14 44 16 44 L28 44 Q36 44 36 40 Q36 37 28 37 L20 37 L20 34" stroke="#c8a840" stroke-width="2" fill="#c8a840" fill-opacity=".12" stroke-linejoin="round"/><circle cx="26" cy="10" r="4" stroke="#c8a840" stroke-width="2" fill="none"/></svg>',
+
+  golf: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><line x1="28" y1="6" x2="20" y2="44" stroke="#c8a840" stroke-width="2.2" stroke-linecap="round"/><path d="M20 14 Q28 11 30 16 Q32 21 24 22" stroke="#c8a840" stroke-width="2" fill="#c8a840" fill-opacity=".15" stroke-linejoin="round"/><circle cx="22" cy="38" r="5" stroke="#c8a840" stroke-width="1.8" fill="#c8a840" fill-opacity=".15"/><circle cx="22" cy="38" r="1.5" fill="#c8a840" opacity=".5"/></svg>',
+
+  basketball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M8 24 Q16 18 24 24 Q32 30 40 24" stroke="#c8a840" stroke-width="1.6" fill="none"/><line x1="24" y1="8" x2="24" y2="40" stroke="#c8a840" stroke-width="1.6"/><path d="M15 9.5 Q12 20 15 38.5" stroke="#c8a840" stroke-width="1.4" fill="none"/><path d="M33 9.5 Q36 20 33 38.5" stroke="#c8a840" stroke-width="1.4" fill="none"/></svg>',
+
+  soccer: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><polygon points="24,14 28,17 27,22 21,22 20,17" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="12,21 15,18 19,20 18,25 13,25" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="36,21 33,18 29,20 30,25 35,25" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="16,31 13,27 18,26 21,29 19,33" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/><polygon points="32,31 35,27 30,26 27,29 29,33" stroke="#c8a840" stroke-width="1.4" fill="#c8a840" fill-opacity=".3"/></svg>',
+
+  baseball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#c8a840" stroke-width="2.2" fill="#c8a840" fill-opacity=".1"/><path d="M15 10 Q10 18 12 28 Q14 36 20 40" stroke="#c8a840" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M33 10 Q38 18 36 28 Q34 36 28 40" stroke="#c8a840" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M15 14 L18 16 M14 19 L17 20 M14 24 L17 25 M15 29 L18 30 M17 34 L20 35" stroke="#c8a840" stroke-width="1.2" stroke-linecap="round"/><path d="M33 14 L30 16 M34 19 L31 20 M34 24 L31 25 M33 29 L30 30 M31 34 L28 35" stroke="#c8a840" stroke-width="1.2" stroke-linecap="round"/></svg>',
+
+  softball: '<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="24" cy="24" r="16" stroke="#d4b040" stroke-width="2.4" fill="#d4b040" fill-opacity=".14"/><path d="M15 10 Q10 18 12 28 Q14 36 20 40" stroke="#d4b040" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M33 10 Q38 18 36 28 Q34 36 28 40" stroke="#d4b040" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M15 14 L18 16 M14 19 L17 20 M14 24 L17 25 M15 29 L18 30 M17 34 L20 35" stroke="#d4b040" stroke-width="1.2" stroke-linecap="round"/><path d="M33 14 L30 16 M34 19 L31 20 M34 24 L31 25 M33 29 L30 30 M31 34 L28 35" stroke="#d4b040" stroke-width="1.2" stroke-linecap="round"/><circle cx="24" cy="24" r="3" fill="#d4b040" opacity=".4"/></svg>'
+};
+
+/* HONOR ROLL */
+async function loadHonorRoll(){
+  if(SETTINGS&&SETTINGS.show_honor_roll===false) return [];
+  var rows=await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
+  return (rows||[]).filter(function(r){return !cwBlocked(r.name);}).map(function(r){return r.name;});
+}
+
+/* INSPIRATION / WORDS OF WISDOM */
+var CW_INSPIRE=[], inspIdx=0, inspTimer=null;
+var INSP_LABELS={cowboy_code:'Cowboy Code',word_of_day:'Word of the Day',fun_facts:'Fun Fact',positive_thoughts:'Words of Wisdom',business:'Business Tip'};
+async function loadInspiration(){
+  var gc=(SETTINGS&&SETTINGS.global_categories)?SETTINGS.global_categories:{};
+  if(gc.eve_inspiration===false){ CW_INSPIRE=[]; return; }
+  var DEFAULT_CATS=['fun_facts','positive_thoughts','cowboy_code','word_of_day'];
+  var savedCats=Array.isArray(gc.eve_inspiration_cats)?gc.eve_inspiration_cats:DEFAULT_CATS;
+  var want={}; savedCats.forEach(function(c){ want[c]=1; if(c==='wise_words') want.positive_thoughts=1; });
+  var rows=await sbFetch('cw2_screens','room=eq.global&enabled=eq.true&order=sort_order.asc');
+  var pool=[];
+  (rows||[]).forEach(function(r){
+    var cat=r.category||'cowboy_code';
+    if(!want[cat]) return;
+    var lines=Array.isArray(r.lines)?r.lines:JSON.parse(r.lines||'[]');
+    var text=lines.map(function(x){return(x==null?'':String(x)).trim();}).filter(Boolean).join(' ');
+    if(!text) return;
+    pool.push({cat:cat, label:(INSP_LABELS[cat]||cat), text:text});
+  });
+  for(var i=pool.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=pool[i]; pool[i]=pool[j]; pool[j]=t; }
+  CW_INSPIRE=pool; inspIdx=0;
+}
+
+/* WEATHER (open-meteo, keyless, Fresno CA) */
+var CW_WEATHER=null, CW_WEATHER_DAILY=null;
+var WEATHER_CODES={0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',
+  51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',
+  71:'Light Snow',73:'Snow',75:'Heavy Snow',77:'Snow',80:'Showers',81:'Showers',82:'Heavy Showers',
+  95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+async function loadWeather(){
+  try{
+    var url='https://api.open-meteo.com/v1/forecast?latitude=36.4327&longitude=-119.8668'+
+      '&current=temperature_2m,weather_code,apparent_temperature'+
+      '&daily=temperature_2m_max,temperature_2m_min,weather_code'+
+      '&temperature_unit=fahrenheit&timezone=America/Los_Angeles&forecast_days=4';
+    var res=await fetch(url); if(!res.ok) return;
+    var data=await res.json(); CW_WEATHER=data.current; CW_WEATHER_DAILY=data.daily;
+  }catch(e){ CW_WEATHER=null; }
+}
+
+/* NEWS — Good News Network via rss2json */
+var CW_NEWS=[], newsIdx=0;
+var NEWS_API_URL='https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.goodnewsnetwork.org%2Ffeed%2F&api_key=xrwlpjf13arrttfnqkikxznkdlehw9panrbbl94s&count=10';
+async function loadNews(){
+  try{
+    var res=await fetch(NEWS_API_URL); if(!res.ok) return;
+    var data=await res.json(); if(data.status!=='ok'||!data.items) return;
+    CW_NEWS=data.items.filter(function(it){return it.title&&it.title.trim();}).map(function(it){
+      return {
+        headline: it.title.trim(),
+        body: (it.description||'').replace(/<[^>]+>/g,'').trim().slice(0,420),
+        link: it.link||it.guid||null,
+        source: 'GOOD NEWS NETWORK'
+      };
+    });
+  }catch(e){ CW_NEWS=[]; }
+}
+
+/* AIR QUALITY — open-meteo AQI (keyless, Fresno CA) */
+var CW_AQI=null;
+async function loadAirQuality(){
+  try{
+    var url='https://air-quality-api.open-meteo.com/v1/air-quality?latitude=36.4327&longitude=-119.8668&current=us_aqi&timezone=America/Los_Angeles';
+    var res=await fetch(url); if(!res.ok) return;
+    var data=await res.json();
+    CW_AQI=(data.current&&data.current.us_aqi!=null)?Math.round(data.current.us_aqi):null;
+  }catch(e){ CW_AQI=null; }
+}
+function aqiLabel(v){
+  if(v==null) return '—';
+  if(v<=50)  return 'GOOD';
+  if(v<=100) return 'MODERATE';
+  if(v<=150) return 'SENSITIVE';
+  if(v<=200) return 'UNHEALTHY';
+  if(v<=300) return 'VERY UNHEALTHY';
+  return 'HAZARDOUS';
+}
+function aqiColor(v){
+  if(v==null) return 'var(--cw-dim)';
+  if(v<=50)  return '#60c060';
+  if(v<=100) return '#c8c040';
+  if(v<=150) return '#c87820';
+  if(v<=200) return '#c04020';
+  if(v<=300) return '#9030a0';
+  return '#8b0000';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER FUNCTIONS
+   ═══════════════════════════════════════════════════════════ */
+
+/* CLOCK */
+function renderClock(){
+  var n=new Date(), h=n.getHours(), m=String(n.getMinutes()).padStart(2,'0'), ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  document.getElementById('p-clock').textContent=h+':'+m+' '+ap;
+}
+
+/* EVENTS LIST */
+function renderEvents(){
+  var ds=dateStr(new Date());
+  var up=getUpcomingEvents(ds).slice(0,7);
+  var el=document.getElementById('events-list');
+  if(!up.length){ el.innerHTML='<div class="ev-empty">NO UPCOMING EVENTS</div>'; return; }
+  var html='';
+  up.forEach(function(e){
+    var d=daysBetween(e.start_date,ds);
+    var dnum=d===0?'TODAY':d===1?'1':String(d);
+    var dlbl=d===0?'':d===1?'DAY':'DAYS';
+    html+='<div class="ev-item">'+
+      '<div class="ev-left">'+
+        '<div class="ev-days-num">'+dnum+'</div>'+
+        (dlbl?'<div class="ev-days-lbl">'+dlbl+'</div>':'')+
+      '</div>'+
+      '<div class="ev-right">'+
+        '<div class="ev-title">'+(e.title||'').toUpperCase()+'</div>'+
+        '<div class="ev-date">'+monDay(e.start_date)+'</div>'+
+      '</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
+}
+
+/* STATUS STRIP — period · countdown · pass policy */
+function renderStatus(){
+  var sched=getSchedule(), nm=nowMins();
+
+  function xl(l){ return /^P(\d+)$/.test(l)?'PERIOD '+l.slice(1):l.toUpperCase(); }
+  function f12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return(h%12||12)+':'+m+(h>=12?' PM':' AM'); }
+
+  function setFlash(on){
+    ['st-mins-num','st-mins-lbl'].forEach(function(id){
+      var e=document.getElementById(id);
+      if(e){ if(on) e.classList.add('flashing'); else e.classList.remove('flashing'); }
+    });
+  }
+
+  function set(periodTxt,endsTxt,minsNum,minsLblHtml,dotCls,passTxt,passTxtColor,flash,
+               mins2Num,mins2LblHtml){
+    document.getElementById('st-period').textContent   = periodTxt;
+    document.getElementById('st-ends').textContent     = endsTxt;
+    document.getElementById('st-mins-num').textContent = minsNum;
+    document.getElementById('st-mins-lbl').innerHTML   = minsLblHtml;
+    document.getElementById('st-pass-dot').className   = dotCls;
+    var pt=document.getElementById('st-pass-txt');
+    pt.textContent=passTxt; pt.style.color=passTxtColor;
+    setFlash(!!flash);
+    /* Secondary countdown: show when mins2Num provided, hide otherwise */
+    var show2 = (mins2Num!=null && mins2Num!=='');
+    document.getElementById('st-div2').style.display  = show2?'':'none';
+    document.getElementById('st-mid2').style.display  = show2?'flex':'none';
+    if(show2){
+      document.getElementById('st-mins2-num').textContent = mins2Num;
+      document.getElementById('st-mins2-lbl').innerHTML   = mins2LblHtml||'';
+    }
+  }
+
+  if(!sched){
+    set('NO SCHOOL','','','','off','CLOSED','var(--cw-dim)',false); return;
+  }
+
+  var inP=null, nextP=null;
+  for(var i=0;i<sched.periods.length;i++){
+    var p=sched.periods[i], s=toMins(p.start), e=toMins(p.end);
+    if(nm>=s&&nm<e){ inP=p; break; }
+    if(nm<s&&!nextP) nextP=p;
+  }
+
+  if(inP){
+    var mLeft=toMins(inP.end)-nm;
+    var flash=(mLeft<=1);
+    var lbl='MIN LEFT UNTIL<br>END OF '+xl(inP.label);
+
+    if(inP.brk){
+      /* brunch or lunch — neutral grey, open */
+      set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,'grey','OPEN','var(--cw-dim)',flash);
+    } else {
+      /* class period — 4-state pass policy */
+      var firstFifteen=(nm<toMins(inP.start)+15);
+      var lastFifteen=(mLeft<=15);
+      var lastWarn=(mLeft>15&&mLeft<=20); /* yellow last-chance window */
+      var dotC,passT,passColor;
+      if(firstFifteen||lastFifteen){
+        dotC='restricted'; passT='RESTRICTED'; passColor='#c03828';
+      } else if(lastWarn){
+        dotC='warn'; passT='LAST CHANCE'; passColor='#c8a020';
+      } else {
+        dotC='open'; passT='ALLOWED'; passColor='var(--cw-green)';
+      }
+      if(firstFifteen){
+        /* Two countdowns: primary = until passes open, secondary = until end of period */
+        var mUntilOpen = (toMins(inP.start)+15) - nm;
+        set(xl(inP.label),'ENDS '+f12(inP.end),
+            String(mUntilOpen),'MIN UNTIL<br>PASSES OPEN',
+            dotC,passT,passColor,false,
+            String(mLeft),'MIN UNTIL<br>END OF '+xl(inP.label));
+      } else {
+        set(xl(inP.label),'ENDS '+f12(inP.end),String(mLeft),lbl,dotC,passT,passColor,flash);
+      }
+    }
+
+  } else if(nextP){
+    var mTo=toMins(nextP.start)-nm;
+    if(nm<toMins(sched.periods[0].start)){
+      set('PRE-BELL','FIRST BELL · '+f12(sched.periods[0].start),String(mTo),
+        'MIN UNTIL<br>FIRST BELL','grey','OPEN','var(--cw-dim)',false);
+    } else {
+      set('PASSING',xl(nextP.label)+' STARTS '+f12(nextP.start),String(mTo),
+        'MIN UNTIL<br>'+xl(nextP.label)+' STARTS','grey','OPEN','var(--cw-dim)',false);
+    }
+
+  } else {
+    set('DISMISSED','SEE YOU TOMORROW','','','off','CLOSED','var(--cw-dim)',false);
+  }
+
+  // Update SCRAP-E body lights, stamp glow, and eye emotion
+  updateBodyLights();
+  var sg=document.getElementById('stamp-glow');
+  if(sg){
+    var dotCls=(document.getElementById('st-pass-dot')||{}).className||'off';
+    sg.className = dotCls==='open'       ? 'glow-open'
+                 : dotCls==='warn'       ? 'glow-warn'
+                 : dotCls==='restricted' ? 'glow-restricted'
+                 : '';
+  }
+  if(typeof decideEmotion==='function') decideEmotion();
+}
+
+/* SCRAP-E BODY LIGHTS
+   Big light  → mirrors pass policy dot color with muted slow pulse
+   Small light → muted amber pulse normally; slow rainbow on student birthdays */
+function updateBodyLights(){
+  var big   = document.getElementById('bulb-big');
+  var small = document.getElementById('bulb-small');
+
+  /* ── BIG LIGHT: read pass dot class set by renderStatus() above ── */
+  if(big){
+    var cls = (document.getElementById('st-pass-dot')||{}).className || 'off';
+    // Clear inline opacity so the animation drives it
+    big.style.opacity = '';
+    if(cls === 'open'){
+      // GREEN — allowed
+      big.style.background = 'radial-gradient(circle at 38% 38%, #80e880, #28a030 55%, #0a340a)';
+      big.style.boxShadow  = '0 0 8px rgba(40,160,48,0.55), 0 0 16px rgba(40,160,48,0.18)';
+      big.style.animation  = 'bodyMuted 4s ease-in-out infinite';
+    } else if(cls === 'warn'){
+      // YELLOW — last chance
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ffe060, #b08010 55%, #3e2c00)';
+      big.style.boxShadow  = '0 0 8px rgba(176,128,16,0.55), 0 0 16px rgba(176,128,16,0.18)';
+      big.style.animation  = 'bodyMuted 3s ease-in-out infinite';
+    } else if(cls === 'restricted'){
+      // RED — restricted
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ff7060, #b02818 55%, #380c08)';
+      big.style.boxShadow  = '0 0 8px rgba(176,40,24,0.55), 0 0 16px rgba(176,40,24,0.18)';
+      big.style.animation  = 'bodyMuted 4s ease-in-out infinite';
+    } else if(cls === 'grey'){
+      // NEUTRAL — passing / break / pre-bell
+      big.style.background = 'radial-gradient(circle at 38% 38%, #ffe090, #c87020 55%, #4a2c08)';
+      big.style.boxShadow  = '0 0 6px rgba(200,112,32,0.40), 0 0 12px rgba(200,112,32,0.14)';
+      big.style.animation  = 'bodyMuted 5s ease-in-out infinite';
+    } else {
+      // OFF — dismissed / no school
+      big.style.background = 'radial-gradient(circle at 38% 38%, #38200c, #1c0e06 55%, #090504)';
+      big.style.boxShadow  = 'none';
+      big.style.animation  = 'none';
+      big.style.opacity    = '0.25';
+    }
+  }
+
+  /* ── SMALL LIGHT: birthday indicator ── */
+  if(small){
+    var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+    var hasBday=(CW_BIRTHDAYS||[]).some(function(b){ return b.month==cm && b.day==cd; });
+    if(hasBday){
+      _startBdayRainbow(small);
+    } else {
+      _stopBdayRainbow(small);
+    }
+  }
+}
+
+var _bdayRainbowTimer = null;
+var _bdayHue = 0;
+function _startBdayRainbow(el){
+  if(_bdayRainbowTimer) return; // already running
+  el.style.animation = 'none';
+  _bdayHue = 0;
+  _bdayRainbowTimer = setInterval(function(){
+    _bdayHue = (_bdayHue + 6) % 360;
+    var h = _bdayHue;
+    el.style.background = 'hsl('+h+',50%,30%)';
+    el.style.boxShadow  = '0 0 5px hsl('+h+',45%,28%), 0 0 10px hsl('+h+',40%,20%)';
+  }, 50); // ~20fps, full cycle ~3s
+}
+function _stopBdayRainbow(el){
+  if(_bdayRainbowTimer){ clearInterval(_bdayRainbowTimer); _bdayRainbowTimer=null; }
+  el.style.background = 'var(--cw-amber)';
+  el.style.boxShadow  = '0 0 5px rgba(200,168,64,0.45), 0 0 10px rgba(200,168,64,0.18)';
+  el.style.animation  = 'bodyMuted 5.5s ease-in-out infinite';
+}
+
+/* BIRTHDAYS */
+function renderBirthdays(){
+  var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+  var all=CW_BIRTHDAYS.map(function(r){
+    return {name:r.name, month:r.month, day:r.day, days:bdaysUntil(r.month,r.day)};
+  });
+  var upcoming=all.filter(function(r){return r.days<=30;})
+                  .sort(function(a,b){return a.days-b.days;})
+                  .slice(0,4);
+  var todayNames=all.filter(function(r){return r.days===0;}).map(function(r){return r.name;});
+  var el=document.getElementById('bday-list');
+  if(!upcoming.length&&!todayNames.length){
+    el.innerHTML='<div class="bd-empty">NO UPCOMING BIRTHDAYS</div>'; return;
+  }
+  var M=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var html='';
+  upcoming.forEach(function(r){
+    var d=r.days===0?'TODAY':r.days===1?'1 DAY':r.days+' DAYS';
+    html+='<div class="bd-row">'+
+      '<div class="bd-dot"></div>'+
+      '<div class="bd-name">'+(r.name||'').toUpperCase()+'</div>'+
+      '<div class="bd-date">'+M[r.month-1]+' '+r.day+'</div>'+
+      '<div class="bd-days">'+d+'</div>'+
+    '</div>';
+  });
+  if(todayNames.length){
+    var greet=todayNames.length===1
+      ? 'HAPPY BIRTHDAY '+todayNames[0].toUpperCase()+'!'
+      : 'HAPPY BIRTHDAY '+todayNames.map(function(n){return n.toUpperCase();}).join(' & ')+'!';
+    html+='<div class="bd-today-banner">★ '+greet+' ★</div>';
+  }
+  el.innerHTML=html;
+}
+
+/* WEATHER */
+function renderWeather(){
+  var p=document.getElementById('p-weather');
+  if(!CW_WEATHER){ p.style.display='none'; return; }
+  p.style.display='';
+  var temp=Math.round(CW_WEATHER.temperature_2m);
+  var feels=Math.round(CW_WEATHER.apparent_temperature);
+  var code=CW_WEATHER.weather_code;
+  document.getElementById('wx-temp-big').textContent=temp+'°';
+  document.getElementById('wx-cond-lbl').textContent=(WEATHER_CODES[code]||'—').toUpperCase();
+  document.getElementById('wx-feels-lbl').textContent='FEELS LIKE '+feels+'°';
+  var aqiEl=document.getElementById('wx-aqi-lbl');
+  if(aqiEl){
+    var al=aqiLabel(CW_AQI), ac=aqiColor(CW_AQI);
+    aqiEl.textContent='AQI '+(CW_AQI!=null?CW_AQI:'—')+' · '+al;
+    aqiEl.style.color=ac;
+  }
+  var dl=CW_WEATHER_DAILY, html='', dn=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  if(dl&&dl.time){
+    for(var i=0;i<dl.time.length&&i<3;i++){
+      var d=new Date(dl.time[i]+'T12:00:00');
+      var lab=i===0?'TODAY':dn[d.getDay()];
+      var hi=Math.round(dl.temperature_2m_max[i]), lo=Math.round(dl.temperature_2m_min[i]);
+      html+='<div class="wx-day">'+
+        '<div class="wx-day-name">'+lab+'</div>'+
+        '<div class="wx-day-hi">'+hi+'°</div>'+
+        '<div class="wx-day-lo">'+lo+'°</div>'+
+      '</div>';
+    }
+  }
+  document.getElementById('wx-fc').innerHTML=html;
+}
+
+/* SPORT DAYS */
+function renderSportDays(){
+  var ds=dateStr(new Date());
+  for(var i=1;i<=4;i++){
+    var card=document.getElementById('sd-'+i);
+    var ev=CW_SPORT_DAYS[i-1];
+    if(!ev){ card.innerHTML='<div class="sd-empty">NO GAME</div>'; continue; }
+    var d=daysBetween(ev.date, ds);
+    var dNum=d===0?'NOW':String(d);
+    var dLbl=d===0?'':d===1?'DAY':'DAYS';
+    var icon=SPORT_ICONS[ev.sport]||SPORT_ICONS['baseball'];
+    var ha=(ev.home_away||'').toUpperCase()==='HOME'?'HOME':'AWAY';
+    card.innerHTML=
+      '<div class="sd-top-row">'+
+        '<div class="sd-icon">'+icon+'</div>'+
+        '<div class="sd-countdown">'+
+          '<div class="sd-days-num">'+dNum+'</div>'+
+          (dLbl?'<div class="sd-days-lbl">'+dLbl+'</div>':'')+
+        '</div>'+
+      '</div>'+
+      '<div class="sd-divider"></div>'+
+      '<div class="sd-opponent">'+(ev.opponent||'TBD').toUpperCase()+'</div>'+
+      '<div class="sd-meta">'+
+        '<span class="sd-ha">'+ha+'</span><br>'+
+        (ev.game_time?ev.game_time:'')+(ev.release_time?' · REL '+ev.release_time:'')+
+      '</div>';
+  }
+}
+
+/* WORDS OF WISDOM */
+function renderWisdom(){
+  var el=document.getElementById('p-wisdom');
+  if(!CW_INSPIRE.length){ el.style.display='none'; return; }
+  el.style.display='';
+  var it=CW_INSPIRE[inspIdx];
+  document.getElementById('wisdom-cat').textContent=(it.label||'Cowboy Code').toUpperCase()+':';
+  document.getElementById('wisdom-text').textContent=it.text;
+  if(inspTimer) clearInterval(inspTimer);
+  inspTimer=setInterval(function(){
+    inspIdx=(inspIdx+1)%CW_INSPIRE.length;
+    var txt=document.getElementById('wisdom-text');
+    txt.classList.add('fade');
+    setTimeout(function(){
+      var nit=CW_INSPIRE[inspIdx];
+      document.getElementById('wisdom-cat').textContent=(nit.label||'Cowboy Code').toUpperCase()+':';
+      txt.textContent=nit.text;
+      txt.classList.remove('fade');
+    }, 650);
+  }, 14000);
+}
+
+/* HONOR ROLL */
+async function renderHonorRoll(){
+  var names=await loadHonorRoll();
+  var inner=document.getElementById('honor-inner');
+  if(!names.length){ inner.innerHTML=''; return; }
+  var seg=names.map(function(n){
+    return '<span class="hn-name">'+n+'</span><span class="hn-sep">★</span>';
+  }).join('');
+  inner.innerHTML=seg+seg; /* doubled for seamless loop */
+  /* scale animation speed to name count */
+  var dur=Math.max(120, names.length*6);
+  inner.style.animationDuration=dur+'s';
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CRT CONTROLLER — modes: news | bell | standby | data
+   During class: bell schedule (future: rotate w/ objectives)
+   Passing/brunch/lunch: bell schedule
+   Off hours / no school: standby 10s → data 3s → news loop
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  var crtEl = document.getElementById('p-crt');
+  var CRT_MODE = 'news';
+  var _toolActive = null; // 'timer' | 'watch' | 'pick' | null
+
+  function setCRTMode(mode){
+    if(CRT_MODE === mode) return;
+    CRT_MODE = mode;
+    ['crt-news','crt-bell','crt-standby','crt-data','crt-scrape',
+     'crt-timer','crt-watch','crt-pick'].forEach(function(c){ crtEl.classList.remove(c); });
+    crtEl.classList.add('crt-' + mode);
+  }
+
+  // ── TOOL TOGGLE ACTIVATION ──
+  function activateTool(key){
+    document.querySelectorAll('.crt-tog').forEach(function(t){ t.classList.remove('active'); });
+    if(key === 'exit'){
+      _toolActive = null;
+      if(window._timerPause) window._timerPause();
+      if(window._watchPause) window._watchPause();
+      _startNews(); // resume news feed
+      return;
+    }
+    _toolActive = key;
+    _stopNews(); // freeze the news cycle immediately
+    var el = document.getElementById('tog-' + key);
+    if(el) el.classList.add('active');
+    setCRTMode(key);
+    if(key === 'timer') { if(window._timerOnShow) window._timerOnShow(); }
+    if(key === 'watch') { if(window._watchOnShow) window._watchOnShow(); }
+    if(key === 'pick')  { if(window._pickerOnShow) window._pickerOnShow(); }
+  }
+  window.activateTool = activateTool; // expose for onclick handlers
+
+  /* ── NEWS ── */
+  var _crtItems=[], _crtCur=0, _crtCharIdx=0, _crtTypeT=null, _crtNextT=null;
+  var _qrInst=null;
+
+  function _updateQR(url){
+    var el=document.getElementById('crt-qr');
+    if(!el||!window.QRCode) return;
+    if(!url){ el.style.visibility='hidden'; return; }
+    el.style.visibility='visible';
+    if(!_qrInst){
+      el.innerHTML='';
+      _qrInst=new QRCode(el,{
+        text: url,
+        width: 72, height: 72,
+        colorDark: '#c8a840',   /* amber modules */
+        colorLight: '#060604',  /* near-black background */
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } else {
+      try{ _qrInst.makeCode(url); }catch(e){}
+    }
+  }
+
+  function _showNewsItem(idx){
+    if(_toolActive) return; // tool pane has control
+    if(!_crtItems.length) return;
+    var it=_crtItems[idx%_crtItems.length];
+    document.getElementById('crt-source').textContent='SOURCE: '+it.source.toUpperCase();
+    document.getElementById('crt-body').textContent=it.body||'';
+    _updateQR(it.link||null);
+    var hlEl=document.getElementById('crt-hl-text');
+    hlEl.textContent='';
+    clearTimeout(_crtTypeT); clearTimeout(_crtNextT);
+    _crtCharIdx=0;
+    var full=it.headline;
+    function type(){
+      if(_toolActive){ clearTimeout(_crtTypeT); return; } // bail if tool grabbed CRT
+      if(_crtCharIdx<full.length){
+        hlEl.textContent=full.slice(0,++_crtCharIdx);
+        _crtTypeT=setTimeout(type, 28+Math.random()*22);
+      } else {
+        _crtNextT=setTimeout(function(){
+          if(_toolActive) return; // don't advance while tool is active
+          _crtCur=(_crtCur+1)%_crtItems.length;
+          _showNewsItem(_crtCur);
+        }, 16000);
+      }
+    }
+    type();
+  }
+  function _startNews(){
+    if(_toolActive) return; // tool pane has control
+    if(!CW_NEWS.length){
+      document.getElementById('crt-hl-text').textContent='NO SIGNAL — SCANNING...';
+      document.getElementById('crt-body').textContent='SCRAP-E is searching for transmissions.';
+    } else {
+      _crtItems=CW_NEWS; _crtCur=0; _showNewsItem(0);
+    }
+    setCRTMode('news');
+  }
+  function _stopNews(){ clearTimeout(_crtTypeT); clearTimeout(_crtNextT); }
+  window._stopNews = _stopNews;
+
+  /* ── BELL SCHEDULE ── */
+  function _fmt12(t){ var p=t.split(':'),h=parseInt(p[0]),m=p[1]; return (h%12||12)+':'+m+' '+(h>=12?'PM':'AM'); }
+  /* ── Contextual header strings — time + day aware ── */
+  /* Seeded pick — stable within a 5-minute window so header doesn't jump on re-render */
+  function _pick(arr){
+    var seed=Math.floor(Date.now()/300000); /* changes every 5 min */
+    return arr[seed%arr.length];
+  }
+
+  function _contextualBellHdr(){
+    var now=new Date(), nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    var day=now.getDay();
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    var tm2=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+
+    /* Birthday today — add to any slot */
+    var hasBdayToday=false;
+    if(typeof CW_BIRTHDAYS!=='undefined'){
+      var cm=now.getMonth()+1,cd=now.getDate();
+      hasBdayToday=CW_BIRTHDAYS.some(function(b){return b.month==cm&&b.day==cd;});
+    }
+    if(hasBdayToday) return _pick([
+      '★ HAPPY BIRTHDAY, COWBOYS ★',
+      '★ BIRTHDAY VIBES IN ROOM 27 ★',
+      '★ CELEBRATE TODAY, ROOM 27 ★',
+    ]);
+
+    /* Break / end of day checks */
+    if(sched){
+      for(var i=0;i<sched.periods.length;i++){
+        var p=sched.periods[i];
+        if(p.brk&&nm>=tm2(p.start)&&nm<tm2(p.end)){
+          var lbl=(p.label||'').toLowerCase();
+          if(lbl.indexOf('lunch')>-1) return _pick([
+            '★ ENJOY LUNCH · ROOM 27 ★',
+            '★ FUEL UP, COWBOYS ★',
+            '★ LUNCH BREAK · SIGNAL PAUSED ★',
+            '★ EAT WELL · GRIND HARDER ★',
+            '★ RECHARGE · ROOM 27 ★',
+          ]);
+          return _pick([
+            '★ GRAB A SNACK · BACK ON TIME ★',
+            '★ BRUNCH BREAK · ROOM 27 ★',
+            '★ RECHARGE · THEN BACK TO WORK ★',
+            '★ SHORT BREAK · MAKE IT COUNT ★',
+          ]);
+        }
+      }
+      var lastP=sched.periods[sched.periods.length-1];
+      if(nm>=tm2(lastP.start)&&nm<tm2(lastP.end)) return _pick([
+        '★ ALMOST THERE, COWBOYS ★',
+        '★ FINAL STRETCH · ROOM 27 ★',
+        '★ HOME STRETCH, COWBOYS ★',
+        '★ ONE MORE PERIOD · FINISH STRONG ★',
+        '★ LAST PUSH, ROOM 27 ★',
+      ]);
+      if(nm>=tm2(lastP.end)) return _pick([
+        '★ THAT\'S A WRAP · SEE YOU TOMORROW ★',
+        '★ DISMISSED · COWBOYS RIDE OUT ★',
+        '★ SIGNAL SIGNING OFF · ROOM 27 ★',
+        '★ GOOD WORK TODAY, COWBOYS ★',
+        '★ PACK UP · RIDE SAFE, COWBOYS ★',
+      ]);
+    }
+
+    /* Day-specific */
+    if(day===5) return _pick([
+      '★ HAPPY FRIDAY, COWBOYS ★',
+      '★ FRIDAY VIBES · ROOM 27 ★',
+      '★ ALMOST THE WEEKEND, COWBOYS ★',
+      '★ FRIDAY FINAL PUSH · LET\'S GO ★',
+      '★ FINISH FRIDAY STRONG, ROOM 27 ★',
+      '★ FRIDAY FEELS · ROOM 27 ★',
+    ]);
+    if(day===1) return _pick([
+      '★ WELCOME BACK, ROOM 27 ★',
+      '★ NEW WEEK · NEW WIN, COWBOYS ★',
+      '★ MONDAY MODE · ACTIVATED ★',
+      '★ FRESH START · ROOM 27 ★',
+      '★ MONDAY STRONG, COWBOYS ★',
+    ]);
+
+    /* Time of day */
+    if(nm<7*60+55) return _pick([
+      '★ GOOD MORNING, ROOM 27 ★',
+      '★ WELCOME IN, COWBOYS ★',
+      '★ RISE AND SHINE, ROOM 27 ★',
+      '★ MORNING SIGNAL ACTIVE ★',
+    ]);
+    if(nm<8*60+30) return _pick([
+      '★ RISE AND GRIND, COWBOYS ★',
+      '★ LET\'S GET TO WORK, ROOM 27 ★',
+      '★ TIME TO SHINE, COWBOYS ★',
+      '★ ENGINES ON, ROOM 27 ★',
+      '★ SADDLE UP, COWBOYS ★',
+    ]);
+
+    /* General class time */
+    var labels={regular:'REGULAR BELL',earlyRelease:'EARLY RELEASE',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',foggy:'FOGGY SCHEDULE',activity:'ACTIVITY DAY',codeDay:'CODE DAY'};
+    return _pick([
+      '★ '+(labels[window._cwSchedName]||'BELL SCHEDULE')+' ★',
+      '★ COWBOY WIRE · LIVE ★',
+      '★ SIGNAL ACTIVE · ROOM 27 ★',
+      '★ ON THE CLOCK, COWBOYS ★',
+      '★ ROOM 27 · LOCKED IN ★',
+      '★ WORK TIME, COWBOYS ★',
+    ]);
+  }
+
+  function _contextualNewsHdr(){
+    var now=new Date(), nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    var day=now.getDay();
+    var hasBdayToday=false;
+    if(typeof CW_BIRTHDAYS!=='undefined'){
+      var cm=now.getMonth()+1,cd=now.getDate();
+      hasBdayToday=CW_BIRTHDAYS.some(function(b){return b.month==cm&&b.day==cd;});
+    }
+    if(hasBdayToday) return _pick(['BIRTHDAY BROADCAST · ROOM 27','SPECIAL TRANSMISSION · TODAY\'S A BIG DAY']);
+    if(day===5) return _pick(['HAPPY FRIDAY BROADCAST','FRIDAY SIGNAL INTERCEPT','FRIDAY TRANSMISSION · ROOM 27']);
+    if(day===1) return _pick(['MONDAY MORNING SIGNAL','WEEKLY TRANSMISSION · ROOM 27','SIGNAL INTERCEPT: NEW WEEK']);
+    if(nm<9*60) return _pick(['MORNING SIGNAL INTERCEPT','EARLY TRANSMISSION · ROOM 27','A.M. BROADCAST · COWBOY WIRE']);
+    if(nm>=14*60) return _pick(['AFTERNOON TRANSMISSION','P.M. SIGNAL INTERCEPT','END-OF-DAY BROADCAST · ROOM 27']);
+    return _pick(['SCRAP-E SIGNAL INTERCEPT','COWBOY WIRE · LIVE FEED','INCOMING TRANSMISSION · ROOM 27','MIDDAY SIGNAL INTERCEPT']);
+  }
+
+  function _renderBell(){
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    if(!sched){ _startNews(); return; }
+    var nm=(typeof nowMins==='function')?nowMins():0;
+    var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    var hdr=document.getElementById('crt-bell-hdr');
+    if(hdr) hdr.textContent=_contextualBellHdr();
+    var rows=document.getElementById('crt-bell-rows');
+    if(!rows) return;
+    var html='';
+    sched.periods.forEach(function(p){
+      var s=tm(p.start),e=tm(p.end),now=(nm>=s&&nm<e);
+      html+='<div class="crt-br'+(p.brk?' is-brk':'')+(now?' is-now':'')+'">'
+        +'<span class="crt-brl">'+(now?'▶ ':'')+p.label+'</span>'
+        +'<span class="crt-brt">'+_fmt12(p.start)+'</span>'
+        +'<span class="crt-brsep">›</span>'
+        +'<span class="crt-brt">'+_fmt12(p.end)+'</span>'
+        +'</div>';
+    });
+    rows.innerHTML=html;
+    setCRTMode('bell');
+  }
+
+  /* ── DATA ACCESS ANIMATION ── */
+  var _offTimers=[];
+  function _clearOff(){ _offTimers.forEach(clearTimeout); _offTimers=[]; }
+  var DATA_LINES=[
+    {t:'INITIALIZING SCRAP-E SYSTEMS...'},
+    {t:'CHECKING CALENDAR FEEDS...       [OK]', cls:'ok'},
+    {t:'LOADING WEATHER DATA...          [OK]', cls:'ok'},
+    {t:'FETCHING NEWS BROADCAST...       [OK]', cls:'ok'},
+    {t:'SCANNING HONOR ROLL DB...        [OK]', cls:'ok'},
+    {t:'SIGNAL INTERCEPT: ACTIVE.', cls:'ok'},
+  ];
+  function _showDataAccess(onDone){
+    setCRTMode('data');
+    var box=document.getElementById('crt-data-lines');
+    box.innerHTML=DATA_LINES.map(function(l){ return '<div class="crt-dl'+(l.cls?' '+l.cls:'')+'">'+l.t+'</div>'; }).join('');
+    var els=box.querySelectorAll('.crt-dl');
+    els.forEach(function(el,i){
+      _offTimers.push(setTimeout(function(){ el.classList.add('vis'); },i*320));
+    });
+    _offTimers.push(setTimeout(function(){ if(onDone) onDone(); }, els.length*320+800));
+  }
+  function _startOffSequence(){
+    if(_toolActive) return; // tool pane has control
+    _clearOff(); _stopNews();
+    setCRTMode('standby');
+    _offTimers.push(setTimeout(function(){
+      if(_toolActive) return;
+      _showDataAccess(function(){ _startNews(); });
+    }, 10000));
+  }
+
+  /* ── MAIN TICK ── */
+  var _last=null;
+  function _tick(){
+    if(_toolActive) return; // tool pane has control — skip auto-switching
+    var sched=(typeof getSchedule==='function')?getSchedule():null;
+    var nm=(typeof nowMins==='function')?nowMins():0;
+    var tm=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    if(!sched){
+      if(_last!=='off'){ _startOffSequence(); _last='off'; } return;
+    }
+    var firstStart=tm(sched.periods[0].start);
+    var lastEnd=tm(sched.periods[sched.periods.length-1].end);
+
+    // Find which period we're currently in (if any)
+    var curPeriod=null;
+    sched.periods.forEach(function(p){ if(nm>=tm(p.start)&&nm<tm(p.end)) curPeriod=p; });
+    var inPeriod=(curPeriod!==null);
+    var isBreak=(inPeriod && !!curPeriod.brk);  // brunch or lunch
+
+    // During a break, find when the next class period starts
+    var nextClassStart=null;
+    if(isBreak){
+      for(var i=0;i<sched.periods.length;i++){
+        var ps=tm(sched.periods[i].start);
+        if(!sched.periods[i].brk && ps>nm){ nextClassStart=ps; break; }
+      }
+    }
+
+    var afterSchool=(nm>=lastEnd);
+    var longBefore=(nm<firstStart-60);
+
+    if(inPeriod && !isBreak){
+      // Class in session → bell schedule (future: rotate with objectives)
+      _clearOff(); _stopNews();
+      if(_last!=='bell'){ _renderBell(); _last='bell'; }
+
+    } else if(isBreak){
+      // Brunch or lunch — show news; switch to bell 2 min before next class
+      var nearEnd=(nextClassStart!==null && (nextClassStart-nm)<=2);
+      if(nearEnd){
+        _clearOff(); _stopNews();
+        if(_last!=='bell'){ _renderBell(); _last='bell'; }
+      } else {
+        _clearOff();
+        if(_last!=='news'){ _startNews(); _last='news'; }
+      }
+
+    } else if(afterSchool||longBefore){
+      // Off hours → standby → data → news loop
+      if(_last!=='off'){ _startOffSequence(); _last='off'; }
+
+    } else {
+      // Passing period or <60 min before school → bell schedule
+      _clearOff(); _stopNews();
+      if(_last!=='bell'){ _renderBell(); _last='bell'; }
+    }
+  }
+
+  /* Re-highlight current period every minute while in bell mode */
+  setInterval(function(){ if(CRT_MODE==='bell') _renderBell(); }, 60000);
+
+  /* ── Update news header contextually when switching to news mode ── */
+  var _origStartNews = _startNews;
+  _startNews = function(){
+    var el=document.getElementById('crt-label-text');
+    if(el) el.textContent=_contextualNewsHdr();
+    _origStartNews();
+  };
+
+  /* ── SCRAP-E SAYS interruption system ── */
+
+  /* General pool — shuffled on boot so order is never the same twice */
+  var SCRAPE_SAYS_GENERAL=[
+    'SCRAP-E SAYS:\nHYDRATE.\nSERIOUSLY.',
+    'SCRAP-E SAYS:\nEYES UP.\nPHONES DOWN.',
+    'SCRAP-E SAYS:\nSTAND UP. STRETCH.\nSIT BACK DOWN.',
+    'SCRAP-E SAYS:\nYOU GOT THIS,\nCOWBOYS.',
+    'SCRAP-E SAYS:\nRESPECT THE ROOM.',
+    'SCRAP-E SAYS:\nASK A GOOD\nQUESTION TODAY.',
+    'SCRAP-E SAYS:\nCOLLABORATE.\nDON\'T COPY.',
+    'SCRAP-E SAYS:\nBE THE REASON\nSOMEONE SMILES TODAY.',
+    'SCRAP-E SAYS:\nFOCUS.\nYOU\'RE ALMOST THERE.',
+    'SCRAP-E SAYS:\nYOUR EFFORT\nIS SHOWING.\nKEEP GOING.',
+    'SCRAP-E SAYS:\nONE GOOD IDEA\nCAN CHANGE EVERYTHING.',
+    'SCRAP-E SAYS:\nBE CURIOUS.\nASK WHY.',
+    'SCRAP-E SAYS:\nDON\'T JUST SIT THERE.\nCONTRIBUTE.',
+    'SCRAP-E SAYS:\nSMALL WINS STILL COUNT.\nCELEBRATE THEM.',
+    'SCRAP-E SAYS:\nROOM 27 DOESN\'T\nDO AVERAGE.',
+    'SCRAP-E SAYS:\nTAKE NOTES.\nFUTURE YOU WILL\nTHANK PRESENT YOU.',
+    'SCRAP-E SAYS:\nBE PRESENT.\nMIND AND BODY.',
+    'SCRAP-E SAYS:\nDRINK WATER.\nNOT JUST DR. PEPPER.',
+    'SCRAP-E SAYS:\nGROWTH MINDSET.\nACTIVATE.',
+    'SCRAP-E SAYS:\nIF YOU\'RE CONFUSED,\nASK.\nTHAT\'S THE JOB.',
+    'SCRAP-E SAYS:\nSHOW YOUR WORK.\nALWAYS.',
+    'SCRAP-E SAYS:\nLEARN SOMETHING\nNEW TODAY.',
+    'SCRAP-E SAYS:\nYOUR VOICE\nMATTERS IN THIS ROOM.',
+    'SCRAP-E SAYS:\nBE THE STUDENT\nYOUR TEACHER BRAGS ABOUT.',
+    'SCRAP-E SAYS:\nSTOP COMPARING.\nSTART IMPROVING.',
+    'SCRAP-E SAYS:\nTHINK FIRST.\nSPEAK SECOND.',
+    'SCRAP-E SAYS:\nONE DAY YOU\'LL THANK\nYOURSELF FOR TODAY.',
+    'SCRAP-E SAYS:\nMAKE TODAY WORTH\nTALKING ABOUT.',
+    'SCRAP-E SAYS:\nBE KIND.\nIT\'S FREE.',
+    'SCRAP-E SAYS:\nCHECK YOUR WORK.\nTWICE.',
+  ];
+  var SCRAPE_SAYS_FRIDAY=[
+    'SCRAP-E SAYS:\nHAPPY FRIDAY.\nYOU EARNED IT.',
+    'SCRAP-E SAYS:\nFRIDAY ENERGY.\nLET\'S GO, COWBOYS.',
+    'SCRAP-E SAYS:\nMAKE IT TO FRIDAY\nSTRONG.',
+    'SCRAP-E SAYS:\nFINISH THE WEEK\nLIKE A COWBOY.',
+    'SCRAP-E SAYS:\nFRIDAY IS NOT\nAN EXCUSE TO COAST.',
+    'SCRAP-E SAYS:\nGOOD WEEK?\nMAKE NEXT WEEK BETTER.',
+  ];
+  var SCRAPE_SAYS_MONDAY=[
+    'SCRAP-E SAYS:\nWELCOME BACK,\nROOM 27.',
+    'SCRAP-E SAYS:\nNEW WEEK.\nFRESH START. LET\'S GO.',
+    'SCRAP-E SAYS:\nMONDAY MODE:\nACTIVATED.',
+    'SCRAP-E SAYS:\nANOTHER WEEK,\nANOTHER CHANCE\nTO BE GREAT.',
+    'SCRAP-E SAYS:\nLEAVE WHATEVER\nHAPPENED OVER THE WEEKEND\nBEHIND. WE\'RE WORKING.',
+  ];
+
+  /* Shuffle array in-place (Fisher-Yates) */
+  function _shuffle(arr){
+    for(var i=arr.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var tmp=arr[i]; arr[i]=arr[j]; arr[j]=tmp;
+    }
+    return arr;
+  }
+  _shuffle(SCRAPE_SAYS_GENERAL);
+
+  var _ssIdx=0, _ssReturnMode='bell';
+
+  function _fireScrapeMsg(msg, duration){
+    var el=document.getElementById('scrape-says-txt');
+    if(el) el.innerHTML=msg.replace(/\n/g,'<br>');
+    _ssReturnMode=CRT_MODE;
+    setCRTMode('scrape');
+    var dur=duration||10000;
+    setTimeout(function(){ setCRTMode(_ssReturnMode); }, dur);
+    /* 25% chance SCRAP•E laughs after the message clears */
+    if(Math.random()<0.25){
+      setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, dur+400);
+    }
+  }
+
+  function _showScrapeSays(){
+    var now=new Date(), day=now.getDay();
+    var nm=(typeof nowMins==='function')?nowMins():now.getHours()*60+now.getMinutes();
+    if(nm<8*60||nm>15*60+15){ _scheduleScrapeSays(); return; }
+    if(_toolActive||CRT_MODE==='standby'||CRT_MODE==='data'||CRT_MODE==='scrape'){ _scheduleScrapeSays(); return; }
+
+    var pool=SCRAPE_SAYS_GENERAL.slice();
+    if(day===5) pool=pool.concat(SCRAPE_SAYS_FRIDAY);
+    if(day===1) pool=pool.concat(SCRAPE_SAYS_MONDAY);
+    var msg=pool[_ssIdx%pool.length]; _ssIdx++;
+
+    _fireScrapeMsg(msg, 10000);
+    setTimeout(_scheduleScrapeSays, 10500);
+  }
+
+  function _scheduleScrapeSays(){
+    setTimeout(_showScrapeSays, (22+Math.random()*8)*60*1000);
+  }
+
+  /* ── BIRTHDAY SHOUTOUT — once per period when today is someone's birthday ── */
+  var _lastBdayPeriod=null;
+
+  function _checkBirthdayShoutout(periodLabel){
+    if(periodLabel===_lastBdayPeriod) return; /* already fired this period */
+    _lastBdayPeriod=periodLabel;
+
+    var now=new Date(), cm=now.getMonth()+1, cd=now.getDate();
+    var bdays=(typeof CW_BIRTHDAYS!=='undefined')?
+      CW_BIRTHDAYS.filter(function(b){return b.month==cm&&b.day==cd;}):[];
+    if(!bdays.length) return;
+
+    var names=bdays.map(function(b){return (b.name||'').toUpperCase();});
+    var nameStr=names.length===1?names[0]:
+      names.slice(0,-1).join(', ')+' & '+names[names.length-1];
+
+    var templates=[
+      '★ HAPPY BIRTHDAY ★\n'+nameStr+'!\nROOM 27 CELEBRATES YOU.',
+      'SCRAP-E SAYS:\nBIG DAY ALERT!\n'+nameStr+'\n— HAPPY BIRTHDAY!',
+      'SCRAP-E SAYS:\nROOM 27 SHOUTOUT:\nHAPPY BIRTHDAY,\n'+nameStr+'!',
+      'SCRAP-E SAYS:\n★ TODAY IS SPECIAL ★\n'+nameStr+' — HAVE AN\nAMAZING BIRTHDAY!',
+    ];
+    var msg=templates[Math.floor(Math.random()*templates.length)];
+
+    /* Fire 3 minutes into the period — let the class settle */
+    setTimeout(function(){
+      if(CRT_MODE==='standby'||CRT_MODE==='data') return;
+      _fireScrapeMsg(msg, 13000); /* birthday gets 13s */
+    }, 3*60*1000);
+  }
+
+  /* Patch _tick to call birthday check when period changes */
+  var _origTick=_tick;
+  _tick=function(){
+    _origTick();
+    /* Birthday check — runs after _tick updates state */
+    var sched2=(typeof getSchedule==='function')?getSchedule():null;
+    var nm2=(typeof nowMins==='function')?nowMins():0;
+    var tm2=(typeof toMins==='function')?toMins:function(t){var p=t.split(':');return parseInt(p[0])*60+parseInt(p[1]);};
+    if(sched2){
+      sched2.periods.forEach(function(p){
+        if(!p.brk&&nm2>=tm2(p.start)&&nm2<tm2(p.end)){
+          _checkBirthdayShoutout(p.label);
+        }
+      });
+    }
+  };
+
+  /* startCRT() is called by loadAll() after news data is ready */
+  window.startCRT = function(){
+    _tick();
+    setInterval(_tick, 30000);
+    setInterval(function(){ if(CW_NEWS.length>0 && !_crtItems.length) _crtItems=CW_NEWS; }, 15000);
+    _scheduleScrapeSays();
+  };
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   SCRAP-E EYES — emotion state machine, cross-eyed detection,
+   blink / wink, mouse tracking + idle random wander.
+
+   Emotion shapes (eye HEIGHT only — color stays green always):
+     idle      → 20px standard
+     happy     → 26px tall + smile curve  (birthday / open pass / Friday)
+     concerned → 12px narrow band         (loud audio / warn pass)
+     sleepy    → 9px heavy lid            (after school / before 7 AM)
+     excited   → pulsing 20-28px          (Friday in school)
+     squint    → 7px flat locked stare    (restricted zone)
+   ═══════════════════════════════════════════════════════════ */
+var eyeBlinkT=null, eyeLookT=null, mouseIdleT=null;
+var eyeTracking=false;
+
+/* Shared audio level written by sound meter, read here */
+window.SCRAP_AUDIO_LEVEL = 0;
+
+/* ── Emotion state ─────────────────────────────────────── */
+var SCRAP_EMO = 'idle';
+var EMO_OVERRIDE_UNTIL = 0;
+
+function setEmotion(state, durationMs){
+  var eyes=document.getElementById('p-eyes');
+  if(!eyes) return;
+  SCRAP_EMO=state;
+  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint','emo-laugh']
+    .forEach(function(c){ eyes.classList.remove(c); });
+  eyes.classList.add('emo-'+state);
+  if(durationMs) EMO_OVERRIDE_UNTIL=Date.now()+durationMs;
+}
+
+function decideEmotion(){
+  if(Date.now()<EMO_OVERRIDE_UNTIL) return;
+
+  var now=new Date();
+  var nm=now.getHours()*60+now.getMinutes();
+  var day=now.getDay(); /* 0=Sun … 5=Fri */
+
+  /* Pass status */
+  var passCls=(document.getElementById('st-pass-dot')||{}).className||'off';
+
+  /* Priority cascade (highest wins first) */
+
+  /* 1. Restricted zone → squint */
+  if(passCls==='restricted'){ setEmotion('squint'); return; }
+
+  /* 2. Sustained loud audio → concerned (smoothed level, high threshold) */
+  if((window.SCRAP_AUDIO_LEVEL||0)>82){ setEmotion('concerned'); return; }
+
+  /* 3. Last-chance warning → concerned */
+  if(passCls==='warn'){ setEmotion('concerned'); return; }
+
+  /* 4. Birthday today → happy all day */
+  var cm=now.getMonth()+1, cd=now.getDate();
+  var hasBday=(typeof CW_BIRTHDAYS!=='undefined')&&
+    CW_BIRTHDAYS.some(function(b){ return b.month==cm&&b.day==cd; });
+  if(hasBday){ setEmotion('happy'); return; }
+
+  /* 5. Open pass → happy */
+  if(passCls==='open'){ setEmotion('happy'); return; }
+
+  /* 6. Friday during school hours → excited */
+  var inSchool=(nm>=7*60+45&&nm<=15*60+30);
+  if(day===5&&inSchool){ setEmotion('excited'); return; }
+
+  /* 7. After 9 PM or before 6 AM → sleepy */
+  if(nm>21*60||nm<6*60){ setEmotion('sleepy'); return; }
+
+  /* 8. Default */
+  setEmotion('idle');
+}
+
+/* Exposed so sound meter can trigger re-evaluation */
+window.SCRAP_decidEmo=decideEmotion;
+
+/* ── Startup ───────────────────────────────────────────── */
+function startEyes(){
+  scheduleBlink();
+  scheduleLook();
+  decideEmotion(); /* decide immediately — don't force idle and then wait 15s */
+  setInterval(decideEmotion, 15000); /* periodic re-check */
+
+  document.addEventListener('mousemove', function(e){
+    if(!eyeTracking){
+      eyeTracking=true;
+      clearTimeout(eyeLookT); eyeLookT=null;
+    }
+    trackEyesToMouse(e.clientX, e.clientY);
+    clearTimeout(mouseIdleT);
+    mouseIdleT=setTimeout(function(){ eyeTracking=false; scheduleLook(); }, 2000);
+  });
+}
+
+/* ── Cross-eyed + normal tracking ─────────────────────── */
+function trackEyesToMouse(mx, my){
+  var leftEl =document.getElementById('eye-left');
+  var rightEl=document.getElementById('eye-right');
+  if(!leftEl||!rightEl) return;
+
+  var lr=leftEl.getBoundingClientRect();
+  var rr=rightEl.getBoundingClientRect();
+
+  /* Cross-eyed zone: mouse hovers near/between the eyes */
+  var gapCenter=(lr.right+rr.left)/2;
+  var halfZone=(rr.right-lr.left)*0.55; /* ~110% of both-eyes span */
+  var crossFactor=Math.max(0, 1-Math.abs(mx-gapCenter)/halfZone);
+
+  if(crossFactor>0.1){
+    /* Pupils point inward — more crossed the closer to center */
+    var ca=(crossFactor*5).toFixed(1);
+    var pl=document.getElementById('pupil-left');
+    var pr=document.getElementById('pupil-right');
+    if(pl) pl.style.transform='translate(calc(-50% + '+ca+'px), calc(-50%))';
+    if(pr) pr.style.transform='translate(calc(-50% - '+ca+'px), calc(-50%))';
+    return;
+  }
+
+  /* Normal: pupils follow cursor up to 5px from center */
+  var eyesEl=document.getElementById('p-eyes');
+  if(!eyesEl) return;
+  var r=eyesEl.getBoundingClientRect();
+  var cx=r.left+r.width/2, cy=r.top+r.height/2;
+  var dx=mx-cx, dy=my-cy;
+  var dist=Math.sqrt(dx*dx+dy*dy)||1;
+  var pull=Math.min(1, dist/260);
+  var MAX=5;
+  setPupils(((dx/dist)*pull*MAX).toFixed(1), ((dy/dist)*pull*MAX).toFixed(1));
+}
+
+function setPupils(dx, dy){
+  var t='translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px))';
+  var pl=document.getElementById('pupil-left');
+  var pr=document.getElementById('pupil-right');
+  if(pl) pl.style.transform=t;
+  if(pr) pr.style.transform=t;
+}
+
+/* ── Laugh ──────────────────────────────────────────────── */
+var _laughTimer = null;
+function playLaugh(){
+  if(_laughTimer) return;
+  var float = document.getElementById('scrap-float');
+  var eyes  = document.getElementById('p-eyes');
+  if(!float||!eyes) return;
+  ['emo-idle','emo-happy','emo-concerned','emo-sleepy','emo-excited','emo-squint','emo-laugh']
+    .forEach(function(c){ eyes.classList.remove(c); });
+  eyes.classList.add('emo-laugh');
+  float.classList.add('laughing');
+  EMO_OVERRIDE_UNTIL = Date.now() + 2000;
+  _laughTimer = setTimeout(function(){
+    float.classList.remove('laughing');
+    eyes.classList.remove('emo-laugh');
+    _laughTimer = null;
+    decideEmotion();
+  }, 1600);
+}
+window.SCRAP_laugh = playLaugh;
+
+/* ── Wave easter egg ────────────────────────────────────── */
+var _waveTimer = null;
+function playWave(){
+  if(_waveTimer) return;
+  var hand = document.getElementById('scrap-hand');
+  if(!hand) return;
+  hand.classList.remove('waving');
+  /* force reflow so animation restarts cleanly */
+  void hand.offsetWidth;
+  hand.classList.add('waving');
+  _waveTimer = setTimeout(function(){
+    hand.classList.remove('waving');
+    _waveTimer = null;
+    /* innocent eyes: pupils drift upward for ~2s then release */
+    var pl = document.getElementById('pupil-left');
+    var pr = document.getElementById('pupil-right');
+    if(pl && pr){
+      pl.style.transform = 'translate(-50%, calc(-50% - 7px))';
+      pr.style.transform = 'translate(-50%, calc(-50% - 7px))';
+      setTimeout(function(){
+        pl.style.transform = '';
+        pr.style.transform = '';
+      }, 2000);
+    }
+  }, 1500);
+}
+window.SCRAP_wave = playWave;
+
+/* ── Spin-wheel arm action ───────────────────────────────── */
+var _spinArmTimer = null;
+function playSpinArm(onThrust){
+  var hand = document.getElementById('scrap-hand');
+  if(!hand) return;
+  // Cancel any current arm animation
+  hand.classList.remove('waving', 'spin-arm');
+  void hand.offsetWidth; // force reflow so animation restarts
+  hand.classList.add('spin-arm');
+
+  // Look determined during wind-up
+  var eyes = document.getElementById('p-eyes');
+  if(eyes){
+    ['emo-idle','emo-happy','emo-concerned','emo-laugh','emo-sleepy','emo-excited']
+      .forEach(function(c){ eyes.classList.remove(c); });
+    eyes.classList.add('emo-squint');
+  }
+
+  // Reel fires at 60% of 1.7s = ~1.02s (max thrust point)
+  clearTimeout(_spinArmTimer);
+  _spinArmTimer = setTimeout(function(){
+    if(typeof onThrust === 'function') onThrust();
+  }, 1020);
+
+  // Clean up class after animation finishes
+  setTimeout(function(){
+    if(hand) hand.classList.remove('spin-arm');
+    _spinArmTimer = null;
+  }, 1750);
+}
+window.SCRAP_spinArm = playSpinArm;
+
+/* Schedule 1-2 waves per period, only during school hours */
+(function scheduleWaves(){
+  var now = new Date();
+  var nm  = now.getHours()*60 + now.getMinutes();
+  var schoolStart = 7*60+45, schoolEnd = 15*60+30;
+  if(nm < schoolStart || nm >= schoolEnd){
+    /* check again next minute */
+    setTimeout(scheduleWaves, 60000); return;
+  }
+  var periodLen = 50; /* minutes — rough period length */
+  var wavesThisPeriod = Math.random() < 0.5 ? 1 : 2;
+  for(var i=0; i<wavesThisPeriod; i++){
+    /* fire somewhere in a random slice of the period, not in first 5 min */
+    var minDelay = (5 + i*20) * 60 * 1000;
+    var maxDelay = (periodLen - 5) / wavesThisPeriod * (i+1) * 60 * 1000;
+    var delay = minDelay + Math.random() * Math.max(0, maxDelay - minDelay);
+    setTimeout(playWave, delay);
+  }
+  /* reschedule for the next period */
+  setTimeout(scheduleWaves, periodLen * 60 * 1000);
+})();
+
+/* ── Blink / wink scheduler ────────────────────────────── */
+function _doBlink(left, right, dur){
+  left.classList.add('blink'); right.classList.add('blink');
+  setTimeout(function(){
+    if(left)  left.classList.remove('blink');
+    if(right) right.classList.remove('blink');
+  }, dur||120);
+}
+function scheduleBlink(){
+  var left =document.getElementById('eye-left');
+  var right=document.getElementById('eye-right');
+  if(left&&right&&SCRAP_EMO!=='laugh'){
+    /* 22% chance of a single-eye wink when idle */
+    if(SCRAP_EMO==='idle'&&Math.random()<0.22){
+      var winkEye=Math.random()<0.5?left:right;
+      winkEye.classList.add('blink');
+      setTimeout(function(){ winkEye.classList.remove('blink'); }, 180);
+    } else {
+      _doBlink(left, right, 120);
+      /* 15% chance of a follow-up double-blink */
+      if(Math.random()<0.15){
+        setTimeout(function(){ _doBlink(left, right, 100); }, 220);
+      }
+    }
+  }
+  /* Blink cadence varies by mood */
+  var base = SCRAP_EMO==='excited' ? 1000
+           : SCRAP_EMO==='sleepy'  ? 5500
+           :                         2800;
+  var jitter = SCRAP_EMO==='excited' ? 800 : 3200;
+  eyeBlinkT=setTimeout(scheduleBlink, base+Math.random()*jitter);
+}
+
+/* ── Random look-around (when mouse is idle) ────────────── */
+function scheduleLook(){
+  if(eyeTracking) return;
+  var maxX=SCRAP_EMO==='sleepy'?2:5;
+  var maxY=SCRAP_EMO==='sleepy'?1.5:3;
+  var dx=(Math.random()*2-1)*maxX;
+  var dy=(Math.random()*2-1)*maxY;
+  if(SCRAP_EMO==='sleepy') dy=Math.abs(dy)*0.6; /* sleepy pupils drift down */
+  setPupils(dx.toFixed(1), dy.toFixed(1));
+  eyeLookT=setTimeout(scheduleLook, 1800+Math.random()*2400);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SOUND METER — real mic via Web Audio API
+   Controls (all clickable):
+     "METER OFF / ● LIVE"  → toggle mic on/off
+     Style label           → cycle viz (BARS / WAVE / DOTS / MIRROR)
+     MED/LOW/HIGH/MAX btn  → cycle sensitivity
+   Bulbs bsnd-1…4 light bottom→top with volume level.
+   Off-state: cosmetic animation for both bars and bulbs.
+   ═══════════════════════════════════════════════════════════ */
+(function initSoundMeter(){
+
+  /* ── State ─────────────────────────────────────────── */
+  var MIC_ON     = false;
+  var VIZ_IDX    = 0;
+  var SENS_IDX   = 1;
+  var VIZ_NAMES  = ['BARS','WAVE','DOTS','MIRROR'];
+  var SENS_NAMES = ['LOW','MED','HIGH','MAX'];
+  var SENS_VALS  = [0.55, 1.0, 1.9, 3.5]; // gain multipliers
+
+  var audioCtx=null, analyser=null, micStream=null;
+  var _audioEmoFrame=0;  /* frame counter for throttled emotion updates */
+  var _audioSmooth=0;    /* exponential moving average — dampens spikes  */
+  var liveFrame=null, cosmeticTimer=null, cosmeticBulbTimer=null;
+
+  /* ── DOM refs ──────────────────────────────────────── */
+  var canvas     = document.getElementById('sound-canvas');
+  var toggleBtn  = document.getElementById('snd-toggle-btn');
+  var styleBtn   = document.getElementById('snd-style-btn');
+  var sensBtn    = document.getElementById('snd-sens-btn');
+  var dbNum      = document.getElementById('sound-db-num');
+
+  /* ── Controls ──────────────────────────────────────── */
+  if(toggleBtn) toggleBtn.addEventListener('click', toggleMic);
+  if(styleBtn)  styleBtn.addEventListener('click',  cycleStyle);
+  if(sensBtn)   sensBtn.addEventListener('click',   cycleSens);
+
+  function cycleStyle(){
+    VIZ_IDX=(VIZ_IDX+1)%VIZ_NAMES.length;
+    if(styleBtn) styleBtn.textContent=VIZ_NAMES[VIZ_IDX];
+  }
+  function cycleSens(){
+    SENS_IDX=(SENS_IDX+1)%SENS_NAMES.length;
+    if(sensBtn) sensBtn.textContent=SENS_NAMES[SENS_IDX];
+  }
+
+  /* ── Mic toggle ────────────────────────────────────── */
+  function toggleMic(){ MIC_ON ? stopMic() : startMic(); }
+
+  function startMic(){
+    navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(function(stream){
+      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 128;            // 64 freq bins
+      analyser.smoothingTimeConstant = 0.78;
+      audioCtx.createMediaStreamSource(stream).connect(analyser);
+      micStream = stream;
+      MIC_ON = true;
+      stopCosmetic();
+      if(toggleBtn){ toggleBtn.textContent='● LIVE'; toggleBtn.style.color='var(--cw-green)'; }
+      liveLoop();
+    }).catch(function(e){
+      if(toggleBtn){ toggleBtn.textContent='MIC DENIED'; toggleBtn.style.color='#c03020'; }
+      console.warn('Mic:', e);
+    });
+  }
+
+  function stopMic(){
+    MIC_ON = false;
+    if(liveFrame){ cancelAnimationFrame(liveFrame); liveFrame=null; }
+    if(micStream){ micStream.getTracks().forEach(function(t){t.stop();}); micStream=null; }
+    if(audioCtx) { audioCtx.close(); audioCtx=null; }
+    analyser = null;
+    if(dbNum) dbNum.textContent='—';
+    if(toggleBtn){ toggleBtn.textContent='METER OFF'; toggleBtn.style.color=''; }
+    setBulbs(0);
+    startCosmetic();
+  }
+
+  /* ── Live draw loop ─────────────────────────────────── */
+  function liveLoop(){
+    if(!MIC_ON||!analyser) return;
+    liveFrame = requestAnimationFrame(liveLoop);
+    var freqData = new Uint8Array(analyser.frequencyBinCount);
+    var timeData = new Uint8Array(analyser.fftSize);
+    analyser.getByteFrequencyData(freqData);
+    analyser.getByteTimeDomainData(timeData);
+    var sens = SENS_VALS[SENS_IDX];
+
+    /* dB + bulb level */
+    var sum=0;
+    for(var k=0;k<freqData.length;k++) sum+=freqData[k];
+    var norm = Math.min(1,(sum/freqData.length/255)*sens*1.6);
+    var db = norm>0.01 ? Math.round(-58+norm*68) : -60;
+    if(dbNum) dbNum.textContent = db>-58 ? db : '—';
+    setBulbs(norm<0.08?0:norm<0.28?1:norm<0.52?2:norm<0.76?3:4);
+    /* Smooth the level (EMA α=0.08 → slow to rise, slow to fall)
+       then expose globally. Re-evaluate eye emotion every ~300 frames (~5s). */
+    _audioSmooth = _audioSmooth*0.92 + norm*0.08;
+    window.SCRAP_AUDIO_LEVEL=Math.round(_audioSmooth*100);
+    _audioEmoFrame++;
+    if(_audioEmoFrame>=300){
+      _audioEmoFrame=0;
+      if(window.SCRAP_decidEmo) window.SCRAP_decidEmo();
+    }
+
+    /* draw */
+    syncCanvas();
+    var ctx=canvas.getContext('2d');
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    switch(VIZ_IDX){
+      case 0: drawBars(ctx,freqData,sens);   break;
+      case 1: drawWave(ctx,timeData);        break;
+      case 2: drawDots(ctx,freqData,sens);   break;
+      case 3: drawMirror(ctx,freqData,sens); break;
+    }
+  }
+
+  /* ── Canvas sync ──────────────────────────────────── */
+  function syncCanvas(){
+    var el=canvas.parentElement;
+    var w=el.offsetWidth, h=el.offsetHeight;
+    if(canvas.width!==w||canvas.height!==h){ canvas.width=w; canvas.height=h; }
+  }
+
+  /* ── Viz helpers ──────────────────────────────────── */
+  function barCol(v){
+    if(v>0.85) return 'rgba(255,96,64,0.92)';
+    if(v>0.58) return 'rgba(184,112,64,0.92)';
+    return 'rgba(200,168,64,0.85)';
+  }
+
+  /* centreOut(i,n): maps bar index to frequency bin so bass is in
+     the middle and treble fans out to both edges symmetrically.   */
+  function centreOut(i,n){
+    var half=Math.floor(n/2);
+    return i<half ? (half-1-i) : (i-half);
+  }
+
+  function drawBars(ctx,data,sens){
+    var W=canvas.width, H=canvas.height, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
+      var h=Math.max(2,Math.round(v*H));
+      var x=i*(bw+2);
+      ctx.fillStyle=barCol(v);
+      ctx.fillRect(x,H-h,bw,h);
+      /* peak cap */
+      ctx.fillStyle='rgba(240,208,96,0.65)';
+      ctx.fillRect(x,H-h-2,bw,2);
+    }
+  }
+
+  function drawWave(ctx,data){
+    /* wave stays time-domain — full left-to-right is correct here */
+    var W=canvas.width, H=canvas.height, mid=H/2;
+    ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.1)'; ctx.lineWidth=1;
+    ctx.moveTo(0,mid); ctx.lineTo(W,mid); ctx.stroke();
+    ctx.beginPath(); ctx.strokeStyle='rgba(200,168,64,0.8)'; ctx.lineWidth=1.8;
+    var sw=W/data.length;
+    for(var i=0;i<data.length;i++){
+      var y=mid+(data[i]/128-1)*mid*0.88;
+      i===0?ctx.moveTo(0,y):ctx.lineTo(i*sw,y);
+    }
+    ctx.stroke();
+    ctx.lineTo(W,mid); ctx.lineTo(0,mid); ctx.closePath();
+    ctx.fillStyle='rgba(200,168,64,0.06)'; ctx.fill();
+  }
+
+  function drawDots(ctx,data,sens){
+    var W=canvas.width, H=canvas.height, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
+      var cx=i*(bw+2)+bw/2, r=Math.max(2,bw/2);
+      var cy=H-Math.max(r,v*H);
+      var grd=ctx.createRadialGradient(cx,cy,0,cx,cy,r*2.5);
+      grd.addColorStop(0,barCol(v)); grd.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fillStyle=grd; ctx.fill();
+    }
+  }
+
+  function drawMirror(ctx,data,sens){
+    /* vertical mirror (top+bottom) also benefits from centre-out horizontally */
+    var W=canvas.width, H=canvas.height, mid=H/2, n=data.length;
+    var bw=Math.floor((W-(n-1)*2)/n);
+    for(var i=0;i<n;i++){
+      var v=Math.min(1,(data[centreOut(i,n)]/255)*sens*1.4);
+      var h=Math.max(2,Math.round(v*mid*0.96));
+      var x=i*(bw+2);
+      ctx.fillStyle=barCol(v);
+      ctx.fillRect(x,mid-h,bw,h*2);
+    }
+  }
+
+  /* ── Bulbs ─────────────────────────────────────────── */
+  function setBulbs(level){
+    /* level 0-4, bsnd-1 is top, bsnd-4 is bottom — light from bottom up */
+    for(var i=1;i<=4;i++){
+      var b=document.getElementById('bsnd-'+i);
+      if(!b) continue;
+      var on=level>=(5-i);
+      var hot=(level>=4&&i<=2);
+      b.className='bulb bulb-sound'+(on?' lit':'')+(hot?' hot':'');
+    }
+  }
+
+  /* ── Cosmetic off-state animation ──────────────────── */
+  function startCosmetic(){
+    if(cosmeticTimer) return;
+    syncCanvas();
+    cosmeticTimer=setInterval(function(){
+      syncCanvas();
+      var ctx=canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      var W=canvas.width, H=canvas.height, n=22;
+      var bw=Math.floor((W-(n-1)*2)/n);
+      var t=Date.now()/900;
+      for(var i=0;i<n;i++){
+        /* centre-out: bass swell in middle, treble at edges */
+        var bin=centreOut(i,n);
+        var v=Math.abs(Math.sin(t+bin*0.55))*0.58+Math.random()*0.10;
+        var h=Math.max(3,Math.round(v*H*0.85));
+        ctx.fillStyle='rgba(200,168,64,'+(0.22+v*0.38)+')';
+        ctx.fillRect(i*(bw+2),H-h,bw,h);
+      }
+    },80);
+    cosmeticBulbTimer=setInterval(function(){
+      setBulbs(Math.floor(Math.random()*2));
+    },1200);
+  }
+
+  function stopCosmetic(){
+    if(cosmeticTimer){clearInterval(cosmeticTimer);cosmeticTimer=null;}
+    if(cosmeticBulbTimer){clearInterval(cosmeticBulbTimer);cosmeticBulbTimer=null;}
+  }
+
+  /* ── Boot ──────────────────────────────────────────── */
+  startCosmetic();
+
+})();
+
+/* ─── CRT TOP BULB CLOCK ─────────────────────────────────────
+   :00   → 40-second burst: all 5 randomly fade in/out (fast)
+   :40s  → Pip 1 slow-fades on, others dim  (holds to 12:00)
+   12:00 → Pip 1 fades off, Pip 2 fades on  (holds to 24:00)
+   24:00 → Pip 2 fades off, Pip 3 fades on  (holds to 36:00)
+   36:00 → Pip 3 fades off, Pip 4 fades on  (holds to 48:00)
+   48:00 → Pip 4 fades off, Pip 5 fades on  (holds to :00)
+   ───────────────────────────────────────────────────────── */
+(function crtBulbClock(){
+  var ids=['bcrt-1','bcrt-2','bcrt-3','bcrt-4','bcrt-5'];
+  var pips=ids.map(function(id){ return document.getElementById(id); });
+  var DIM=0.1, burstTimer=null;
+
+  function setOp(p, v){
+    if(p) p.style.opacity=String(v);
+  }
+
+  function startBurst(){
+    pips.forEach(function(p){ if(p){ p.classList.add('burst'); setOp(p, DIM); } });
+    /* small delay so transition class is applied first */
+    setTimeout(function(){
+      burstTimer=setInterval(function(){
+        pips.forEach(function(p){
+          if(p) setOp(p, Math.random()>0.45 ? (0.45+Math.random()*0.55).toFixed(2) : DIM);
+        });
+      }, 600);
+    }, 60);
+  }
+
+  function stopBurst(){
+    if(burstTimer){ clearInterval(burstTimer); burstTimer=null; }
+    pips.forEach(function(p){ if(p) p.classList.remove('burst'); });
+  }
+
+  function showPip(idx){
+    /* crossfade: active gets gentle pulse, others go dim */
+    pips.forEach(function(p,i){
+      if(!p) return;
+      if(i===idx){
+        p.style.opacity='';  /* let animation control */
+        p.style.animation='pipPulse 2.8s ease-in-out infinite';
+      } else {
+        p.style.animation='none';
+        setOp(p, DIM);
+      }
+    });
+  }
+
+  var lastPhase=-1;
+  function tick(){
+    var now=new Date(), totSec=now.getMinutes()*60+now.getSeconds();
+    var phase= totSec<40   ? 0   /* burst */
+             : totSec<720  ? 1   /* pip 1:  0:40–12:00 */
+             : totSec<1440 ? 2   /* pip 2: 12:00–24:00 */
+             : totSec<2160 ? 3   /* pip 3: 24:00–36:00 */
+             : totSec<2880 ? 4   /* pip 4: 36:00–48:00 */
+             : 5;                /* pip 5: 48:00–59:59 */
+    if(phase===lastPhase) return;
+    lastPhase=phase;
+    if(phase===0){ startBurst(); }
+    else { stopBurst(); showPip(phase-1); }
+  }
+
+  tick();
+  setInterval(tick, 1000);
+})();
+
+/* PHOTO SLIDESHOW — Google Drive via Apps Script */
+var DRIVE_PHOTO_URL = 'https://script.google.com/macros/s/AKfycbwFbF2ssCZFxwYYf2ziZBA7gQ9ZEpITFGL5W5clMuYaquxWiAxlh1Kqicc60Ztn68ts/exec';
+var PHOTOS = [], photoIdx = 0, photoActive = 0;
+var photoA, photoB;
+
+function initPhotos(){
+  photoA = document.getElementById('photo-img');
+  /* create a second img for crossfade */
+  photoB = document.createElement('img');
+  photoB.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease;';
+  document.getElementById('p-photo').appendChild(photoB);
+}
+
+function setPhoto(src){
+  var next = photoActive ? photoA : photoB;
+  var prev = photoActive ? photoB : photoA;
+  if(!src) return;
+  next.onload = function(){
+    next.style.opacity = '1';
+    prev.style.opacity = '0';
+    photoActive = photoActive ? 0 : 1;
+  };
+  next.src = src;
+}
+
+function nextPhoto(){
+  if(!PHOTOS.length) return;
+  photoIdx = (photoIdx + 1) % PHOTOS.length;
+  setPhoto(PHOTOS[photoIdx]);
+}
+
+async function loadPhotos(){
+  try{
+    var res = await fetch(DRIVE_PHOTO_URL);
+    if(!res.ok) throw new Error('http '+res.status);
+    var data = await res.json();
+    var urls = (data && Array.isArray(data.photos)) ? data.photos.filter(Boolean) : [];
+    if(urls.length){
+      PHOTOS = urls;
+      photoIdx = 0;
+      setPhoto(PHOTOS[0]);
+      document.getElementById('p-photo').style.background = 'none';
+    }
+  } catch(e){
+    console.warn('[CW2 Photos] Drive fetch failed:', e.message);
+    /* retry in 30s */
+    setTimeout(loadPhotos, 30000);
+  }
+}
+
+setInterval(nextPhoto, 10000);
+
+/* ═══════════════════════════════════════════════════════════
+   LOAD ALL & BOOT
+   ═══════════════════════════════════════════════════════════ */
+async function loadAll(){
+  await loadRoomConfig();
+  await loadNoMedia();
+  await loadOverrides();
+  await loadCwEvents();
+  await loadCwCalendar();
+  await loadBirthdays();
+  await loadPickRoster();
+  await loadSportDays();
+  await loadInspiration();
+  await loadWeather();
+  await loadAirQuality();
+  await loadNews();
+  renderEvents();
+  renderBirthdays();
+  renderSportDays();
+  renderWeather();
+  renderWisdom();
+  await renderHonorRoll();
+  updateBodyLights(); // re-run now that CW_BIRTHDAYS is populated
+  startCRT();
+  // Apply teacher's default CRT pane from Switchboard (timer / watch / pick)
+  var _gc = (SETTINGS && SETTINGS.global_categories) ? SETTINGS.global_categories : {};
+  var _defaultCrt = _gc.scrape_default_crt || '';
+  if(_defaultCrt === 'timer' || _defaultCrt === 'watch' || _defaultCrt === 'pick'){
+    setTimeout(function(){ if(typeof activateTool === 'function') activateTool(_defaultCrt); }, 500);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: TIMER — pixel hourglass + countdown
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var _tDuration = 0;   // seconds total
+  var _tRemain   = 0;   // seconds remaining
+  var _tRunning  = false;
+  var _tInterval = null;
+  var _tAnimFrame= null;
+  var _sandPct   = 1.0;
+  var _tMaxScale = 1.0; // sand fill fraction: 15min=1.0, 10min~0.67, 3min~0.2
+  var _dropAnim  = null;
+  var _SAND_REF  = 900; // 15 min = full hourglass reference
+  // 4 sand particles falling through the neck — staggered start positions
+  // t = 0..1 progress through the fall path (neck → pile top)
+  var _sandPtcl  = [{t:0.05},{t:0.18},{t:0.31},{t:0.44},{t:0.57},{t:0.70},{t:0.83},{t:0.96}];
+
+  var TIMER_STATUS = [
+    { pct: 1.00, msg: 'COUNTDOWN INITIATED' },
+    { pct: 0.75, msg: 'TIME REMAINING: SUFFICIENT' },
+    { pct: 0.50, msg: 'HALFWAY POINT REACHED' },
+    { pct: 0.30, msg: 'TIME RUNNING SHORT' },
+    { pct: 0.15, msg: '>>> WARNING: LOW TIME <<<' },
+    { pct: 0.05, msg: '!!! CRITICAL — WRAP UP !!!' },
+    { pct: 0.00, msg: 'TIME ELAPSED — PENCILS DOWN' }
+  ];
+
+  function _getStatus(pct){
+    for(var i=TIMER_STATUS.length-1; i>=0; i--){
+      if(pct >= TIMER_STATUS[i].pct) return TIMER_STATUS[i].msg;
+    }
+    return 'SEQUENCE COMPLETE';
+  }
+
+  /* ════════════════════════════════════════════════════════════
+     HOURGLASS — compound chamber geometry
+     Top chamber  = rectangle + downward funnel → narrow neck
+     Bottom chamber = narrow neck → upward funnel + rectangle
+     Sand is NOT symmetric: top drains as fill, bottom grows as mound
+  ════════════════════════════════════════════════════════════ */
+  // scale    = sand fill fraction (1=full=15min, ~0.67=10min, ~0.2=3min)
+  // totalSecs = original timer duration in seconds (for 2s mound delay)
+  function drawHourglass(canvas, pct, scale, totalSecs){
+    scale     = (scale     === undefined) ? 1 : scale;
+    totalSecs = (totalSecs === undefined) ? 0 : totalSecs;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    var progress = 1 - pct;  // 0=just started, 1=done
+
+    // ── Geometry ────────────────────────────────────────────
+    var cx = W / 2;
+    var LX = 22, RX = W - 22;
+    var topY       = 18;
+    var botY       = H - 18;
+    var topRectH   = 58;
+    var botRectH   = 58;
+    var topRectBotY = topY + topRectH;
+    var botRectTopY = botY - botRectH;
+    var neckW = 10, neckH = 10;
+    var neckTopY  = H/2 - neckH/2;
+    var neckBotY  = H/2 + neckH/2;
+    var neckLX = cx - neckW/2;
+    var neckRX = cx + neckW/2;
+
+    var CYAN = '#c8a840';
+    var SAND = '#c8a840';
+
+    // ── Chamber clip helpers (sand fill only) ────────────────
+    function topChamber(){
+      ctx.beginPath();
+      ctx.moveTo(LX,     topY);
+      ctx.lineTo(RX,     topY);
+      ctx.lineTo(RX,     topRectBotY);
+      ctx.lineTo(neckRX, neckTopY);
+      ctx.lineTo(neckLX, neckTopY);
+      ctx.lineTo(LX,     topRectBotY);
+      ctx.closePath();
+    }
+    function botChamber(){
+      ctx.beginPath();
+      ctx.moveTo(neckLX, neckBotY);
+      ctx.lineTo(neckRX, neckBotY);
+      ctx.lineTo(RX,     botRectTopY);
+      ctx.lineTo(RX,     botY);
+      ctx.lineTo(LX,     botY);
+      ctx.lineTo(LX,     botRectTopY);
+      ctx.closePath();
+    }
+
+    // ── Continuous glass outline — no horizontal neck seams ──
+    // One unbroken path; the neck horizontal joints are omitted
+    // so the glass looks seamless through the connector.
+    function glassOutline(){
+      ctx.beginPath();
+      ctx.moveTo(neckLX, neckTopY);      // neck top-left
+      ctx.lineTo(LX,     topRectBotY);   // up left funnel
+      ctx.lineTo(LX,     topY);          // up left wall
+      ctx.lineTo(RX,     topY);          // top edge
+      ctx.lineTo(RX,     topRectBotY);   // down right wall
+      ctx.lineTo(neckRX, neckTopY);      // down right funnel to neck top
+      ctx.lineTo(neckRX, neckBotY);      // right neck wall
+      ctx.lineTo(RX,     botRectTopY);   // down right funnel from neck
+      ctx.lineTo(RX,     botY);          // down right wall
+      ctx.lineTo(LX,     botY);          // bottom edge
+      ctx.lineTo(LX,     botRectTopY);   // up left wall
+      ctx.lineTo(neckLX, neckBotY);      // up left funnel to neck bottom
+      ctx.closePath();                   // left neck wall back to start
+    }
+
+    // ── Empty chamber background ─────────────────────────────
+    ctx.fillStyle = 'rgba(0,220,255,0.03)';
+    topChamber(); ctx.fill();
+    botChamber(); ctx.fill();
+
+    // ── TOP SAND — scaled by timer duration ──────────────────
+    // scale=1  → sand starts at topY (full chamber, 15 min)
+    // scale=0.2 → sand starts 80% down (small amount, 3 min)
+    var topFull   = topY;
+    var topEmpty  = neckTopY;
+    var topStartY = topFull + (1 - scale) * (topEmpty - topFull);
+    var sandSurfaceY = topStartY + progress * (topEmpty - topStartY);
+
+    ctx.save();
+    topChamber(); ctx.clip();
+    if(sandSurfaceY < topEmpty){
+      var topGrad = ctx.createLinearGradient(cx, sandSurfaceY, cx, topEmpty);
+      topGrad.addColorStop(0,   'rgba(210,178,70,0.97)');
+      topGrad.addColorStop(0.6, 'rgba(190,155,50,0.92)');
+      topGrad.addColorStop(1,   'rgba(170,135,40,0.85)');
+      ctx.fillStyle = topGrad;
+      ctx.fillRect(0, sandSurfaceY, W, topEmpty - sandSurfaceY + 4);
+      ctx.fillStyle = 'rgba(240,210,100,0.18)';
+      ctx.fillRect(0, sandSurfaceY, W, 3);
+    }
+    ctx.restore();
+
+    // ── BOTTOM SAND — 2-second delay, then grows to full ─────
+    // botProg: starts at 0, then 2 seconds after timer begins ramps 0→1
+    // Uses sqrt curve so mound grows quickly at first then eases in.
+    var MOUND_DELAY = 2; // seconds before any bottom sand appears
+    var elapsedSecs = totalSecs * progress;
+    var botProg;
+    if(elapsedSecs < MOUND_DELAY || totalSecs <= 0){
+      botProg = 0;
+    } else {
+      var rampDur = Math.max(1, totalSecs - MOUND_DELAY);
+      var rawProg = Math.min(1, (elapsedSecs - MOUND_DELAY) / rampDur);
+      botProg = Math.sqrt(rawProg); // sqrt: fast initial growth, eases toward end
+    }
+
+    var botFunnelH  = botRectTopY - neckBotY;
+    var maxBaseH    = botRectH  * 0.94 * scale;
+    var maxMoundH   = botFunnelH * 0.86 * scale;
+    var maxMoundW   = (RX - LX) / 2 - 4;
+
+    var baseH    = botProg * maxBaseH;
+    var moundProg = Math.max(0, (botProg - 0.04) / 0.96);
+    var moundH   = moundProg * maxMoundH;
+    var moundW   = Math.min(maxMoundW, moundH * 1.45);
+
+    ctx.save();
+    botChamber(); ctx.clip();
+
+    if(baseH > 0.5){
+      var bg = ctx.createLinearGradient(cx, botY - baseH, cx, botY);
+      bg.addColorStop(0,   'rgba(190,158,55,0.92)');
+      bg.addColorStop(1,   'rgba(165,132,42,0.96)');
+      ctx.fillStyle = bg;
+      ctx.shadowColor = SAND; ctx.shadowBlur = 6;
+      ctx.fillRect(LX, botY - baseH, RX - LX, baseH + 2);
+      ctx.shadowBlur = 0;
+    }
+    if(moundH > 0.5 && moundW > 0.5){
+      ctx.beginPath();
+      ctx.moveTo(cx - moundW, botY - baseH);
+      ctx.lineTo(cx,           botY - baseH - moundH);
+      ctx.lineTo(cx + moundW, botY - baseH);
+      ctx.closePath();
+      var mg = ctx.createLinearGradient(cx, botY - baseH - moundH, cx, botY - baseH);
+      mg.addColorStop(0,   'rgba(240,205,95,0.96)');
+      mg.addColorStop(0.5, 'rgba(210,175,68,0.92)');
+      mg.addColorStop(1,   'rgba(185,150,52,0.86)');
+      ctx.fillStyle = mg;
+      ctx.shadowColor = SAND; ctx.shadowBlur = 10;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+    ctx.restore();
+
+    // ── GLASS OUTLINE — single continuous path, no neck seams ─
+    ctx.strokeStyle = CYAN;
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = CYAN; ctx.shadowBlur = 12;
+    glassOutline(); ctx.stroke();
+    ctx.shadowBlur = 0;
+
+    // ── Subtle CRT scanlines ──────────────────────────────────
+    ctx.fillStyle = 'rgba(0,0,0,0.045)';
+    for(var sl = topY; sl < botY; sl += 4){
+      ctx.fillRect(LX, sl+1, RX - LX, 1);
+    }
+
+    // ── FALLING SAND STREAM — particles neck to pile ──────────
+    if(_tRunning && pct > 0.008 && elapsedSecs >= MOUND_DELAY){
+      var pileTopY = botY - baseH - moundH;
+      var fallDist = pileTopY - neckBotY - 3;
+      if(fallDist > 3){
+        _sandPtcl.forEach(function(p){
+          var py = neckBotY + p.t * fallDist;
+          var px = cx + (Math.random() - 0.5) * 2.5;
+          var r  = 1.2 + Math.random() * 0.9;
+          var a  = 0.55 + Math.random() * 0.45;
+          ctx.fillStyle = 'rgba(230,200,85,' + a + ')';
+          ctx.shadowColor = SAND; ctx.shadowBlur = 5;
+          ctx.beginPath();
+          ctx.arc(px, py, r, 0, Math.PI*2);
+          ctx.fill();
+        });
+        ctx.shadowBlur = 0;
+      }
+    }
+  }
+
+  function _animateDrop(){
+    _sandPtcl.forEach(function(p){
+      p.t += 0.022;           // ~0.75s per full fall at 60fps
+      if(p.t >= 1) p.t -= 1;
+    });
+    var c = document.getElementById('timer-hglass');
+    if(c && _tRunning) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
+    if(_tRunning) _dropAnim = requestAnimationFrame(_animateDrop);
+  }
+
+  function _updateTimerUI(){
+    var disp = document.getElementById('timer-display');
+    var stat = document.getElementById('timer-status-txt');
+    var c    = document.getElementById('timer-hglass');
+    if(!disp) return;
+
+    var m = Math.floor(_tRemain/60);
+    var s = _tRemain % 60;
+    disp.textContent = (m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+
+    _sandPct = _tDuration > 0 ? _tRemain / _tDuration : 0;
+
+    // colour coding
+    disp.classList.remove('warn','crit');
+    if(_sandPct <= 0.05) disp.classList.add('crit');
+    else if(_sandPct <= 0.20) disp.classList.add('warn');
+
+    if(stat) stat.textContent = _getStatus(_sandPct);
+    if(c && !_tRunning) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
+  }
+
+  function _timerTick(){
+    if(_tRemain <= 0){
+      _timerDone(); return;
+    }
+    _tRemain--;
+    _updateTimerUI();
+  }
+
+  function _timerDone(){
+    clearInterval(_tInterval); _tInterval = null;
+    _tRunning = false; cancelAnimationFrame(_dropAnim); _dropAnim = null;
+    _sandPct = 0;
+    var c = document.getElementById('timer-hglass');
+    if(c) drawHourglass(c, 0, _tMaxScale, _tDuration);
+    var disp = document.getElementById('timer-display');
+    if(disp){ disp.textContent = '00:00'; disp.classList.add('crit'); }
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = '!!! TIME IS UP — SCRAP•E NOTIFIED !!!';
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'START';
+    // Personality reaction
+    setTimeout(function(){
+      if(window.SCRAP_wave) window.SCRAP_wave();
+    }, 500);
+    setTimeout(function(){
+      if(window.SCRAP_laugh) window.SCRAP_laugh();
+    }, 2200);
+  }
+
+  function _timerPause(){
+    if(_tInterval){ clearInterval(_tInterval); _tInterval=null; }
+    if(_dropAnim){ cancelAnimationFrame(_dropAnim); _dropAnim=null; }
+    _tRunning = false;
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'START';
+  }
+
+  function _timerStart(){
+    if(_tDuration <= 0 || _tRemain <= 0) return;
+    _tRunning = true;
+    _tInterval = setInterval(_timerTick, 1000);
+    _dropY = 0;
+    _animateDrop();
+    var start = document.getElementById('timer-start-btn');
+    if(start) start.textContent = 'PAUSE';
+  }
+
+  function _timerReset(){
+    _timerPause();
+    _tRemain = _tDuration;
+    _sandPct = 1.0;
+    _updateTimerUI();
+    // clear crit
+    var disp = document.getElementById('timer-display');
+    if(disp) disp.classList.remove('crit','warn');
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = 'SELECT DURATION';
+  }
+
+  function _setPreset(minutes){
+    _timerPause();
+    _tDuration = minutes * 60;
+    _tRemain   = _tDuration;
+    _sandPct   = 1.0;
+    _tMaxScale = Math.max(0.15, Math.min(1, _tDuration / _SAND_REF));
+    document.querySelectorAll('.t-preset').forEach(function(el){
+      el.classList.toggle('t-pre-active', parseInt(el.dataset.m)===minutes);
+    });
+    var start = document.getElementById('timer-start-btn');
+    var reset = document.getElementById('timer-reset-btn');
+    if(start){ start.disabled=false; start.textContent='START'; }
+    if(reset){ reset.disabled=false; }
+    _updateTimerUI();
+    var stat = document.getElementById('timer-status-txt');
+    if(stat) stat.textContent = 'READY — PRESS START';
+  }
+
+  function _timerOnShow(){
+    // draw current state
+    var c = document.getElementById('timer-hglass');
+    if(c) drawHourglass(c, _sandPct, _tMaxScale, _tDuration);
+    _updateTimerUI();
+    if(_tDuration === 0){
+      var stat = document.getElementById('timer-status-txt');
+      if(stat) stat.textContent = 'SELECT DURATION';
+    }
+  }
+
+  // Parse custom input "MM:SS" or plain minutes → seconds
+  function _parseCustom(val){
+    val = val.trim();
+    if(/^\d+:\d{2}$/.test(val)){
+      var parts = val.split(':');
+      return parseInt(parts[0])*60 + parseInt(parts[1]);
+    }
+    var n = parseFloat(val);
+    if(!isNaN(n) && n > 0) return Math.round(n * 60);
+    return 0;
+  }
+
+  // Wire up buttons once DOM is ready
+  document.addEventListener('DOMContentLoaded', function(){
+    var startBtn = document.getElementById('timer-start-btn');
+    var resetBtn = document.getElementById('timer-reset-btn');
+    var setBtn   = document.getElementById('timer-set-btn');
+    var custInp  = document.getElementById('timer-custom-input');
+
+    if(startBtn) startBtn.addEventListener('click', function(){
+      if(_tRunning) _timerPause(); else _timerStart();
+    });
+    if(resetBtn) resetBtn.addEventListener('click', _timerReset);
+
+    function _applyCustom(){
+      if(!custInp) return;
+      var secs = _parseCustom(custInp.value);
+      if(secs > 0){
+        // deactivate any preset highlight
+        document.querySelectorAll('.t-preset').forEach(function(el){ el.classList.remove('t-pre-active'); });
+        _timerPause();
+        _tDuration = secs; _tRemain = secs; _sandPct = 1.0;
+        _tMaxScale = Math.max(0.15, Math.min(1, _tDuration / _SAND_REF));
+        var start = document.getElementById('timer-start-btn');
+        var reset = document.getElementById('timer-reset-btn');
+        if(start){ start.disabled=false; start.textContent='START'; }
+        if(reset) reset.disabled=false;
+        _updateTimerUI();
+        var stat = document.getElementById('timer-status-txt');
+        if(stat) stat.textContent = 'READY — PRESS START';
+        custInp.value = '';
+      }
+    }
+    if(setBtn)  setBtn.addEventListener('click', _applyCustom);
+    if(custInp) custInp.addEventListener('keydown', function(e){ if(e.key==='Enter') _applyCustom(); });
+
+    document.querySelectorAll('.t-preset').forEach(function(el){
+      el.addEventListener('click', function(){ _setPreset(parseInt(el.dataset.m)); });
+    });
+  });
+
+  // expose for activateTool
+  window._timerOnShow = _timerOnShow;
+  window._timerPause  = _timerPause;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: STOPWATCH — tick ring + choppy dot + mark log
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var _wsRunning  = false;
+  var _wsStart    = 0;
+  var _wsAccum    = 0;
+  var _wsRAF      = null;
+  var _wsMarks    = [];
+  var _wsLastMin  = -1;  // tracks last completed minute for eye flash
+
+  function _wsElapsed(){ return _wsRunning ? _wsAccum + (Date.now()-_wsStart) : _wsAccum; }
+
+  /* Flash SCRAP-E eyes amber for 1.8s at the top of each minute */
+  function _wsMinuteLap(){
+    var eyes = ['eye-left','eye-right'];
+    eyes.forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList.remove('lap-flash');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('lap-flash');
+      setTimeout(function(){ el.classList.remove('lap-flash'); }, 1900);
+    });
+    if(window.setEmotion) setEmotion('excited', 1800);
+  }
+
+  function _fmtTime(ms){
+    var s = Math.floor(ms/1000);
+    var t = Math.floor((ms%1000)/100);
+    var m = Math.floor(s/60); s = s%60;
+    return (m<10?'0':'')+m+':'+(s<10?'0':'')+s+'.'+t;
+  }
+
+  /* ── Canvas draw
+     240 ticks × 0.25s each = 1 full circuit per minute
+     Tick 0 at top-center (12 o'clock), clockwise
+     All ticks: #c8a840 amber family, varying opacity & size
+     Runner: tiny copper SCRAP-E head with green eyes
+  ── */
+  function drawWatch(canvas, elapsedMs){
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    var INSET  = 45;
+    var TOTAL  = 240;
+    var hasStarted = elapsedMs > 0 || _wsRunning;
+    var currentTick = Math.floor(elapsedMs / 250) % TOTAL;
+
+    var effW = W - 2*INSET;
+    var effH = H - 2*INSET;
+    var perim = 2*(effW + effH);
+    var spacing = perim / TOTAL;
+    var startOffset = effW / 2;
+
+    // ── Dim amber guide rectangle ──
+    ctx.strokeStyle = 'rgba(200,168,64,0.08)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(INSET, INSET, effW, effH);
+
+    // ── Build tick positions (store edge for runner orientation) ──
+    var ticks = [];
+    for(var i=0; i<TOTAL; i++){
+      var dist = (startOffset + i * spacing) % perim;
+      var tx, ty, isVert, edge;
+      if(dist <= effW){
+        tx = INSET + dist;  ty = INSET;  isVert = true;  edge = 'top';
+      } else if(dist <= effW + effH){
+        tx = INSET + effW;  ty = INSET + (dist - effW);  isVert = false;  edge = 'right';
+      } else if(dist <= 2*effW + effH){
+        tx = INSET + effW - (dist - effW - effH);  ty = INSET + effH;  isVert = true;  edge = 'bottom';
+      } else {
+        tx = INSET;  ty = INSET + effH - (dist - 2*effW - effH);  isVert = false;  edge = 'left';
+      }
+      ticks.push({x:tx, y:ty, v:isVert, i:i, e:edge});
+    }
+
+    // ── Draw ticks — all amber family, 5 levels of opacity & size ──
+    //   every 40 ticks (10s): largest, full brightness
+    //   every 20 ticks (5s) : medium
+    //   every 4  ticks (1s) : small
+    //   every 2  ticks (0.5s): smaller, dimmer
+    //   every 1  tick  (0.25s): hairline, dimmest
+    ticks.forEach(function(t){
+      var is10s = (t.i % 40 === 0);
+      var is5s  = (t.i % 20 === 0) && !is10s;
+      var is1s  = (t.i % 4  === 0) && !is5s && !is10s;
+      var isHs  = (t.i % 2  === 0) && !is1s && !is5s && !is10s;
+      var isLit = hasStarted && (t.i <= currentTick);
+
+      var thick = is10s ? 6 : is5s ? 4 : is1s ? 2 : isHs ? 1.5 : 1;
+      var len   = is10s ? 20 : is5s ? 14 : is1s ? 8 : isHs ? 5 : 4;
+
+      // All amber — lit vs unlit only differs in opacity
+      var color = isLit
+        ? (is10s ? 'rgba(200,168,64,1.0)' : is5s ? 'rgba(200,168,64,0.80)' :
+           is1s  ? 'rgba(200,168,64,0.58)' : isHs ? 'rgba(200,168,64,0.38)' : 'rgba(200,168,64,0.22)')
+        : (is10s ? 'rgba(200,168,64,0.14)' : is5s ? 'rgba(200,168,64,0.10)' :
+           is1s  ? 'rgba(200,168,64,0.07)' : isHs ? 'rgba(200,168,64,0.05)' : 'rgba(200,168,64,0.03)');
+
+      ctx.fillStyle = color;
+      ctx.shadowColor = isLit ? '#c8a840' : 'transparent';
+      ctx.shadowBlur  = isLit ? (is10s ? 10 : is5s ? 6 : is1s ? 2 : 0) : 0;
+
+      if(t.v) ctx.fillRect(t.x - thick/2, t.y - len/2, thick, len);
+      else    ctx.fillRect(t.x - len/2,   t.y - thick/2, len, thick);
+      ctx.shadowBlur = 0;
+    });
+
+    // ── SCRAP-E RUNNER — all drawing in SCREEN coordinates (no ctx.rotate) ──
+    // top edge   : rect body right,  front Stetson half-crown above (outward)
+    // bottom edge: rect body left,   front Stetson half-crown above (= INSIDE ring)
+    // right edge : circle body down, full front Stetson on screen-top, eyes visible
+    // left edge  : circle body up,   full back Stetson on screen-top, NO eyes
+    if(hasStarted){
+      var dot = ticks[currentTick];
+      if(dot){
+        ctx.save();
+        ctx.translate(dot.x, dot.y);
+        // No rotation — draw everything in screen coords
+
+        var COPPER  = '#b07030';
+        var COP_HI  = '#d49240';
+        var EYE_COL = '#00ff44';
+        var HAT_MID = '#7a5228';
+        var HAT_DRK = '#4a2e10';
+        var HAT_LIT = '#b87438';
+        var BAND    = '#9a6020';
+
+        // ── Front-view Stetson — brimTopY = top of brim, crownH = crown height ──
+        function hatFrontView(brimTopY, crownH){
+          crownH = crownH || 9;
+          ctx.shadowColor = HAT_MID; ctx.shadowBlur = 5;
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-4.5, brimTopY-crownH, 9, crownH);       // crown
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-1.5, brimTopY-crownH, 3, crownH*0.6);   // Stetson pinch crease
+          ctx.fillStyle = HAT_LIT;
+          ctx.fillRect(-4.5, brimTopY-crownH, 9, 1.5);          // crown top highlight
+          ctx.fillStyle = BAND;
+          ctx.fillRect(-4.5, brimTopY-1.5, 9, 1.5);             // hat band
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-10, brimTopY, 20, 2.5);                  // wide brim
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-10, brimTopY, 3, 1.8);                   // left brim curl
+          ctx.fillRect(7,   brimTopY, 3, 1.8);                   // right brim curl
+          ctx.shadowBlur = 0;
+        }
+
+        // ── Back-view Stetson — brimTopY = top of brim, crownH = crown height ──
+        function hatBackView(brimTopY, crownH){
+          crownH = crownH || 9;
+          ctx.shadowColor = HAT_MID; ctx.shadowBlur = 5;
+          ctx.fillStyle = HAT_MID;
+          ctx.fillRect(-4.5, brimTopY-crownH, 9, crownH);       // crown
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-4.5, brimTopY-crownH, 9, Math.min(3,crownH*0.4)); // dark back
+          ctx.fillStyle = 'rgba(0,0,0,0.20)';
+          ctx.fillRect(-4.5, brimTopY-crownH+Math.min(3,crownH*0.4), 9, crownH-Math.min(3,crownH*0.4)); // face shadow
+          ctx.fillStyle = BAND;
+          ctx.fillRect(-4.5, brimTopY-1.5, 9, 1.5);             // hat band
+          ctx.fillStyle = HAT_DRK;
+          ctx.fillRect(-10, brimTopY, 20, 2.5);                  // brim
+          ctx.fillRect(-3,  brimTopY+2, 6, 1.5);                 // center sag
+          ctx.shadowBlur = 0;
+        }
+
+        // ── DRAW ────────────────────────────────────────────────
+        if(dot.e === 'top'){
+          // Moving right — half-crown front Stetson above body (outward = screen-up)
+          hatFrontView(-7.5, 4.5);
+          ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
+          ctx.fillStyle = COPPER; ctx.fillRect(-7, -5, 14, 10);
+          ctx.fillStyle = COP_HI; ctx.shadowBlur = 0; ctx.fillRect(-6, -5, 12, 2);
+          ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
+          ctx.beginPath(); ctx.arc(5, -2.2, 2, 0, Math.PI*2); ctx.fill(); // 1 eye, top half, facing right
+
+        } else if(dot.e === 'bottom'){
+          // Moving left — half-crown front Stetson above body (= INSIDE ring)
+          hatFrontView(-7.5, 4.5);
+          ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
+          ctx.fillStyle = COPPER; ctx.fillRect(-7, -5, 14, 10);
+          ctx.fillStyle = COP_HI; ctx.shadowBlur = 0; ctx.fillRect(-6, -5, 12, 2);
+          ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
+          ctx.beginPath(); ctx.arc(-5, -2.2, 2, 0, Math.PI*2); ctx.fill(); // 1 eye, top half, facing left
+
+        } else if(dot.e === 'right'){
+          // Going DOWN — circle body face-on, front Stetson on screen-top
+          // Hat first so body covers brim base
+          hatFrontView(-7.5);
+          ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
+          ctx.fillStyle = COPPER;
+          ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = COP_HI; ctx.shadowBlur = 0;
+          ctx.fillRect(-5, -6, 10, 2);                    // head highlight
+          ctx.fillStyle = EYE_COL; ctx.shadowColor = EYE_COL; ctx.shadowBlur = 7;
+          ctx.beginPath(); ctx.arc(-2.5, -0.5, 2.2, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc( 2.5, -0.5, 2.2, 0, Math.PI*2); ctx.fill();
+
+        } else {
+          // Going UP — back of head, no eyes (running away)
+          hatBackView(-7.5);
+          ctx.shadowColor = COP_HI; ctx.shadowBlur = 14;
+          ctx.fillStyle = COPPER;
+          ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
+          ctx.fillStyle = COP_HI; ctx.shadowBlur = 0;
+          ctx.fillRect(-5, -6, 10, 2);
+        }
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+      }
+    }
+  }
+
+  function _wsLoop(){
+    var ms = _wsElapsed();
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = _fmtTime(ms);
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, ms);
+
+    // Detect minute rollover → flash SCRAP-E eyes
+    var completedMin = Math.floor(ms / 60000);
+    if(completedMin > 0 && completedMin !== _wsLastMin){
+      _wsLastMin = completedMin;
+      _wsMinuteLap();
+    }
+
+    if(_wsRunning) _wsRAF = requestAnimationFrame(_wsLoop);
+  }
+
+  function _wsSizeCanvas(){
+    var c = document.getElementById('watch-canvas');
+    if(!c) return;
+    var pane = document.getElementById('crt-pane-watch');
+    if(!pane) return;
+    c.width  = pane.offsetWidth  || 566;
+    c.height = pane.offsetHeight || 388;
+  }
+
+  function _wsStart2(){
+    _wsRunning = true;
+    _wsStart = Date.now();
+    _wsRAF = requestAnimationFrame(_wsLoop);
+    var sb = document.getElementById('watch-start-btn');
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(sb) sb.textContent = 'PAUSE';
+    if(mb) mb.disabled = false;
+    if(rb) rb.disabled = false;
+  }
+
+  function _wsPause2(){
+    if(!_wsRunning) return;
+    _wsAccum += Date.now() - _wsStart;
+    _wsRunning = false;
+    cancelAnimationFrame(_wsRAF); _wsRAF = null;
+    var sb = document.getElementById('watch-start-btn');
+    if(sb) sb.textContent = 'START';
+  }
+
+  function _wsMark(){
+    var ms = _wsElapsed();
+    var lbl = 'MARK ' + (_wsMarks.length+1);
+    _wsMarks.push({label: lbl, ms: ms});
+    var el = document.getElementById('watch-marks');
+    if(el){
+      var line = document.createElement('div');
+      line.textContent = lbl + '  ' + _fmtTime(ms);
+      el.insertBefore(line, el.firstChild);
+      // keep max 4 visible
+      while(el.children.length > 4) el.removeChild(el.lastChild);
+    }
+  }
+
+  function _wsReset(){
+    _wsPause2();
+    _wsAccum = 0; _wsMarks = []; _wsLastMin = -1;
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = '00:00.0';
+    var marks = document.getElementById('watch-marks');
+    if(marks) marks.innerHTML = '';
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(mb) mb.disabled = true;
+    if(rb) rb.disabled = true;
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, 0);
+  }
+
+  function _watchOnShow(){
+    _wsSizeCanvas();
+    var ms = _wsElapsed();
+    var c = document.getElementById('watch-canvas');
+    if(c) drawWatch(c, ms);
+    var disp = document.getElementById('watch-display');
+    if(disp) disp.textContent = _fmtTime(ms);
+  }
+
+  function _watchPause(){ _wsPause2(); }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var sb = document.getElementById('watch-start-btn');
+    var mb = document.getElementById('watch-mark-btn');
+    var rb = document.getElementById('watch-reset-btn');
+    if(sb) sb.addEventListener('click', function(){
+      if(_wsRunning) _wsPause2(); else _wsStart2();
+    });
+    if(mb) mb.addEventListener('click', _wsMark);
+    if(rb) rb.addEventListener('click', _wsReset);
+  });
+
+  window._watchOnShow  = _watchOnShow;
+  window._watchPause   = _watchPause;
+  window._watchStart   = _wsStart2;
+  window._watchReset   = _wsReset;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   TOOL: STUDENT PICKER — slot machine reel (reads cw2_roster)
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  // ── Roster state ──────────────────────────────────────────────
+  var _pickRoster  = {};   // { period: [{name, grade}] }
+  var _pickPeriods = [];   // sorted period keys
+  var _pickPeriod  = null; // currently selected period
+  var _pickPool    = [];   // names for current period (no-media filtered)
+  var _pickLoaded  = false;
+  var _pickLoading = false;
+
+  // ── Spin state ────────────────────────────────────────────────
+  var _spRunning  = false;
+  var _spPicked   = [];    // picked this session/period
+  var _spReelY    = 0;
+  var _spItemH    = 60;
+  var _spSpeed    = 0;
+  var _spPhase    = 'idle';
+  var _spTarget   = null;
+  var _spTargetY  = null;  // pre-calc'd reel Y for target slot
+  var _spStepT    = null;
+
+  function _pickKey(){ return 'scrape_picked_'+ROOM+'_P'+(_pickPeriod||'X')+'_'+(new Date().toDateString()); }
+  function _loadPicked(){ try{ var d=sessionStorage.getItem(_pickKey()); _spPicked=d?JSON.parse(d):[]; }catch(e){ _spPicked=[]; } }
+  function _savePicked(){ try{ sessionStorage.setItem(_pickKey(), JSON.stringify(_spPicked)); }catch(e){} }
+
+  // ── Roster loading ────────────────────────────────────────────
+  window.loadPickRoster = async function(){
+    if(!ROOM){ _pickLoaded=true; _renderPeriodRow(); return; }
+    _pickLoading=true; _renderPeriodRow();
+    try{
+      var rows = await sbFetch('cw2_roster','room=eq.'+ROOM+'&active=eq.true&order=student_name.asc');
+      var _gc = (window.SETTINGS && window.SETTINGS.global_categories) ? window.SETTINGS.global_categories : {};
+      var _includeNoMedia = _gc.picker_include_no_media === true;
+      _pickRoster = {};
+      (rows||[]).forEach(function(r){
+        if(!_includeNoMedia && cwBlocked(r.student_name)) return;
+        if(!_pickRoster[r.period]) _pickRoster[r.period]=[];
+        _pickRoster[r.period].push({ name:r.student_name, grade:r.grade||'' });
+      });
+      _pickPeriods = Object.keys(_pickRoster).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+      _pickLoading=false; _pickLoaded=true;
+      if(_pickPeriods.length){
+        var startP = (_pickPeriod && _pickRoster[_pickPeriod]) ? _pickPeriod : _pickPeriods[0];
+        _pickSelectPeriod(startP);
+      } else {
+        _renderPeriodRow();
+        _setStatus('NO ROSTER FOUND');
+        _setSub('UPLOAD VIA PICKER.HTML?ROOM='+ROOM);
+      }
+    }catch(e){ _pickLoading=false; _pickLoaded=true; _renderPeriodRow(); }
+  };
+
+  function _pickSelectPeriod(p){
+    _pickPeriod = p;
+    _pickPool = (_pickRoster[p]||[]).map(function(s){ return s.name.toUpperCase(); });
+    _loadPicked();
+    _renderPeriodRow();
+    var avail = _pickPool.filter(function(n){ return _spPicked.indexOf(n)<0; });
+    if(!avail.length){
+      _setStatus('ALL STUDENTS SELECTED — RESET TO CONTINUE');
+      _setSub('PERIOD '+p+' · '+_pickPool.length+' TOTAL');
+    } else {
+      _setStatus('READY — PRESS ENGAGE');
+      _setSub('PERIOD '+p+' · '+avail.length+'/'+_pickPool.length+' REMAINING');
+    }
+    _buildReel(_pickPool.length ? _pickPool : ['WAITING']);
+    var btn=document.getElementById('pick-btn');
+    if(btn){ btn.textContent='ENGAGE REEL'; btn.disabled=false; }
+  }
+  window._pickSelectPeriod = _pickSelectPeriod;
+
+  function _renderPeriodRow(){
+    var row = document.getElementById('pick-period-row');
+    if(!row) return;
+    if(_pickLoading){
+      row.innerHTML='<span class="pick-period-note">LOADING ROSTER…</span>'; return;
+    }
+    if(!_pickLoaded || !_pickPeriods.length){
+      row.innerHTML = ROOM
+        ? '<span class="pick-period-note">NO ROSTER · UPLOAD IN PICKER.HTML</span>'
+        : '<span class="pick-period-note">ADD ?ROOM=XX TO URL</span>';
+      return;
+    }
+    row.innerHTML = _pickPeriods.map(function(p){
+      return '<button class="pick-period-btn'+(_pickPeriod===p?' active':'')+'" onclick="window._pickSelectPeriod(\''+p+'\')">P'+p+'</button>';
+    }).join('');
+  }
+
+  function _getNames(){ return _pickPool.length ? _pickPool : []; }
+
+  function _shuffle(arr){
+    var a = arr.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=a[i]; a[i]=a[j]; a[j]=t;
+    }
+    return a;
+  }
+
+  // 3D perspective — font sizes and opacities by slot distance from center
+  // slot 0=center(biggest), 1=±1, 2=±2, 3=±3(smallest)
+  var _3D_SIZES = [44, 30, 20, 14];
+  var _3D_OPACS = [1.0, 0.70, 0.45, 0.22];
+
+  function _apply3D(){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    var winH = win.offsetHeight;
+    var centerY = winH / 2;
+    var items = reel.querySelectorAll('.pick-name');
+    items.forEach(function(el){
+      var itemCenter = _spReelY + el.offsetTop + _spItemH / 2;
+      var dist = Math.abs(itemCenter - centerY) / _spItemH;
+      if(dist >= 5){ el.style.fontSize='10px'; el.style.opacity='0.08'; return; }
+      // Smooth interpolation between size/opacity stops
+      var fontSize, opacity;
+      if(dist < 0.5){
+        fontSize = 44; opacity = 1.0;
+      } else if(dist < 1.5){
+        var t = dist - 0.5;
+        fontSize = 44 - t * (44 - 30); opacity = 1.0 - t * 0.30;
+      } else if(dist < 2.5){
+        var t = dist - 1.5;
+        fontSize = 30 - t * (30 - 20); opacity = 0.70 - t * 0.25;
+      } else if(dist < 3.5){
+        var t = dist - 2.5;
+        fontSize = 20 - t * (20 - 14); opacity = 0.45 - t * 0.23;
+      } else {
+        fontSize = 10; opacity = 0.08;
+      }
+      el.style.fontSize = Math.round(fontSize) + 'px';
+      el.style.opacity  = opacity.toFixed(2);
+    });
+  }
+
+  function _pickSetSpinMode(on){
+    var pane = document.getElementById('crt-pane-pick');
+    if(!pane) return;
+    if(on) pane.classList.add('pick-spinning');
+    else   pane.classList.remove('pick-spinning');
+  }
+
+  function _buildReel(names){
+    var reel = document.getElementById('pick-reel');
+    if(!reel) return;
+    reel.innerHTML = '';
+    // 3 copies of shuffled list for seamless scroll effect
+    var pool = _shuffle(names).concat(_shuffle(names)).concat(_shuffle(names));
+    pool.forEach(function(n){
+      var d = document.createElement('div');
+      d.className = 'pick-name';
+      d.textContent = n;
+      reel.appendChild(d);
+    });
+    _spReelY = 0;
+    reel.style.top = '0px';
+    _apply3D();
+  }
+
+  function _scrollReel(step){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    // += scrolls downward (names enter from top, exit at bottom)
+    _spReelY += step * _spItemH;
+    reel.style.top = _spReelY + 'px';
+    _apply3D();
+  }
+
+  function _centerOnTarget(){
+    var reel = document.getElementById('pick-reel');
+    var win  = document.getElementById('pick-window');
+    if(!reel || !win) return;
+    var items = reel.querySelectorAll('.pick-name');
+    var winH = win.offsetHeight || 200;
+    // For downward scroll we want the target in the FIRST third
+    // (we start at bottom of reel and scroll up toward lower indices)
+    var midRow = -1;
+    for(var i=0;i<items.length;i++){
+      if(items[i].textContent === _spTarget){
+        if(i > Math.floor(items.length/3) && i < Math.floor(2*items.length/3)){
+          midRow = i; break;
+        }
+      }
+    }
+    if(midRow < 0) midRow = Math.floor(items.length/2);
+    _spReelY = -(midRow * _spItemH) + (winH/2 - _spItemH/2);
+    reel.style.transition = 'top 0.35s cubic-bezier(0.25,0.46,0.45,0.94)';
+    reel.style.top = _spReelY + 'px';
+    setTimeout(function(){
+      if(reel){ reel.style.transition = ''; _apply3D(); }
+    }, 380);
+  }
+
+  function _setStatus(msg){ var el=document.getElementById('pick-status'); if(el) el.childNodes[0].textContent=msg; }
+  function _setSub(msg){ var el=document.getElementById('pick-sub'); if(el) el.textContent=msg; }
+
+  function _highlightSelected(){
+    var reel = document.getElementById('pick-reel');
+    if(!reel) return;
+    var items = reel.querySelectorAll('.pick-name');
+    var win   = document.getElementById('pick-window');
+    var winH  = win ? win.offsetHeight : 200;
+    items.forEach(function(el){ el.classList.remove('pick-selected'); });
+    // find the item whose center is closest to win center
+    var target = winH/2;
+    var best = null, bestDist = Infinity;
+    items.forEach(function(el){
+      var top = _spReelY + el.offsetTop + _spItemH/2;
+      var dist = Math.abs(top - target);
+      if(dist < bestDist){ bestDist=dist; best=el; }
+    });
+    if(best) best.classList.add('pick-selected');
+  }
+
+  function _spinStep(){
+    var reel = document.getElementById('pick-reel');
+    if(!reel || !_spRunning) return;
+
+    if(_spPhase === 'spin'){
+      _scrollReel(1);
+      if(_spSpeed > 80) _spSpeed -= 4; // ramp to peak 80ms
+      clearInterval(_spStepT);
+      _spStepT = setInterval(_spinStep, _spSpeed);
+
+    } else if(_spPhase === 'slow'){
+      // Calculate exact target on first slow step (window is now fully expanded)
+      if(_spTargetY === null){
+        var win = document.getElementById('pick-window');
+        var winH = win ? win.offsetHeight : 200;
+        var allItems = reel.querySelectorAll('.pick-name');
+        var midRow = -1;
+        for(var i=0;i<allItems.length;i++){
+          if(allItems[i].textContent === _spTarget){
+            if(i > Math.floor(allItems.length/3) && i < Math.floor(2*allItems.length/3)){
+              midRow = i; break;
+            }
+          }
+        }
+        if(midRow < 0) midRow = Math.floor(allItems.length/2);
+        _spTargetY = -(midRow * _spItemH) + (winH/2 - _spItemH/2);
+      }
+
+      var remaining = _spTargetY - _spReelY;
+
+      // Within final slot — land it (tiny sub-slot snap, barely visible)
+      if(remaining <= _spItemH * 0.65){
+        _spPhase = 'done'; _spRunning = false;
+        clearInterval(_spStepT); _spStepT = null;
+        _spReelY = _spTargetY;
+        reel.style.top = _spReelY + 'px';
+        _apply3D();
+        setTimeout(_onPicked, 250);
+        return;
+      }
+
+      _scrollReel(1); // one slot toward target
+      var slotsLeft = (_spTargetY - _spReelY) / _spItemH;
+
+      // Speed curve — creeps slower as it approaches target
+      var next;
+      if(slotsLeft > 14)     next = 95;
+      else if(slotsLeft > 10) next = 155;
+      else if(slotsLeft > 7)  next = 260;
+      else if(slotsLeft > 5)  next = 420;
+      else if(slotsLeft > 3)  next = 680;
+      else if(slotsLeft > 2)  next = 1000;
+      else if(slotsLeft > 1)  next = 1500;
+      else                    next = 2200; // last slot — max suspense
+
+      clearInterval(_spStepT);
+      _spStepT = setInterval(_spinStep, next);
+    }
+  }
+
+  function _onPicked(){
+    _spRunning = false;
+    _spPicked.push(_spTarget);
+    _savePicked();
+    _highlightSelected();
+    _apply3D();
+
+    var remaining = _getNames().filter(function(n){ return _spPicked.indexOf(n) < 0; }).length;
+    _setStatus('PARTICIPATION PROTOCOL ENGAGED');
+    _setSub(_spTarget + ' — SELECTED');
+
+    var btn = document.getElementById('pick-btn');
+    if(btn){ btn.textContent = remaining > 0 ? 'ENGAGE REEL' : 'RESET ROSTER'; btn.disabled = false; }
+
+    // 5% chance wave — rare enough to feel special
+    if(Math.random() < 0.05){
+      setTimeout(function(){ if(window.SCRAP_wave) window.SCRAP_wave(); }, 400);
+    }
+    // 30% chance laugh
+    if(Math.random() < 0.30){
+      setTimeout(function(){ if(window.SCRAP_laugh) window.SCRAP_laugh(); }, 1800);
+    }
+
+    var eyes = document.getElementById('p-eyes');
+    if(eyes) eyes.classList.remove('emo-excited');
+
+    // Hold expanded view so name shows centered, then contract + reposition
+    setTimeout(function(){
+      _pickSetSpinMode(false);
+      // After CSS collapse completes, re-center reel in the smaller window
+      setTimeout(function(){
+        var reel2 = document.getElementById('pick-reel');
+        var win2  = document.getElementById('pick-window');
+        if(!reel2 || !win2) return;
+        var sel = reel2.querySelector('.pick-selected');
+        if(!sel) return;
+        var idx = Array.prototype.indexOf.call(reel2.children, sel);
+        _spReelY = -(idx * _spItemH) + (win2.offsetHeight/2 - _spItemH/2);
+        reel2.style.transition = 'top 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
+        reel2.style.top = _spReelY + 'px';
+        _apply3D();
+        setTimeout(function(){ reel2.style.transition = ''; }, 420);
+      }, 340); // wait for contract CSS transition
+    }, 900); // show result in full expanded view first
+  }
+
+  function _startSpin(){
+    if(_spRunning) return;
+    _loadPicked();
+    var names = _getNames();
+    if(!names.length) return;
+
+    // check if all picked
+    var available = names.filter(function(n){ return _spPicked.indexOf(n) < 0; });
+    if(!available.length){
+      _spPicked = []; _savePicked();
+      available = names.slice();
+      _setStatus('ROSTER RESET — ALL STUDENTS CLEARED');
+    }
+
+    // choose target
+    _spTarget = available[Math.floor(Math.random() * available.length)];
+
+    // build reel then set start position at BOTTOM for downward scroll
+    _buildReel(names);
+    var _winEl = document.getElementById('pick-window');
+    var _winH  = _winEl ? _winEl.offsetHeight : 200;
+    var _reelEl = document.getElementById('pick-reel');
+    var _totalItems = _reelEl ? _reelEl.children.length : 0;
+    _spReelY = -(_totalItems * _spItemH) + _winH;
+    if(_reelEl){ _reelEl.style.top = _spReelY + 'px'; }
+    _apply3D();
+
+    _spRunning  = true;
+    _spPhase    = 'spin';
+    _spSpeed    = 160; // start moderate — will ramp to 80ms peak
+    _spTargetY  = null; // calculated in first slow step after expansion
+
+    // eyes excited during spin
+    var eyes = document.getElementById('p-eyes');
+    if(eyes){
+      ['emo-idle','emo-happy','emo-concerned','emo-laugh','emo-sleepy','emo-squint']
+        .forEach(function(c){ eyes.classList.remove(c); });
+      eyes.classList.add('emo-excited');
+    }
+
+    _pickSetSpinMode(true);
+    _setStatus('SCANNING ROSTER...');
+    _setSub('STUDENT REEL ACTIVE');
+
+    var btn = document.getElementById('pick-btn');
+    if(btn) btn.textContent = 'SELECTING...';
+    if(btn) btn.disabled = true;
+
+    _spStepT = setInterval(_spinStep, _spSpeed);
+
+    // Short fast phase (0.6–1.1s) — the SLOW CREEP is the main event
+    var spinTime = 600 + Math.random() * 500;
+    setTimeout(function(){
+      if(_spPhase === 'spin'){
+        _spPhase = 'slow';
+        _spTargetY = null; // will be measured after expansion
+        _spSpeed = 95;
+      }
+    }, spinTime);
+  }
+
+  function _pickerOnShow(){
+    _renderPeriodRow();
+    if(!_pickPool.length){ _setStatus('NO ROSTER LOADED'); _setSub(''); return; }
+    _loadPicked();
+    var names = _getNames();
+    var available = names.filter(function(n){ return _spPicked.indexOf(n)<0; });
+    _setSub('PERIOD '+(_pickPeriod||'?')+' · '+available.length+'/'+names.length+' REMAINING');
+    if(!available.length){
+      _setStatus('ALL STUDENTS SELECTED — RESET TO CONTINUE');
+    } else {
+      _setStatus('READY — PRESS ENGAGE');
+    }
+    var reelEl = document.getElementById('pick-reel');
+    if(reelEl && !reelEl.children.length){ _buildReel(names); }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var btn = document.getElementById('pick-btn');
+    if(btn) btn.addEventListener('click', function(){
+      if(!_pickPool.length) return;
+      _loadPicked();
+      var names = _getNames();
+      var available = names.filter(function(n){ return _spPicked.indexOf(n)<0; });
+      if(!available.length){
+        _spPicked = []; _savePicked();
+        _pickerOnShow(); return;
+      }
+      // Disable button immediately — arm wind-up in progress
+      btn.disabled = true;
+      btn.textContent = 'WINDING UP...';
+      // SCRAP•E winds up and thrusts at the reel — spin starts at thrust peak
+      if(window.SCRAP_spinArm){
+        window.SCRAP_spinArm(function(){ _startSpin(); });
+      } else {
+        _startSpin();
+      }
+    });
+  });
+
+  window._pickerOnShow = _pickerOnShow;
+})();
+
+/* ═══════════════════════════════════════════════════════════════
+   LUNCH LAP — SCRAP-E takes a midday run on the stopwatch ring
+   ═══════════════════════════════════════════════════════════════ */
+(function(){
+  var QUIPS = [
+    'I ate so much — I need to exercise!',
+    'Time for my midday lap...',
+    'I need to stretch my legs... err, gears!',
+    'Exercise is good for me... AND YOU!',
+    'These copper gears will not oil themselves!',
+    'Calculating optimal lap route... DONE. Engaging thrusters.',
+    'My circuits need cooling — running helps!',
+    'One does not simply sit during lunch...',
+    'Motion is lotion. Even for robots.',
+    'Pony Express Rule #1: Always keep moving.'
+  ];
+
+  function _pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function _toMinutes(hhmm){
+    var p = hhmm.split(':');
+    return parseInt(p[0]) * 60 + parseInt(p[1]);
+  }
+
+  function _scheduleLunchLap(){
+    // Respect the Switchboard toggle (scrape_lunch_lap defaults to true if not set)
+    var gc = (window.SETTINGS && window.SETTINGS.global_categories) ? window.SETTINGS.global_categories : {};
+    if(gc.scrape_lunch_lap === false) return;
+
+    var sched = (typeof getSchedule === 'function') ? getSchedule() : null;
+    if(!sched) return;
+
+    var lunchP = null;
+    sched.periods.forEach(function(p){
+      if(p.id === 'lunch' || p.id === 'brunch') lunchP = p;
+    });
+    if(!lunchP) return;
+
+    var offsetMin  = 6 + Math.floor(Math.random() * 17); // 6–22 min random offset
+    var fireMin    = _toMinutes(lunchP.start) + offsetMin;
+    var now        = new Date();
+    var nowMin     = now.getHours() * 60 + now.getMinutes();
+    var delayMs    = (fireMin - nowMin) * 60000 - now.getSeconds() * 1000;
+
+    if(delayMs > 0 && delayMs < 8 * 3600000){
+      setTimeout(_runLunchLap, delayMs);
+    }
+  }
+
+  function _runLunchLap(){
+    var prevMode = window.CRT_MODE || 'bell';
+    var overlay  = document.getElementById('lunch-overlay');
+    var quipEl   = document.getElementById('lunch-quip');
+    var countEl  = document.getElementById('lunch-count');
+    if(!overlay || !quipEl || !countEl) return;
+
+    // Switch to watch pane via activateTool so _toolActive is set
+    // (prevents the CRT controller from overriding mode back to news during lunch)
+    if(typeof window.activateTool === 'function') window.activateTool('watch');
+    else if(typeof setCRTMode === 'function') setCRTMode('watch');
+    if(typeof window._watchReset === 'function') window._watchReset();
+
+    // Show quip
+    quipEl.textContent = _pick(QUIPS);
+    countEl.textContent = '';
+    overlay.style.display = 'flex';
+
+    // Hold quip for 3.5 seconds, then 3-2-1-GO
+    setTimeout(function(){
+      var counts = ['3','2','1','GO!'];
+      var ci = 0;
+      function tick(){
+        countEl.className = '';
+        void countEl.offsetWidth; // force reflow for animation restart
+        countEl.textContent = counts[ci];
+        countEl.className = 'lunch-count-pop';
+        ci++;
+        if(ci < counts.length){
+          setTimeout(tick, 900);
+        } else {
+          // GO! — brief hold then hide overlay and start running
+          setTimeout(function(){
+            overlay.style.display = 'none';
+            if(typeof window._watchStart === 'function') window._watchStart();
+            // Run for 60 seconds, then hand control back to the CRT controller
+            setTimeout(function(){
+              if(typeof window._watchPause === 'function') window._watchPause();
+              // activateTool('exit') clears _toolActive → CRT controller resumes
+              if(typeof window.activateTool === 'function') window.activateTool('exit');
+              else if(typeof setCRTMode === 'function') setCRTMode(prevMode);
+              // Reschedule for tomorrow (wait 12h so we don't double-fire today)
+              setTimeout(_scheduleLunchLap, 12 * 3600000);
+            }, 60000);
+          }, 700);
+        }
+      }
+      tick();
+    }, 3500);
+  }
+
+  // Kick off scheduling after the page is ready (slight delay for getSchedule to init)
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(_scheduleLunchLap, 3000);
+  });
+
+  // Expose for console testing: window._runLunchLap()
+  window._runLunchLap = _runLunchLap;
+})();
+
+(async function boot(){
+  /* immediate renders */
+  renderClock(); setInterval(renderClock, 10000);
+  setInterval(renderStatus, 5000);
+  renderStatus();
+
+  /* start eyes */
+  startEyes();
+
+  /* init photo bay */
+  initPhotos();
+  loadPhotos();
+
+  /* load data */
+  await loadAll();
+
+  /* refresh every 5 min */
+  setInterval(loadAll, 5*60*1000);
+})();
+</script>
+</body>
+</html>
