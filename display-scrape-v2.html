@@ -12937,24 +12937,28 @@ body #sd-cards > .sd-card > .sd-days {
 }
 .legacy-tog:hover::before{opacity:1;}
 
-/* ---- FULLSCREEN TOOL OVERLAY (shared by Timer + Stopwatch) ---- */
+/* ---- TOOL OVERLAY (shared by Timer + Stopwatch) ----
+   Positioned/sized via JS to exactly match .crt-screen's current box, so it
+   renders INSIDE the big CRT screen (like Bell/Broadcast do) instead of
+   covering the whole page. See _positionToolOverlay() below. */
 #legacy-tool-overlay{
-  position:absolute; inset:0; z-index:500; display:none;
+  position:absolute; z-index:500; display:none;
   align-items:center; justify-content:center;
   background:rgba(6,5,3,.94);
   font-family:'Courier New',monospace;
+  border-radius:4px; overflow:hidden;
 }
 #legacy-tool-overlay.open{display:flex;}
-.lt-pane{display:none; flex-direction:column; align-items:center; gap:1.4cqh; padding:2cqh;}
+.lt-pane{display:none; flex-direction:column; align-items:center; justify-content:center; gap:2.2%; padding:3%; width:100%; height:100%;}
 .lt-pane.lt-active{display:flex;}
-.lt-canvas-wrap{position:relative; width:min(46vh,40vw); height:min(46vh,40vw);}
+.lt-canvas-wrap{position:relative; width:44%; height:62%; max-width:220px; max-height:220px;}
 .lt-canvas-wrap canvas{position:absolute;inset:0;width:100%;height:100%;}
 #timer-display, #watch-display{
-  font-family:inherit; font-size:clamp(28px,5.4cqw,72px); line-height:1;
+  font-family:inherit; font-size:clamp(18px,10cqh,44px); line-height:1;
   color:#c8a840; text-shadow:0 0 18px #c8a840, 0 0 36px rgba(200,168,64,.3); letter-spacing:.05em;
 }
-.lt-label{font-size:clamp(9px,1cqw,13px); letter-spacing:.22em; color:rgba(200,168,64,.6); text-transform:uppercase;}
-.lt-presets{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:min(46vh,40vw);}
+.lt-label{font-size:clamp(8px,3.4cqh,13px); letter-spacing:.22em; color:rgba(200,168,64,.6); text-transform:uppercase;}
+.lt-presets{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; width:80%; max-width:220px;}
 .lt-preset{font-size:clamp(10px,1cqw,14px); letter-spacing:.05em; color:rgba(200,168,64,.5);
   border:1px solid rgba(200,168,64,.3); padding:6px 4px; text-align:center; cursor:pointer; transition:.15s;}
 .lt-preset:hover,.lt-preset.lt-preset-active{color:#c8a840;border-color:rgba(200,168,64,.7);background:rgba(200,168,64,.12);}
@@ -13021,6 +13025,23 @@ body #sd-cards > .sd-card > .sd-days {
   document.addEventListener('DOMContentLoaded',function(){ setTimeout(playWave,1500); });
 
   /* ============ TOOL RAIL / OVERLAY CONTROLLER ============ */
+  /* Positions #legacy-tool-overlay to exactly cover .crt-screen's current
+     rendered box, so Timer/Watch appear INSIDE the big screen (matching
+     how Bell/Broadcast/Objective already render) rather than as a
+     separate full-page overlay. */
+  function _positionToolOverlay(){
+    var overlay=document.getElementById('legacy-tool-overlay');
+    var screen=document.querySelector('.crt-screen');
+    var stage=document.getElementById('stage');
+    if(!overlay||!screen||!stage) return;
+    var sRect=stage.getBoundingClientRect();
+    var cRect=screen.getBoundingClientRect();
+    overlay.style.left=(cRect.left-sRect.left)+'px';
+    overlay.style.top=(cRect.top-sRect.top)+'px';
+    overlay.style.width=cRect.width+'px';
+    overlay.style.height=cRect.height+'px';
+  }
+  var _toolResizeBound=false;
   function activateTool(key){
     var overlay=document.getElementById('legacy-tool-overlay');
     document.querySelectorAll('.legacy-tog').forEach(function(t){t.classList.remove('active');});
@@ -13029,6 +13050,8 @@ body #sd-cards > .sd-card > .sd-days {
       if(overlay)overlay.classList.remove('open');
       return;
     }
+    _positionToolOverlay();
+    if(!_toolResizeBound){ window.addEventListener('resize',_positionToolOverlay); _toolResizeBound=true; }
     if(overlay)overlay.classList.add('open');
     var tog=document.getElementById('tog-'+key);
     if(tog)tog.classList.add('active');
