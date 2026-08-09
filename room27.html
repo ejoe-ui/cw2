@@ -3,10 +3,10 @@
   FILE:    room27.html
   ROUTE:   /room27.html
   PURPOSE: Room 27 launcher — quick-access cards for all CW2 displays (Display, SCRAP•E,
-           ORB, Switchboard, Name Picker, Sport Schedule Uploader) and PassAble tools
-           (Relay Station, Kiosk, Admin, Pass Log).
+           SCRAP•E Legacy, ORB, Switchboard, Name Picker, Sport Schedule Uploader) and
+           PassAble tools (Relay Station, Kiosk, Admin, Pass Log).
   REPO:    cw2-azure.vercel.app
-  UPDATED: 2026-08-04
+  UPDATED: 2026-08-09
 -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -328,6 +328,14 @@ const COWBOY = [
     badge: 'TV · Live',
     light: { bg:'#fdf3e3', fg:'#7a4a00', br:'#e0b870', ac:'#c8841a' },
     dark:  { bg:'#1a0e00', fg:'#c8a840', br:'#7a5a00', ac:'#c8a840' },
+  },
+  {
+    icon: '🧭', name: 'SCRAP•E Legacy',
+    desc: 'Original fixed-layout SCRAP•E design — classic hourglass timer, running-track stopwatch, Lunch Lap, and photo carousel.',
+    url: 'https://cw2-azure.vercel.app/display-scrape-v2-legacy.html?room=27',
+    badge: 'TV · Legacy',
+    light: { bg:'#f5ece0', fg:'#6a4a2a', br:'#d8c0a0', ac:'#a87a40' },
+    dark:  { bg:'#170f08', fg:'#c8a878', br:'#5a4428', ac:'#c8a878' },
   },
   {
     icon: '🔵', name: 'ORB Display',
