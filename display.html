@@ -531,6 +531,77 @@ const params    = new URLSearchParams(location.search);
 const ROOM      = params.get('room') || '27';
 let   CLASSROOM = null;
 let   SETTINGS  = null;
+ // ── DISPLAY MODE DIAL ──────────────────────────────
+// 6 entries switch the in-page CSS theme (data-theme attr); the last 2
+// navigate to the actual separate display pages that exist in this repo.
+const DISPLAY_MODES = [
+  { key:'retro-dark',   label:'Dark',       name:'Retro · Dark',     type:'theme' },
+  { key:'retro-light',  label:'Light',      name:'Retro · Light',    type:'theme' },
+  { key:'modern-dark',  label:'Dark',       name:'Modern · Dark',    type:'theme' },
+  { key:'modern-light', label:'Light',      name:'Modern · Light',   type:'theme' },
+  { key:'walle',        label:'Wall·E',     name:'Wall·E',           type:'theme' },
+  { key:'eve',          label:'Orb Screen', name:'Eve · Orb Screen', type:'theme' },
+  { key:'orb-board',    label:'Orb Board',  name:'ORB Board',        type:'nav', url:'display-orb.html' },
+  { key:'scrape',       label:'Scrap·E',    name:'SCRAP•E',          type:'nav', url:'display-scrape-v2.html' },
+];
+
+let dialModeIdx = 0;
+
+function populateDialPositions() {
+  const wrap = document.getElementById('dialPositions');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  DISPLAY_MODES.forEach(function(m, i) {
+    const pos = document.createElement('div');
+    pos.className = 'dial-pos';
+    pos.onclick = function(e) { e.stopPropagation(); applyDisplayMode(i, true); };
+    pos.innerHTML =
+      '<div class="dial-pos-dot" id="dialDot' + i + '"></div>' +
+      '<div class="dial-pos-label" id="dialLbl' + i + '">' + m.label + '</div>';
+    wrap.appendChild(pos);
+  });
+}
+
+function applyDisplayMode(idx, save) {
+  const mode = DISPLAY_MODES[idx];
+  if (!mode) return;
+  dialModeIdx = idx;
+
+  DISPLAY_MODES.forEach(function(m, i) {
+    const dot = document.getElementById('dialDot' + i);
+    const lbl = document.getElementById('dialLbl' + i);
+    if (dot) dot.classList.toggle('active', i === idx);
+    if (lbl) lbl.classList.toggle('active', i === idx);
+  });
+
+  const needle = document.getElementById('dialNeedle');
+  if (needle) {
+    const deg = -135 + (270 / (DISPLAY_MODES.length - 1)) * idx;
+    needle.style.transform = 'translateX(-50%) rotate(' + deg + 'deg)';
+  }
+
+  const nameEl = document.getElementById('dialModeName');
+  if (nameEl) nameEl.textContent = mode.name;
+
+  if (mode.type === 'nav') {
+    if (save) location.href = mode.url + '?room=' + ROOM;
+    return;
+  }
+
+  document.documentElement.setAttribute('data-theme', mode.key);
+  if (save) localStorage.setItem('cw2-theme-' + ROOM, mode.key);
+}
+
+function dialNext() {
+  applyDisplayMode((dialModeIdx + 1) % DISPLAY_MODES.length, true);
+}
+
+function toggleDial() {
+  const panel = document.getElementById('dial-panel');
+  if (panel) panel.classList.toggle('open');
+}
+
+populateDialPositions();
 
 // ── NO-MEDIA LIST (FERPA · global block list) ────────
 var CW_NO_MEDIA = {};   // normalized full name -> true
