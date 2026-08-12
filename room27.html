@@ -3,10 +3,11 @@
   FILE:    room27.html
   ROUTE:   /room27.html
   PURPOSE: Room 27 launcher — quick-access cards for all CW2 displays (Display, SCRAP•E,
-           SCRAP•E Legacy, ORB, Switchboard, Name Picker, Sport Schedule Uploader) and
-           PassAble tools (Relay Station, Kiosk, Admin, Pass Log).
+           ORB, Switchboard, Name Picker, Sport Schedule Uploader), PassAble tools
+           (Relay Station, Kiosk, Admin, Pass Log), CheckMate, and student/family
+           resources (RHS Handbook Hub).
   REPO:    cw2-azure.vercel.app
-  UPDATED: 2026-08-09
+  UPDATED: 2026-08-11
 -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
@@ -284,6 +285,18 @@
     </div>
     <div class="card-grid" id="checkmate-grid"></div>
   </div>
+
+  <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">Resources</div>
+        <div class="section-sub">Student &amp; Family Info</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="resources-grid"></div>
+  </div>
 </main>
 
 <footer>
@@ -328,14 +341,6 @@ const COWBOY = [
     badge: 'TV · Live',
     light: { bg:'#fdf3e3', fg:'#7a4a00', br:'#e0b870', ac:'#c8841a' },
     dark:  { bg:'#1a0e00', fg:'#c8a840', br:'#7a5a00', ac:'#c8a840' },
-  },
-  {
-    icon: '🧭', name: 'SCRAP•E Legacy',
-    desc: 'Original fixed-layout SCRAP•E design — classic hourglass timer, running-track stopwatch, Lunch Lap, and photo carousel.',
-    url: 'https://cw2-azure.vercel.app/display-scrape-v2-legacy.html?room=27',
-    badge: 'TV · Legacy',
-    light: { bg:'#f5ece0', fg:'#6a4a2a', br:'#d8c0a0', ac:'#a87a40' },
-    dark:  { bg:'#170f08', fg:'#c8a878', br:'#5a4428', ac:'#c8a878' },
   },
   {
     icon: '🔵', name: 'ORB Display',
@@ -425,6 +430,17 @@ const CHECKMATE = [
   },
 ];
 
+const RESOURCES = [
+  {
+    icon: '📘', name: 'RHS Handbook Hub',
+    desc: 'Searchable digital guide to the 2026–2027 Parent/Student Handbook — official text, plain-language explanations, and Spanish translations.',
+    url: 'https://hall-pass-lime.vercel.app/handbook/',
+    badge: 'Student & Family',
+    light: { bg:'#e6f0ed', fg:'#005640', br:'#b8d8ce', ac:'#005640' },
+    dark:  { bg:'#002a1a', fg:'#00a86b', br:'#00562a', ac:'#00a86b' },
+  },
+];
+
 let qc = 0;
 
 function renderCards() {
@@ -432,10 +448,12 @@ function renderCards() {
   const cg = document.getElementById('cowboy-grid');
   const pg = document.getElementById('passable-grid');
   const kg = document.getElementById('checkmate-grid');
-  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = '';
+  const rg = document.getElementById('resources-grid');
+  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; rg.innerHTML = '';
   COWBOY.forEach(p    => cg.appendChild(buildCard(p, th)));
   PASSABLE.forEach(p  => pg.appendChild(buildCard(p, th)));
   CHECKMATE.forEach(p => kg.appendChild(buildCard(p, th)));
+  RESOURCES.forEach(p => rg.appendChild(buildCard(p, th)));
 }
 
 function buildCard(p, th) {
