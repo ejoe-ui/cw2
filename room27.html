@@ -286,7 +286,19 @@
     <div class="card-grid" id="checkmate-grid"></div>
   </div>
 
-  <div>
+    <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">School Store</div>
+        <div class="section-sub">Punch Clock</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="store-grid"></div>
+  </div>
+
+<div>
     <div class="section-head">
       <div class="section-pip muted"></div>
       <div class="section-wrap">
@@ -438,6 +450,33 @@ const CHECKMATE = [
   },
 ];
 
+const STORE = [
+  {
+    icon: '⏱', name: 'School Store Kiosk',
+    desc: 'Tap-to-clock-in/out punch clock for student store employees — NFC badge, live schedule, and instant confirmation.',
+    url: 'https://school-store-chi.vercel.app/',
+    badge: 'Kiosk · Student',
+    light: { bg:'#e6f0ed', fg:'#005640', br:'#b8d8ce', ac:'#005640' },
+    dark:  { bg:'#002a1a', fg:'#00a86b', br:'#00562a', ac:'#00a86b' },
+  },
+  {
+    icon: '🗂', name: 'Manager Dashboard',
+    desc: 'Approve shifts, run totals & points, manage the weekly schedule, swaps, and employee roster.',
+    url: 'https://school-store-chi.vercel.app/manager',
+    badge: 'Teacher Only',
+    light: { bg:'#fdf8e8', fg:'#7a5a00', br:'#ddc870', ac:'#7a5a00' },
+    dark:  { bg:'#1a1400', fg:'#ccaa00', br:'#7a6200', ac:'#ccaa00' },
+  },
+  {
+    icon: '🧾', name: 'My Hours',
+    desc: 'Student-facing hours & points summary — monthly, quarterly, or all-time, printable as a PDF.',
+    url: 'https://school-store-chi.vercel.app/summary',
+    badge: 'Student',
+    light: { bg:'#e8f0f8', fg:'#1a4a6a', br:'#a8c8de', ac:'#1a4a6a' },
+    dark:  { bg:'#001a2a', fg:'#4da8e0', br:'#1a5a8a', ac:'#4da8e0' },
+  },
+];
+
 const RESOURCES = [
   {
     icon: '📘', name: 'RHS Handbook Hub',
@@ -456,11 +495,13 @@ function renderCards() {
   const cg = document.getElementById('cowboy-grid');
   const pg = document.getElementById('passable-grid');
   const kg = document.getElementById('checkmate-grid');
+  const sg = document.getElementById('store-grid');
   const rg = document.getElementById('resources-grid');
-  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; rg.innerHTML = '';
+  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; sg.innerHTML = ''; rg.innerHTML = '';
   COWBOY.forEach(p    => cg.appendChild(buildCard(p, th)));
   PASSABLE.forEach(p  => pg.appendChild(buildCard(p, th)));
   CHECKMATE.forEach(p => kg.appendChild(buildCard(p, th)));
+  STORE.forEach(p     => sg.appendChild(buildCard(p, th)));
   RESOURCES.forEach(p => rg.appendChild(buildCard(p, th)));
 }
 
