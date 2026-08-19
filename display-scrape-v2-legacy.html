@@ -4814,3 +4814,120 @@ async function loadAll(){
 </script>
 </body>
 </html>
+
+<!-- ══ FIXES: (1) live Sports Days from RHS Sports Weekly Google Sheet,
+     (2) unblock Honor Roll / Sport Days rendering from a slow calendar fetch ══ -->
+<!-- Additive only: no existing element, CSS, or line is modified. -->
+<script id="cw2-sports-and-honor-fix-js">
+(function(){
+  var SPORTS_SHEET_CSV='https://docs.google.com/spreadsheets/d/1gjKQn9tDGOcyiuWn9feyrt1Xw5_8T3_qq9wcjdWvrh0/export?format=csv';
+
+  /* ---- 1) Live Sports Days (replaces the never-populated cw2_sport_days fetch) ---- */
+  function parseCSV(text){
+    var rows=[],row=[],field='',inQ=false;
+    for(var i=0;i<text.length;i++){
+      var c=text[i];
+      if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+      else{
+        if(c==='"') inQ=true;
+        else if(c===','){row.push(field);field='';}
+        else if(c==='\r'){}
+        else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+        else field+=c;
+      }
+    }
+    if(field.length||row.length){row.push(field);rows.push(row);}
+    return rows;
+  }
+  function dateISO(s){
+    var m=(s||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if(!m) return null;
+    var yy=+m[3]; if(yy<100) yy+=2000;
+    var mm=String(+m[1]); if(mm.length<2) mm='0'+mm;
+    var dd=String(+m[2]); if(dd.length<2) dd='0'+dd;
+    return yy+'-'+mm+'-'+dd;
+  }
+  function stripEmoji(s){
+    s=(s||'').trim();
+    var m=s.match(/^([\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]+)\s*(.*)$/u);
+    if(m) return {emoji:m[1].replace(/\uFE0F/g,'').trim(), text:m[2].trim()};
+    return {emoji:'', text:s};
+  }
+  function mapSportKey(name){
+    var n=(name||'').toLowerCase();
+    if(n.indexOf('football')>=0) return 'football';
+    if(n.indexOf('volleyball')>=0) return 'volleyball';
+    if(n.indexOf('tennis')>=0) return 'tennis';
+    if(n.indexOf('cross')>=0||n.indexOf('xc')>=0) return 'cross_country';
+    if(n.indexOf('golf')>=0) return 'golf';
+    if(n.indexOf('basketball')>=0) return 'basketball';
+    if(n.indexOf('soccer')>=0) return 'soccer';
+    if(n.indexOf('softball')>=0) return 'softball';
+    if(n.indexOf('baseball')>=0) return 'baseball';
+    if(n.indexOf('cheer')>=0) return 'football';
+    return 'baseball';
+  }
+  function todayISO(){
+    var d=new Date();
+    var mm=String(d.getMonth()+1); if(mm.length<2)mm='0'+mm;
+    var dd=String(d.getDate()); if(dd.length<2)dd='0'+dd;
+    return d.getFullYear()+'-'+mm+'-'+dd;
+  }
+
+  window.loadSportDays = async function(){
+    try{
+      var res=await fetch(SPORTS_SHEET_CSV);
+      if(!res.ok){ window.CW_SPORT_DAYS=[]; return; }
+      var rows=parseCSV(await res.text());
+      var hIdx=-1;
+      for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
+      if(hIdx<0){ window.CW_SPORT_DAYS=[]; return; }
+      var hd=rows[hIdx].map(function(h){return (h||'').trim();});
+      var col=function(n){return hd.indexOf(n);};
+      var cD=col('Date'),cSp=col('Sport'),cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cRl=col('Dismiss/Release Time');
+      var flat=[],curDate=null;
+      for(var r=hIdx+1;r<rows.length;r++){
+        var row=rows[r]||[];
+        var blank=true;
+        for(var k=0;k<row.length;k++){ if(row[k]&&String(row[k]).trim()){blank=false;break;} }
+        if(blank) continue;
+        var dr=(row[cD]||'').trim();
+        var iso=dr?dateISO(dr):null;
+        if(iso){curDate=iso;}
+        if(!curDate) continue;
+        var spRaw=(row[cSp]||'').trim();
+        if(!spRaw) continue;
+        var sp=stripEmoji(spRaw), pl=stripEmoji((row[cPl]||'').trim());
+        var isHome=pl.emoji.indexOf('🏠')>=0||/^home/i.test(pl.text);
+        flat.push({date:curDate, sport:mapSportKey(sp.text), opponent:(row[cOp]||'').trim(),
+          home_away:isHome?'home':'away', game_time:(row[cTm]||'').trim(), release_time:(row[cRl]||'').trim()});
+      }
+      var t=todayISO();
+      window.CW_SPORT_DAYS = flat.filter(function(e){return e.date>=t;})
+        .sort(function(a,b){return a.date<b.date?-1:1;}).slice(0,4);
+    }catch(e){ window.CW_SPORT_DAYS=[]; }
+  };
+
+  /* ---- 2) Don't let a slow calendar fetch block honor roll / sport days for 7+s ---- */
+  var prevLoadCwCalendar = (typeof window.loadCwCalendar==='function') ? window.loadCwCalendar : null;
+  if(prevLoadCwCalendar){
+    window.loadCwCalendar = function(){
+      return Promise.race([
+        prevLoadCwCalendar(),
+        new Promise(function(resolve){ setTimeout(resolve, 3000); })
+      ]);
+    };
+  }
+
+  /* ---- Kick things off independently, and re-render shortly after in case the
+     original loadAll() sequence was still catching up from a slow calendar call. ---- */
+  async function tick(){
+    await window.loadSportDays();
+    if(typeof window.renderSportDays==='function') window.renderSportDays();
+    if(typeof window.renderHonorRoll==='function') await window.renderHonorRoll();
+  }
+  tick();
+  setTimeout(tick, 4000);
+  setInterval(tick, 5*60*1000);
+})();
+</script>
