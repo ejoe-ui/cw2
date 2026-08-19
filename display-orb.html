@@ -2133,3 +2133,156 @@ async function loadAll(){
 </script>
 </body>
 </html>
+
+<!-- ══ SPORTS OF THE WEEK — live from RHS Sports Weekly Google Sheet ══ -->
+<style id="cw2-sports-widget">
+#sports {
+  position:relative; height:3.6cqh; min-height:28px;
+  display:none; align-items:center; overflow:hidden; border-radius:999px;
+  background:linear-gradient(180deg,#0a1626,#01040a);
+  border:1px solid rgba(95,216,255,0.26);
+  box-shadow:inset 0 1px 0 rgba(120,200,255,0.16), inset 0 0 24px rgba(95,216,255,0.16), 0 12px 28px rgba(8,20,40,0.32);
+}
+#sports-label { flex-shrink:0; height:100%; display:flex; align-items:center; padding:0 1.2cqw;
+  font-family:var(--font-num); font-weight:700; font-size:clamp(9px,0.8cqw,14px);
+  letter-spacing:0.18em; text-transform:uppercase; color:#fff; white-space:nowrap;
+  background:var(--orb-blue); border-radius:999px 0 0 999px; }
+#sports-track { flex:1; overflow:hidden; height:100%; position:relative; }
+#sports-inner { display:inline-flex; align-items:center; height:100%; white-space:nowrap;
+  animation:ticker 90s linear infinite; }
+.sp-item { font-family:var(--font-ui); font-weight:500; font-size:clamp(10px,0.86cqw,15px);
+  letter-spacing:0.04em; color:var(--orb-cyan); padding:0 0.7cqw; }
+.sp-sep { color:var(--orb-blue); opacity:0.6; }
+@media (prefers-reduced-motion: reduce){ #sports-inner{ animation:none !important; } }
+@media (orientation: portrait){ #sports{ height:auto; min-height:42px; } }
+</style>
+<script id="cw2-sports-widget-js">
+(function(){
+  var SPORTS_SHEET_CSV='https://docs.google.com/spreadsheets/d/1gjKQn9tDGOcyiuWn9feyrt1Xw5_8T3_qq9wcjdWvrh0/export?format=csv';
+  var CW_SPORTS_DAYS=[];
+
+  function mountSportsEl(){
+    if(document.getElementById('sports')) return;
+    var html='<div id="sports"><div id="sports-label">Sports Today</div>'+
+      '<div id="sports-track"><div id="sports-inner"></div></div></div>';
+    var wrap=document.createElement('div');
+    wrap.innerHTML=html;
+    var el=wrap.firstElementChild;
+    var announce=document.getElementById('announce');
+    var honor=document.getElementById('honor');
+    if(announce&&announce.parentNode){ announce.parentNode.insertBefore(el, announce.nextSibling); }
+    else if(honor&&honor.parentNode){ honor.parentNode.insertBefore(el, honor); }
+  }
+
+  function parseCSV(text){
+    var rows=[],row=[],field='',inQ=false;
+    for(var i=0;i<text.length;i++){
+      var c=text[i];
+      if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+      else{
+        if(c==='"') inQ=true;
+        else if(c===','){row.push(field);field='';}
+        else if(c==='\r'){}
+        else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+        else field+=c;
+      }
+    }
+    if(field.length||row.length){row.push(field);rows.push(row);}
+    return rows;
+  }
+  function dateISO(s){
+    var m=(s||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if(!m) return null;
+    var yy=+m[3]; if(yy<100) yy+=2000;
+    var mm=String(+m[1]); if(mm.length<2) mm='0'+mm;
+    var dd=String(+m[2]); if(dd.length<2) dd='0'+dd;
+    return yy+'-'+mm+'-'+dd;
+  }
+  function stripEmoji(s){
+    s=(s||'').trim();
+    var m=s.match(/^([\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]+)\s*(.*)$/u);
+    if(m) return {emoji:m[1].replace(/\uFE0F/g,'').trim(), text:m[2].trim()};
+    return {emoji:'', text:s};
+  }
+  function entryLine(e){
+    var parts=[];
+    parts.push((e.emoji?e.emoji+' ':'')+(e.sport||'Game')+(e.level?' ('+e.level+')':''));
+    if(e.opponent) parts.push((e.home?'vs ':'@ ')+e.opponent);
+    else if(e.place) parts.push((e.home?'vs ':'@ ')+e.place);
+    if(e.time) parts.push(e.time);
+    if(e.release) parts.push('Release '+e.release);
+    return parts.join(' · ');
+  }
+  function todayISO(){
+    var d=new Date();
+    var mm=String(d.getMonth()+1); if(mm.length<2)mm='0'+mm;
+    var dd=String(d.getDate()); if(dd.length<2)dd='0'+dd;
+    return d.getFullYear()+'-'+mm+'-'+dd;
+  }
+
+  async function loadSportsSchedule(){
+    try{
+      var res=await fetch(SPORTS_SHEET_CSV);
+      if(!res.ok){CW_SPORTS_DAYS=[];return;}
+      var rows=parseCSV(await res.text());
+      var hIdx=-1;
+      for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
+      if(hIdx<0){CW_SPORTS_DAYS=[];return;}
+      var hd=rows[hIdx].map(function(h){return (h||'').trim();});
+      var col=function(n){return hd.indexOf(n);};
+      var cD=col('Date'),cDay=col('Day'),cSp=col('Sport'),cLv=col('Level'),cGe=col('Gender'),
+          cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cFa=col('Facility'),cRl=col('Dismiss/Release Time');
+      var groups=[],curDate=null,curDay=null;
+      for(var r=hIdx+1;r<rows.length;r++){
+        var row=rows[r]||[];
+        var blank=true;
+        for(var k=0;k<row.length;k++){ if(row[k]&&String(row[k]).trim()){blank=false;break;} }
+        if(blank) continue;
+        var dr=(row[cD]||'').trim();
+        var iso=dr?dateISO(dr):null;
+        if(iso){curDate=iso;curDay=(row[cDay]||'').trim();}
+        if(!curDate) continue;
+        var spRaw=(row[cSp]||'').trim();
+        if(!spRaw) continue;
+        var sp=stripEmoji(spRaw), pl=stripEmoji((row[cPl]||'').trim());
+        var isHome=pl.emoji.indexOf('🏠')>=0||/^home/i.test(pl.text);
+        var entry={sport:sp.text,emoji:sp.emoji,level:(row[cLv]||'').trim(),gender:(row[cGe]||'').trim(),
+          home:isHome,place:pl.text,time:(row[cTm]||'').trim(),opponent:(row[cOp]||'').trim(),
+          facility:(row[cFa]||'').trim(),release:(row[cRl]||'').trim()};
+        var g=groups.length&&groups[groups.length-1].date===curDate?groups[groups.length-1]:null;
+        if(!g){g={date:curDate,day:curDay,entries:[]};groups.push(g);}
+        g.entries.push(entry);
+      }
+      CW_SPORTS_DAYS=groups;
+    }catch(e){CW_SPORTS_DAYS=[];}
+  }
+
+  function renderSports(){
+    var wrap=document.getElementById('sports');
+    if(!wrap) return;
+    if(!CW_SPORTS_DAYS.length){wrap.style.display='none';return;}
+    var t=todayISO();
+    var group=null;
+    for(var i=0;i<CW_SPORTS_DAYS.length;i++){ if(CW_SPORTS_DAYS[i].date===t){group=CW_SPORTS_DAYS[i];break;} }
+    var label='SPORTS TODAY';
+    if(!group){
+      var future=CW_SPORTS_DAYS.filter(function(g){return g.date>t;}).sort(function(a,b){return a.date<b.date?-1:1;});
+      group=future[0];
+      if(group){
+        var dt=new Date(group.date+'T00:00:00');
+        label='NEXT UP · '+dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+      }
+    }
+    if(!group){wrap.style.display='none';return;}
+    var html=group.entries.map(function(e){return '<span class="sp-item">'+entryLine(e)+'</span><span class="sp-sep">·</span>';}).join('');
+    document.getElementById('sports-label').textContent=label;
+    document.getElementById('sports-inner').innerHTML=html+html;
+    wrap.style.display='flex';
+  }
+
+  async function tick(){ await loadSportsSchedule(); renderSports(); }
+  mountSportsEl();
+  tick();
+  setInterval(tick, 5*60*1000);
+})();
+</script>
