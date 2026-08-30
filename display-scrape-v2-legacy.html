@@ -4883,7 +4883,7 @@ async function loadAll(){
     if(hIdx<0) return [];
     var hd=rows[hIdx].map(function(h){return (h||'').trim();});
     var col=function(n){return hd.indexOf(n);};
-    var cD=col('Date'),cSp=col('Sport'),cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cRl=col('Dismiss/Release Time');
+    var cD=hd.findIndex(function(h){return h.indexOf('Date')>=0;}),cSp=col('Sport'),cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cRl=col('Dismiss/Release Time');
     var flat=[],curDate=null;
     for(var r=hIdx+1;r<rows.length;r++){
       var row=rows[r]||[];
