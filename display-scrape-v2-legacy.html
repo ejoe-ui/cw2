@@ -4879,7 +4879,7 @@ async function loadAll(){
   }
   function rowsToFlat(rows){
     var hIdx=-1;
-    for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
+    for(var i=0;i<rows.length;i++){ if((rows[i][0]||'').indexOf('Date')>=0&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
     if(hIdx<0) return [];
     var hd=rows[hIdx].map(function(h){return (h||'').trim();});
     var col=function(n){return hd.indexOf(n);};
