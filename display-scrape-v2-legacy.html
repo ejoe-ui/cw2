@@ -4820,7 +4820,11 @@ async function loadAll(){
 <!-- Additive only: no existing element, CSS, or line is modified. -->
 <script id="cw2-sports-and-honor-fix-js">
 (function(){
-  var SPORTS_SHEET_CSV='https://docs.google.com/spreadsheets/d/1gjKQn9tDGOcyiuWn9feyrt1Xw5_8T3_qq9wcjdWvrh0/export?format=csv';
+  var SPORTS_SHEET_ID='1gjKQn9tDGOcyiuWn9feyrt1Xw5_8T3_qq9wcjdWvrh0';
+  var SPORTS_SHEET_TABS=['Current Week','Next Week','Following Week'];
+  function sportsSheetUrl(tabName){
+    return 'https://docs.google.com/spreadsheets/d/'+SPORTS_SHEET_ID+'/gviz/tq?tqx=out:csv&sheet='+encodeURIComponent(tabName);
+  }
 
   /* ---- 1) Live Sports Days (replaces the never-populated cw2_sport_days fetch) ---- */
   function parseCSV(text){
@@ -4873,37 +4877,51 @@ async function loadAll(){
     var dd=String(d.getDate()); if(dd.length<2)dd='0'+dd;
     return d.getFullYear()+'-'+mm+'-'+dd;
   }
+  function rowsToFlat(rows){
+    var hIdx=-1;
+    for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
+    if(hIdx<0) return [];
+    var hd=rows[hIdx].map(function(h){return (h||'').trim();});
+    var col=function(n){return hd.indexOf(n);};
+    var cD=col('Date'),cSp=col('Sport'),cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cRl=col('Dismiss/Release Time');
+    var flat=[],curDate=null;
+    for(var r=hIdx+1;r<rows.length;r++){
+      var row=rows[r]||[];
+      var blank=true;
+      for(var k=0;k<row.length;k++){ if(row[k]&&String(row[k]).trim()){blank=false;break;} }
+      if(blank) continue;
+      var dr=(row[cD]||'').trim();
+      var iso=dr?dateISO(dr):null;
+      if(iso){curDate=iso;}
+      if(!curDate) continue;
+      var spRaw=(row[cSp]||'').trim();
+      if(!spRaw) continue;
+      var sp=stripEmoji(spRaw), pl=stripEmoji((row[cPl]||'').trim());
+      var isHome=pl.emoji.indexOf('🏠')>=0||/^home/i.test(pl.text);
+      flat.push({date:curDate, sport:mapSportKey(sp.text), opponent:(row[cOp]||'').trim(),
+        home_away:isHome?'home':'away', game_time:(row[cTm]||'').trim(), release_time:(row[cRl]||'').trim()});
+    }
+    return flat;
+  }
 
   window.loadSportDays = async function(){
     try{
-      var res=await fetch(SPORTS_SHEET_CSV);
-      if(!res.ok){ window.CW_SPORT_DAYS=[]; return; }
-      var rows=parseCSV(await res.text());
-      var hIdx=-1;
-      for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
-      if(hIdx<0){ window.CW_SPORT_DAYS=[]; return; }
-      var hd=rows[hIdx].map(function(h){return (h||'').trim();});
-      var col=function(n){return hd.indexOf(n);};
-      var cD=col('Date'),cSp=col('Sport'),cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cRl=col('Dismiss/Release Time');
-      var flat=[],curDate=null;
-      for(var r=hIdx+1;r<rows.length;r++){
-        var row=rows[r]||[];
-        var blank=true;
-        for(var k=0;k<row.length;k++){ if(row[k]&&String(row[k]).trim()){blank=false;break;} }
-        if(blank) continue;
-        var dr=(row[cD]||'').trim();
-        var iso=dr?dateISO(dr):null;
-        if(iso){curDate=iso;}
-        if(!curDate) continue;
-        var spRaw=(row[cSp]||'').trim();
-        if(!spRaw) continue;
-        var sp=stripEmoji(spRaw), pl=stripEmoji((row[cPl]||'').trim());
-        var isHome=pl.emoji.indexOf('🏠')>=0||/^home/i.test(pl.text);
-        flat.push({date:curDate, sport:mapSportKey(sp.text), opponent:(row[cOp]||'').trim(),
-          home_away:isHome?'home':'away', game_time:(row[cTm]||'').trim(), release_time:(row[cRl]||'').trim()});
-      }
+      var csvTexts = await Promise.all(SPORTS_SHEET_TABS.map(function(tab){
+        return fetch(sportsSheetUrl(tab)).then(function(res){ return res.ok ? res.text() : ''; }).catch(function(){ return ''; });
+      }));
+      var allFlat=[], seen={};
+      csvTexts.forEach(function(csvText){
+        if(!csvText) return;
+        var flat = rowsToFlat(parseCSV(csvText));
+        flat.forEach(function(e){
+          var key = e.date+'|'+e.sport+'|'+e.opponent;
+          if(seen[key]) return;
+          seen[key]=true;
+          allFlat.push(e);
+        });
+      });
       var t=todayISO();
-      window.CW_SPORT_DAYS = flat.filter(function(e){return e.date>=t;})
+      window.CW_SPORT_DAYS = allFlat.filter(function(e){return e.date>=t;})
         .sort(function(a,b){return a.date<b.date?-1:1;}).slice(0,4);
     }catch(e){ window.CW_SPORT_DAYS=[]; }
   };
