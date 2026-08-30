@@ -809,6 +809,7 @@
         <div class="sb-widget"><div class="k">Bell Schedule</div><div class="v" id="sbBell">—</div></div>
         <div class="sb-widget"><div class="k">Live Sync</div><div class="v" id="sbSync">—</div></div>
         <div class="sb-widget"><div class="k">Room Systems</div><div class="v" id="sbSystems">ONLINE</div></div>
+        <div class="sb-widget" id="sbPrayerWrap" style="display:none;"><div class="k">Prayer Window</div><div class="v" id="sbPrayer">—</div></div>
       </div>
     </div>
 
@@ -2282,6 +2283,33 @@ async function loadAll(){
 
   async function tick(){ await loadSportsSchedule(); renderSports(); }
   mountSportsEl();
+  tick();
+  setInterval(tick, 5*60*1000);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.4/lib/bundles/adhan.umd.min.js"></script>
+<script src="/shared/prayer-status.js"></script>
+<script id="cw2-prayer-window-js">
+(function(){
+  function renderPrayerStatus(status){
+    var wrap = document.getElementById('sbPrayerWrap');
+    var val = document.getElementById('sbPrayer');
+    if (!wrap || !val) return;
+    if (status && status.enabled && (status.dhuhrOpen || status.asrOpen)) {
+      val.textContent = 'OPEN · ' + status.activeLabel.toUpperCase();
+      wrap.style.display = '';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+  async function tick(){
+    if (typeof CWPrayerStatus === 'undefined') return;
+    try {
+      var status = await CWPrayerStatus.computePrayerStatus();
+      renderPrayerStatus(status);
+    } catch(e) {}
+  }
   tick();
   setInterval(tick, 5*60*1000);
 })();
