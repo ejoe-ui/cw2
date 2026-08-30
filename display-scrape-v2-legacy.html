@@ -103,6 +103,33 @@ html, body {
   letter-spacing: 0.06em; color: var(--cw-highlight);
   text-shadow: 0 0 14px var(--cw-amber), 0 0 28px rgba(200,168,64,0.3);
 }
+#p-prayer {
+  left: 1786px; top: 104px; width: 130px; height: 76px;
+  display: none;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px;
+  background: var(--cw-panel);
+  border: 1px solid rgba(200,168,64,0.30);
+  border-radius: 4px;
+  box-shadow: 0 0 7px rgba(200,168,64,0.35);
+}
+#p-prayer.show { display: flex; }
+#prayer-lbl {
+  font-family: var(--font-mono); font-size: 10px;
+  letter-spacing: 0.14em; color: var(--cw-dim);
+  text-transform: uppercase;
+}
+#prayer-name {
+  font-family: var(--font-crt); font-size: 26px;
+  letter-spacing: 0.05em; color: var(--cw-highlight);
+  text-shadow: 0 0 8px var(--cw-amber);
+  line-height: 1;
+}
+#prayer-sub {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: 0.08em; color: var(--cw-amber);
+  text-transform: uppercase;
+}
 
 /* EVENTS LIST — PSD coords 199,124,290,365 × 1.25 = 249,155,363,456 */
 #p-events {
@@ -1404,6 +1431,11 @@ html, body {
 
     <!-- CLOCK -->
     <div class="panel" id="p-clock">--:-- --</div>
+    <div class="panel" id="p-prayer">
+      <div id="prayer-lbl">Prayer Window</div>
+      <div id="prayer-name">—</div>
+      <div id="prayer-sub">Office Pass Available</div>
+    </div>
 
     <!-- EVENTS LIST -->
     <div class="panel" id="p-events">
@@ -4946,6 +4978,33 @@ async function loadAll(){
   }
   tick();
   setTimeout(tick, 4000);
+  setInterval(tick, 5*60*1000);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.4/lib/bundles/adhan.umd.min.js"></script>
+<script src="/shared/prayer-status.js"></script>
+<script id="cw2-prayer-window-js">
+(function(){
+  function renderPrayerStatus(status){
+    var el = document.getElementById('p-prayer');
+    var nameEl = document.getElementById('prayer-name');
+    if (!el || !nameEl) return;
+    if (status && status.enabled && (status.dhuhrOpen || status.asrOpen)) {
+      nameEl.textContent = status.activeLabel;
+      el.classList.add('show');
+    } else {
+      el.classList.remove('show');
+    }
+  }
+  async function tick(){
+    if (typeof CWPrayerStatus === 'undefined') return;
+    try {
+      var status = await CWPrayerStatus.computePrayerStatus();
+      renderPrayerStatus(status);
+    } catch(e) {}
+  }
+  tick();
   setInterval(tick, 5*60*1000);
 })();
 </script>
