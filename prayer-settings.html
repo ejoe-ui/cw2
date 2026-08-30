@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer Window Settings · Cowboy Wire</title>
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.4/lib/bundles/adhan.umd.min.js"></script>
+<style>
+:root {
+  --bg:     #1a1812;
+  --panel:  #22201a;
+  --border: #4a3e20;
+  --amber:  #c8a840;
+  --hi:     #f0d060;
+  --dim:    #8a7a40;
+  --copper: #b87040;
+  --green:  #4a9a40;
+  --red:    #9a4030;
+  --input:  #2a2620;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--amber); min-height:100vh; }
+
+header {
+  background:var(--panel); border-bottom:2px solid var(--border);
+  padding:16px 28px; display:flex; align-items:center; gap:16px;
+}
+header h1 { font-size:20px; letter-spacing:0.08em; color:var(--hi); }
+header p  { font-size:13px; color:var(--dim); }
+.badge { background:var(--border); color:var(--amber); font-size:11px; letter-spacing:0.1em; padding:3px 8px; border-radius:3px; }
+
+main { max-width:760px; margin:0 auto; padding:28px; }
+
+.card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:24px; margin-bottom:20px; }
+.card h2 { font-size:15px; letter-spacing:0.08em; color:var(--hi); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.card h2 .dot { width:8px; height:8px; border-radius:50%; background:var(--amber); }
+.card p.note { font-size:12.5px; color:var(--dim); line-height:1.5; margin-bottom:16px; }
+
+.field-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+.field-row label { min-width:170px; font-size:13px; color:var(--amber); }
+.field-row .hint { font-size:11.5px; color:var(--dim); margin-top:3px; }
+.field-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px 20px; }
+.field-grid .field-row { display:block; }
+.field-grid .field-row label { display:block; margin-bottom:6px; }
+
+select, input[type=text], input[type=number], input[type=time] {
+  background:var(--input); color:var(--hi); border:1px solid var(--border);
+  border-radius:4px; padding:7px 10px; font-size:13px; width:100%;
+  outline:none;
+}
+select:focus, input:focus { border-color:var(--amber); }
+select option { background:var(--input); }
+
+/* TOGGLE */
+.toggle-wrap { display:flex; align-items:center; gap:10px; }
+.toggle { position:relative; width:44px; height:24px; flex:none; }
+.toggle input { opacity:0; width:0; height:0; }
+.toggle-track {
+  position:absolute; inset:0; background:var(--border); border-radius:24px;
+  cursor:pointer; transition:background 0.15s;
+}
+.toggle-track::before {
+  content:''; position:absolute; width:18px; height:18px; left:3px; top:3px;
+  background:var(--dim); border-radius:50%; transition:transform 0.15s, background 0.15s;
+}
+.toggle input:checked + .toggle-track { background:rgba(74,154,64,0.35); }
+.toggle input:checked + .toggle-track::before { background:var(--green); transform:translateX(20px); }
+
+/* MSG */
+.msg { padding:12px 16px; border-radius:6px; font-size:14px; margin:14px 0 0; display:none; }
+.msg.show { display:block; }
+.msg.info    { background:rgba(200,168,64,0.1); border:1px solid rgba(200,168,64,0.3); color:var(--amber); }
+.msg.success { background:rgba(74,154,64,0.1);  border:1px solid rgba(74,154,64,0.3);  color:var(--green); }
+.msg.error   { background:rgba(154,64,48,0.1);  border:1px solid rgba(154,64,48,0.3);  color:#d07060; }
+
+/* BUTTONS */
+.btn { padding:10px 22px; border-radius:5px; border:none; cursor:pointer; font-size:14px; letter-spacing:0.05em; font-weight:600; transition:opacity 0.15s, transform 0.1s; }
+.btn:hover { opacity:0.85; }
+.btn:active { transform:scale(0.98); }
+.btn-primary { background:var(--amber); color:#1a1812; }
+.btn-secondary { background:rgba(200,168,64,0.15); color:var(--amber); border:1px solid var(--border); }
+.btn:disabled { opacity:0.4; cursor:not-allowed; }
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:4px; align-items:center; }
+
+/* PREVIEW */
+.preview-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:4px; }
+.preview-cell {
+  background:var(--input); border:1px solid var(--border); border-radius:6px;
+  padding:12px; text-align:center;
+}
+.preview-cell .lbl { font-size:10.5px; letter-spacing:0.1em; color:var(--dim); text-transform:uppercase; }
+.preview-cell .val { font-size:20px; color:var(--hi); margin-top:4px; }
+.preview-cell.active { border-color:var(--green); background:rgba(74,154,64,0.08); }
+.preview-cell.active .val { color:var(--green); }
+.preview-status { font-size:13px; color:var(--dim); margin-top:12px; text-align:center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🕌 PRAYER WINDOW SETTINGS</h1>
+    <p>Cowboy Wire · Riverdale High School · Supabase → cw2_prayer_settings</p>
+  </div>
+  <span class="badge">ADMIN TOOL</span>
+</header>
+
+<main>
+  <div class="card">
+    <h2><div class="dot"></div>Accommodation Display</h2>
+    <p class="note">
+      Controls the discreet, anonymous prayer-window indicator shown on the ORB and
+      SCRAP&bull;E Legacy displays. When on, students who observe daily prayer will see
+      a small "Prayer Window" indicator during the Dhuhr (and, if applicable, Asr)
+      window each day &mdash; automatically, with no student names or identifying
+      information. This is separate from the school's 10-minute pass policy, which
+      teachers manage directly.
+    </p>
+    <div class="field-row">
+      <label for="f-enabled">Show indicator on displays</label>
+      <div class="toggle-wrap">
+        <span class="toggle">
+          <input type="checkbox" id="f-enabled">
+          <span class="toggle-track" onclick="document.getElementById('f-enabled').click()"></span>
+        </span>
+        <span id="enabled-lbl" style="font-size:13px;color:var(--dim);">Off</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><div class="dot"></div>Calculation Method</h2>
+    <p class="note">
+      Islamic prayer times are computed from the sun's position, not a fixed clock
+      time. Different communities use slightly different calculation conventions
+      &mdash; this mainly affects when Asr begins. If you're unsure, MoonsightingCommittee
+      + Shafi is a common default for North America.
+    </p>
+    <div class="field-grid">
+      <div class="field-row">
+        <label for="f-method">Calculation method</label>
+        <select id="f-method">
+          <option value="MuslimWorldLeague">Muslim World League</option>
+          <option value="Egyptian">Egyptian General Authority</option>
+          <option value="Karachi">University of Karachi</option>
+          <option value="UmmAlQura">Umm al-Qura, Makkah</option>
+          <option value="Dubai">Dubai</option>
+          <option value="Qatar">Qatar</option>
+          <option value="Kuwait">Kuwait</option>
+          <option value="MoonsightingCommittee">Moonsighting Committee</option>
+          <option value="Singapore">Singapore</option>
+          <option value="Turkey">Turkey (Diyanet)</option>
+          <option value="Tehran">Tehran</option>
+          <option value="NorthAmerica">ISNA (North America)</option>
+          <option value="Other">Other / generic angles</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <label for="f-madhab">Asr calculation (madhab)</label>
+        <select id="f-madhab">
+          <option value="Shafi">Shafi / Maliki / Hanbali (earlier Asr)</option>
+          <option value="Hanafi">Hanafi (later Asr)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><div class="dot"></div>Location &amp; School Hours</h2>
+    <p class="note">Pre-filled for Riverdale High School. Only change these if the school's location or bell schedule changes.</p>
+    <div class="field-grid">
+      <div class="field-row">
+        <label for="f-lat">Latitude</label>
+        <input type="text" id="f-lat" inputmode="decimal">
+      </div>
+      <div class="field-row">
+        <label for="f-lng">Longitude</label>
+        <input type="text" id="f-lng" inputmode="decimal">
+      </div>
+      <div class="field-row">
+        <label for="f-start">School day starts</label>
+        <input type="time" id="f-start">
+      </div>
+      <div class="field-row">
+        <label for="f-end">School day ends</label>
+        <input type="time" id="f-end">
+      </div>
+      <div class="field-row">
+        <label for="f-buffer">Window stays open for (minutes)</label>
+        <input type="number" id="f-buffer" min="5" max="120" step="5">
+        <div class="hint">How long after a prayer begins the on-screen indicator stays visible.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><div class="dot"></div>Today's Preview</h2>
+    <p class="note">Computed live from the settings above &mdash; nothing here is saved until you click Save.</p>
+    <div class="preview-grid" id="preview-grid"></div>
+    <div class="preview-status" id="preview-status">&mdash;</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" id="save-btn" onclick="saveSettings()">Save Settings</button>
+    <button class="btn btn-secondary" onclick="loadSettings()">Revert Changes</button>
+  </div>
+  <div class="msg" id="save-msg"></div>
+</main>
+
+<script>
+/* ═══════════════════════════
+   CONFIG
+═══════════════════════════ */
+var SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+var TABLE = 'cw2_prayer_settings';
+
+var DEFAULTS = {
+  enabled: true,
+  method: 'MoonsightingCommittee',
+  madhab: 'Shafi',
+  latitude: 36.4310,
+  longitude: -119.8549,
+  buffer_minutes: 45,
+  school_start: '08:06',
+  school_end: '15:15'
+};
+
+function $(id){ return document.getElementById(id); }
+
+function fillForm(s){
+  $('f-enabled').checked = !!s.enabled;
+  $('enabled-lbl').textContent = s.enabled ? 'On' : 'Off';
+  $('f-method').value = s.method;
+  $('f-madhab').value = s.madhab;
+  $('f-lat').value = s.latitude;
+  $('f-lng').value = s.longitude;
+  $('f-start').value = s.school_start;
+  $('f-end').value = s.school_end;
+  $('f-buffer').value = s.buffer_minutes;
+}
+
+function readForm(){
+  return {
+    id: 1,
+    enabled: $('f-enabled').checked,
+    method: $('f-method').value,
+    madhab: $('f-madhab').value,
+    latitude: parseFloat($('f-lat').value),
+    longitude: parseFloat($('f-lng').value),
+    buffer_minutes: parseInt($('f-buffer').value, 10),
+    school_start: $('f-start').value,
+    school_end: $('f-end').value
+  };
+}
+
+async function loadSettings(){
+  try{
+    var res = await fetch(SUPABASE_URL + '/rest/v1/' + TABLE + '?id=eq.1&select=*', {
+      headers: { apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY }
+    });
+    var rows = res.ok ? await res.json() : [];
+    var s = (rows && rows[0]) ? rows[0] : DEFAULTS;
+    fillForm(s);
+    showMsg('info', rows && rows[0] ? 'Loaded current settings.' : 'No saved settings found yet — showing defaults. Click Save to create the row.');
+  }catch(e){
+    fillForm(DEFAULTS);
+    showMsg('error', 'Could not reach Supabase — showing defaults.');
+  }
+  renderPreview();
+}
+
+async function saveSettings(){
+  var s = readForm();
+  if (isNaN(s.latitude) || isNaN(s.longitude) || isNaN(s.buffer_minutes)) {
+    showMsg('error', 'Please check latitude, longitude, and buffer minutes — one of them isn\'t a valid number.');
+    return;
+  }
+  var btn = $('save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try{
+    var res = await fetch(SUPABASE_URL + '/rest/v1/' + TABLE + '?id=eq.1', {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json', Prefer: 'return=representation'
+      },
+      body: JSON.stringify(s)
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var rows = await res.json();
+    if (!rows || !rows.length) {
+      var insRes = await fetch(SUPABASE_URL + '/rest/v1/' + TABLE, {
+        method: 'POST',
+        headers: {
+          apikey: SUPABASE_KEY, Authorization: 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json', Prefer: 'return=representation'
+        },
+        body: JSON.stringify(s)
+      });
+      if (!insRes.ok) throw new Error('HTTP ' + insRes.status);
+    }
+    showMsg('success', 'Saved. Displays will pick up the new settings within a few minutes.');
+  }catch(e){
+    showMsg('error', 'Save failed: ' + e.message);
+  }
+  btn.disabled = false; btn.textContent = 'Save Settings';
+  renderPreview();
+}
+
+function showMsg(type, text){
+  var el = $('save-msg');
+  el.className = 'msg show ' + type;
+  el.textContent = text;
+}
+
+/* ═══════════════════════════
+   LIVE PREVIEW (client-side, using adhan.js — nothing saved)
+═══════════════════════════ */
+function renderPreview(){
+  var grid = $('preview-grid');
+  var status = $('preview-status');
+  if (typeof adhan === 'undefined') { grid.innerHTML = ''; status.textContent = 'Preview unavailable (adhan.js failed to load).'; return; }
+
+  var lat = parseFloat($('f-lat').value), lng = parseFloat($('f-lng').value);
+  var methodName = $('f-method').value;
+  var madhab = $('f-madhab').value;
+  if (isNaN(lat) || isNaN(lng)) { grid.innerHTML=''; status.textContent='Enter a valid latitude/longitude to preview.'; return; }
+
+  var now = new Date();
+  var coords = new adhan.Coordinates(lat, lng);
+  var methodFn = adhan.CalculationMethod[methodName] || adhan.CalculationMethod.MoonsightingCommittee;
+  var params = methodFn();
+  params.madhab = (madhab === 'Hanafi') ? adhan.Madhab.Hanafi : adhan.Madhab.Shafi;
+  var pt = new adhan.PrayerTimes(coords, now, params);
+
+  function fmt(d){ return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
+
+  var schoolStart = parseHHMM(now, $('f-start').value);
+  var schoolEnd = parseHHMM(now, $('f-end').value);
+  var bufferMin = parseInt($('f-buffer').value, 10) || 45;
+
+  var cells = [
+    { label: 'Fajr', time: pt.fajr },
+    { label: 'Dhuhr', time: pt.dhuhr },
+    { label: 'Asr', time: pt.asr },
+    { label: 'Maghrib', time: pt.maghrib },
+    { label: 'Isha', time: pt.isha }
+  ];
+
+  var activeLabel = null, activeEnd = null;
+  ['Dhuhr','Asr'].forEach(function(name){
+    var t = (name === 'Dhuhr') ? pt.dhuhr : pt.asr;
+    if (!activeLabel && t >= schoolStart && t <= schoolEnd) {
+      var end = new Date(t.getTime() + bufferMin*60000);
+      if (now >= t && now <= end) { activeLabel = name; activeEnd = end; }
+    }
+  });
+
+  grid.innerHTML = cells.map(function(c){
+    var isActive = (c.label === activeLabel);
+    return '<div class="preview-cell' + (isActive?' active':'') + '"><div class="lbl">' + c.label + '</div><div class="val">' + fmt(c.time) + '</div></div>';
+  }).join('');
+
+  if (activeLabel) {
+    status.textContent = 'Right now, students would see: PRAYER WINDOW OPEN · ' + activeLabel.toUpperCase() + ' (until ' + fmt(activeEnd) + ')';
+  } else {
+    status.textContent = 'No prayer window is open right now with these settings (indicator would be hidden).';
+  }
+}
+
+function parseHHMM(base, hhmm){
+  var parts = String(hhmm||'').split(':');
+  var d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  d.setHours(parseInt(parts[0],10)||0, parseInt(parts[1],10)||0, 0, 0);
+  return d;
+}
+
+['f-enabled','f-method','f-madhab','f-lat','f-lng','f-start','f-end','f-buffer'].forEach(function(id){
+  $(id).addEventListener('input', function(){
+    if (id === 'f-enabled') $('enabled-lbl').textContent = $('f-enabled').checked ? 'On' : 'Off';
+    renderPreview();
+  });
+  $(id).addEventListener('change', renderPreview);
+});
+
+loadSettings();
+setInterval(renderPreview, 30000);
+</script>
+</body>
+</html>
