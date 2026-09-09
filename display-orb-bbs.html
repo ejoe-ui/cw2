@@ -546,6 +546,22 @@ async function init(){
 }
 init();
 
+function fixMarqueeSpeed(elId, pxPerSec){
+  var el = document.getElementById(elId);
+  if(!el) return;
+  var full = el.scrollWidth;
+  if(!full) return;
+  var single = full/2;
+  var dur = Math.max(single / pxPerSec, 12);
+  el.style.animationDuration = dur + 's';
+}
+function fixAllMarquees(){
+  fixMarqueeSpeed('sports-inner', 70);
+  fixMarqueeSpeed('honor-inner', 70);
+}
+setInterval(fixAllMarquees, 3000);
+fixAllMarquees();
+
 </script>
 
 <script id="cw2-sports-widget-js">
