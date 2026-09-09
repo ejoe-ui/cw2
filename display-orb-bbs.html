@@ -89,7 +89,13 @@
   }
   .col{display:flex;flex-direction:column;gap:1vw;min-width:0;}
   #col-left{flex:1;}
-  #col-mid{flex:1.3;align-items:center;justify-content:center;}
+  #col-mid{flex:1.3;align-items:center;justify-content:flex-start;}
+  #periods-panel{width:100%;border:0.2vw solid var(--black);background:var(--cream);padding:0.9vw 1vw;margin-top:1vw;overflow:hidden;}
+  #periods-panel .k{font-size:0.85vw;letter-spacing:0.1em;color:var(--blue-deep);margin:0 0 0.5vw;}
+  #periods-list{display:flex;flex-direction:column;gap:0.2vw;}
+  #periods-list .prow{display:flex;justify-content:space-between;font-size:1vw;padding:0.2vw 0.4vw;}
+  #periods-list .prow.now{background:var(--blue);color:var(--cream);}
+  #periods-list .prow.done{opacity:0.4;}
   #col-right{flex:1;}
   .panel{
     border:0.2vw solid var(--black);background:var(--cream);padding:0.9vw 1vw;
@@ -114,15 +120,16 @@
   #sports{border:0.2vw solid var(--black);border-top:none;background:var(--cream);padding:0.5vw 1vw;margin:0 1.6vw;font-size:1vw;overflow:hidden;white-space:nowrap;flex:none;}
   #sports-label{font-size:0.75vw;letter-spacing:0.1em;color:var(--blue-deep);}
   #sports-track{overflow:hidden;}
-  #sports-inner{display:inline-block;}
+  #sports-inner{display:inline-block;white-space:nowrap;animation:cw-marquee 32s linear infinite;}
   .sp-sep{padding:0 0.6vw;}
   #honor{
     border-top:0.25vw solid var(--black);background:var(--black);color:var(--yellow);
     font-size:1.1vw;letter-spacing:0.05em;padding:0.5vw 0;overflow:hidden;white-space:nowrap;
     flex:none;display:none;
   }
-  #honor-inner{display:inline-block;padding-left:2vw;}
+  #honor-inner{display:inline-block;padding-left:2vw;white-space:nowrap;animation:cw-marquee 45s linear infinite;}
   .hn-sep{padding:0 1vw;}
+  @keyframes cw-marquee{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
 </style>
 </head>
 <body>
@@ -166,6 +173,10 @@
         <div id="status-readout"><span id="statusMain">--</span><span id="statusTime">--:--</span></div>
         <div id="sbPrayerWrap">&#128337; <b>PRAYER WINDOW</b> &middot; <span id="sbPrayer">--</span></div>
       </div>
+      <div id="periods-panel">
+        <p class="k">TODAY&apos;S SCHEDULE</p>
+        <div id="periods-list"></div>
+      </div>
     </div>
 
     <div class="col" id="col-right">
@@ -177,6 +188,10 @@
       <div class="panel">
         <p class="k">CLOCK</p>
         <p class="v" id="bigClock">--:--</p>
+      </div>
+      <div class="panel">
+        <p class="k">TODAY</p>
+        <p class="v" id="dateBig" style="font-size:1.3vw;">--</p>
       </div>
     </div>
 
@@ -413,6 +428,10 @@ function renderClock(){
   h=h%12||12;
   document.getElementById('tbClock').textContent = h+':'+m+' '+ap;
   document.getElementById('bigClock').textContent = h+':'+m;
+  var days=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  var months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  var dEl = document.getElementById('dateBig');
+  if(dEl) dEl.textContent = days[n.getDay()]+' '+months[n.getMonth()]+' '+n.getDate();
 }
 
 function renderStatus(){
@@ -493,9 +512,23 @@ async function renderHonorRoll(){
   document.getElementById('honor-inner').innerHTML = html+html;
 }
 
+function renderPeriodsList(){
+  var wrap = document.getElementById('periods-list');
+  if(!wrap) return;
+  var sched = getSchedule();
+  if(!sched){ wrap.innerHTML = '<div class="prow">No school today</div>'; return; }
+  var n = nowMins();
+  wrap.innerHTML = sched.periods.map(function(p){
+    var s = toMins(p.start), e = toMins(p.end);
+    var cls = n>=s && n<e ? 'now' : (n>=e ? 'done' : '');
+    function fmt(mins){ var hh=Math.floor(mins/60), mm=mins%60; var ap2=hh>=12?'PM':'AM'; hh=hh%12||12; return hh+':'+String(mm).padStart(2,'0')+' '+ap2; }
+    return '<div class="prow '+cls+'"><span>'+(p.label||'').toUpperCase()+'</span><span>'+fmt(s)+' - '+fmt(e)+'</span></div>';
+  }).join('');
+}
 async function tickFast(){
   renderClock();
   renderStatus();
+  renderPeriodsList();
 }
 async function tickSlow(){
   await Promise.all([loadOverrides(), loadWeather(), loadMessages(), loadBirthdays(), loadNoMedia()]);
