@@ -1,0 +1,677 @@
+<!--
+  Cowboy Wire 2.0 -- Riverdale High School, Room 27
+  FILE:    display-orb-bbs.html
+  ROUTE:   /display-orb-bbs.html?room=XX
+  PURPOSE: ORB display -- BBS / pixel-art "Garden Signals" retro skin.
+           Same live data as display-orb.html (schedule, weather, birthdays,
+           sports, prayer window, honor roll, announcements) with a different
+           landscape visual treatment. Not a fork of the JS logic -- the
+           sports widget and prayer-window integration below are copied
+           verbatim from display-orb.html; everything else is fresh.
+  REPO:    cw2-azure.vercel.app
+  BACKEND: Supabase (cw2_roster, cw2_settings, cw2_birthdays, cw2_messages, etc.)
+  UPDATED: 2026-09-08
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920">
+<title>Cowboy Wire &middot; ORB BBS Skin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#4a86d8;
+    --blue-deep:#2f5fae;
+    --yellow:#f4c93a;
+    --cream:#f2ecd8;
+    --black:#111111;
+  }
+  *{box-sizing:border-box;}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden;}
+  body{
+    background:var(--cream);
+    background-image:radial-gradient(var(--black) 1px, transparent 1.2px);
+    background-size:0.4vw 0.4vw;
+    font-family:'VT323', monospace;
+    color:var(--black);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  #frame{
+    width:98vw;height:96vh;
+    background:var(--cream);
+    border:0.25vw solid var(--black);
+    box-shadow:0.5vw 0.5vw 0 var(--black);
+    display:flex;
+    flex-direction:column;
+    overflow:hidden;
+  }
+  #titlebar{
+    background:var(--black);color:var(--cream);
+    display:flex;align-items:center;gap:0.8vw;
+    padding:0.5vw 1vw;
+    font-size:1.1vw;letter-spacing:0.08em;
+    flex:none;
+  }
+  #titlebar .sq{width:0.7vw;height:0.7vw;background:var(--yellow);border:0.15vw solid var(--cream);flex:none;}
+  #titlebar .name{flex:1;text-align:center;}
+  #titlebar .exits a{color:var(--cream);text-decoration:none;font-size:1vw;margin-left:1vw;}
+  #titlebar .exits a:hover{color:var(--yellow);}
+  #tbClock{font-family:'Press Start 2P',monospace;font-size:1vw;}
+  #tabs{
+    display:flex;border-bottom:0.25vw solid var(--black);flex:none;
+  }
+  #tabs div{
+    padding:0.6vw 1vw;font-size:0.9vw;letter-spacing:0.05em;
+    border-right:0.15vw solid var(--black);white-space:nowrap;
+  }
+  #tabs div.active{background:var(--black);color:var(--yellow);}
+  #hero{
+    background:var(--blue);border-bottom:0.25vw solid var(--black);
+    padding:1.4vw 1.6vw;display:flex;align-items:center;justify-content:space-between;
+    flex:none;
+  }
+  #hero h1{
+    font-family:'Press Start 2P',monospace;font-size:2.1vw;line-height:1.4;
+    margin:0;text-shadow:0.15vw 0.15vw 0 var(--cream);
+  }
+  #hero .badge{
+    display:inline-block;margin-top:0.6vw;background:var(--black);color:var(--yellow);
+    font-family:'Press Start 2P',monospace;font-size:0.7vw;padding:0.5vw 0.7vw;letter-spacing:0.05em;
+  }
+  #tbRoom{font-size:1vw;}
+  #body-main{
+    flex:1;display:flex;gap:1.2vw;padding:1.4vw 1.6vw;min-height:0;
+  }
+  .col{display:flex;flex-direction:column;gap:1vw;min-width:0;}
+  #col-left{flex:1;}
+  #col-mid{flex:1.3;align-items:center;justify-content:center;}
+  #col-right{flex:1;}
+  .panel{
+    border:0.2vw solid var(--black);background:var(--cream);padding:0.9vw 1vw;
+  }
+  .panel .k{font-size:0.85vw;letter-spacing:0.1em;color:var(--blue-deep);margin:0 0 0.4vw;}
+  .panel .v{font-size:1.6vw;margin:0;}
+  #calendar{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+  #calendar .k{margin-bottom:0.6vw;}
+  #bday-list{overflow:hidden;flex:1;}
+  #bday-list .row{display:flex;justify-content:space-between;font-size:1.1vw;padding:0.25vw 0;border-bottom:0.1vw dashed var(--black);}
+  #status-box{
+    background:var(--yellow);border:0.25vw solid var(--black);padding:1.2vw 1.4vw;width:100%;
+  }
+  #status-top{display:flex;justify-content:space-between;font-size:1vw;letter-spacing:0.05em;margin-bottom:0.6vw;}
+  #status-bars{display:flex;align-items:flex-end;gap:0.25vw;height:3.2vw;margin-bottom:0.8vw;}
+  #status-bars i{display:block;width:0.5vw;background:var(--blue);border:0.08vw solid var(--black);}
+  #status-readout{font-size:1.5vw;display:flex;justify-content:space-between;border-top:0.15vw dashed var(--black);padding-top:0.6vw;}
+  #sbPrayerWrap{margin-top:0.8vw;font-size:1vw;display:none;}
+  #sbPrayerWrap b{color:var(--blue-deep);}
+  #announce{border:0.2vw solid var(--black);background:var(--black);color:var(--yellow);padding:0.7vw 1vw;font-size:1.1vw;margin:0 1.6vw;flex:none;display:none;}
+  #announce-label{font-size:0.8vw;letter-spacing:0.1em;opacity:0.8;margin-bottom:0.2vw;}
+  #sports{border:0.2vw solid var(--black);border-top:none;background:var(--cream);padding:0.5vw 1vw;margin:0 1.6vw;font-size:1vw;overflow:hidden;white-space:nowrap;flex:none;}
+  #sports-label{font-size:0.75vw;letter-spacing:0.1em;color:var(--blue-deep);}
+  #sports-track{overflow:hidden;}
+  #sports-inner{display:inline-block;}
+  .sp-sep{padding:0 0.6vw;}
+  #honor{
+    border-top:0.25vw solid var(--black);background:var(--black);color:var(--yellow);
+    font-size:1.1vw;letter-spacing:0.05em;padding:0.5vw 0;overflow:hidden;white-space:nowrap;
+    flex:none;display:none;
+  }
+  #honor-inner{display:inline-block;padding-left:2vw;}
+  .hn-sep{padding:0 1vw;}
+</style>
+</head>
+<body>
+<div id="frame">
+
+  <div id="titlebar">
+    <div class="sq"></div>
+    <span class="name">ORB_DISPLAY.SYS &middot; <span id="tbRoom">RHS &middot; ROOM 27</span></span>
+    <span id="tbClock">--:-- --</span>
+    <div class="sq" style="background:var(--cream)"></div>
+  </div>
+
+  <div id="tabs">
+    <div class="active">01 PERIOD STATUS</div>
+    <div>02 CALENDAR</div>
+    <div>03 WEATHER</div>
+    <div>04 SPORTS</div>
+    <div>05 PRAYER WINDOW</div>
+  </div>
+
+  <div id="hero">
+    <div>
+      <h1>ORB &middot; ROOM 27</h1>
+      <div class="badge" id="scheduleBadge">REGULAR DAY</div>
+    </div>
+  </div>
+
+  <div id="body-main">
+
+    <div class="col" id="col-left">
+      <div class="panel" id="calendar">
+        <p class="k">UPCOMING BIRTHDAYS</p>
+        <div id="bday-list"></div>
+      </div>
+    </div>
+
+    <div class="col" id="col-mid">
+      <div id="status-box">
+        <div id="status-top"><span id="statusLabel">--</span><span id="statusFlag">LIVE</span></div>
+        <div id="status-bars"></div>
+        <div id="status-readout"><span id="statusMain">--</span><span id="statusTime">--:--</span></div>
+        <div id="sbPrayerWrap">&#128337; <b>PRAYER WINDOW</b> &middot; <span id="sbPrayer">--</span></div>
+      </div>
+    </div>
+
+    <div class="col" id="col-right">
+      <div class="panel">
+        <p class="k">WEATHER</p>
+        <p class="v" id="wx-temp">--&deg;</p>
+        <p style="font-size:0.95vw;margin:0.2vw 0 0;" id="wx-cond">--</p>
+      </div>
+      <div class="panel">
+        <p class="k">CLOCK</p>
+        <p class="v" id="bigClock">--:--</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="announce">
+    <div id="announce-label">MR. JOE SAYS</div>
+    <div id="announce-text"></div>
+  </div>
+
+  <div id="honor">
+    <div id="honor-inner"></div>
+  </div>
+
+</div>
+
+<script>
+
+const SUPABASE_URL = 'https://lgsfrhibzxjwcudjvfzx.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxnc2ZyaGlienhqd2N1ZGp2Znp4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NTM1NTQsImV4cCI6MjA5MzEyOTU1NH0.A1xLychMJ1UBgRHbrtY5RwVULG71zhK9u-WuTrsA8cU';
+
+async function sbFetch(table, query) {
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + query, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+const params = new URLSearchParams(location.search);
+const ROOM   = params.get('room') || '27';
+const DEMO_PERIOD = (function(){ var d=params.get('demo'); return d==null?null:(parseInt(d,10)||1); })();
+let CLASSROOM = null, SETTINGS = null;
+
+var CW_NO_MEDIA = {};
+function cwNorm(s) {
+  s = (s == null ? '' : String(s));
+  if (s.normalize) s = s.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+  return s.toUpperCase().replace(/[^A-Z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+function cwBlocked(name) { return !!CW_NO_MEDIA[cwNorm(name)]; }
+async function loadNoMedia() {
+  var rows = await sbFetch('cw2_no_media', 'select=norm_name,first_name,last_name');
+  CW_NO_MEDIA = {};
+  (rows || []).forEach(function(r) {
+    if (r.norm_name) CW_NO_MEDIA[r.norm_name] = true;
+    var first = (r.first_name == null ? '' : String(r.first_name)).trim().split(/\s+/)[0] || '';
+    var shortKey = cwNorm(first + ' ' + (r.last_name == null ? '' : r.last_name));
+    if (shortKey) CW_NO_MEDIA[shortKey] = true;
+  });
+}
+
+async function loadRoomConfig() {
+  const classrooms = await sbFetch('cw2_classrooms', 'room=eq.' + ROOM + '&select=*');
+  const settings   = await sbFetch('cw2_settings',   'room=eq.' + ROOM + '&select=*');
+  CLASSROOM = (classrooms && classrooms[0]) ? classrooms[0] : null;
+  SETTINGS  = (settings && settings[0]) ? settings[0] : null;
+  var badge = (CLASSROOM && CLASSROOM.badge) ? CLASSROOM.badge : ('RHS · ROOM ' + ROOM);
+  document.getElementById('tbRoom').textContent = badge;
+}
+
+const SCHEDULES = {
+  regular: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'09:02' },{ id:'2', label:'P2', start:'09:06', end:'09:56' },
+    { id:'brunch', label:'Brunch', start:'09:56', end:'10:11', break:true },
+    { id:'3', label:'P3', start:'10:15', end:'11:05' },{ id:'4', label:'P4', start:'11:09', end:'11:59' },
+    { id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'5', label:'P5', start:'12:37', end:'13:27' },{ id:'6', label:'P6', start:'13:31', end:'14:21' },
+    { id:'7', label:'P7', start:'14:25', end:'15:15' },
+  ]},
+  blockWed: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'09:57' },{ id:'brunch', label:'Brunch', start:'09:57', end:'10:12', break:true },
+    { id:'3', label:'P3', start:'10:16', end:'11:59' },{ id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'5', label:'P5', start:'12:37', end:'14:20' },{ id:'7', label:'P7', start:'14:24', end:'15:15' },
+  ]},
+  blockThu: { periods: [
+    { id:'2', label:'P2', start:'08:10', end:'09:57' },{ id:'brunch', label:'Brunch', start:'09:57', end:'10:12', break:true },
+    { id:'4', label:'P4', start:'10:16', end:'11:59' },{ id:'lunch', label:'Lunch', start:'11:59', end:'12:33', break:true },
+    { id:'6', label:'P6', start:'12:37', end:'14:20' },{ id:'7', label:'P7', start:'14:24', end:'15:15' },
+  ]},
+  minimum: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:46' },{ id:'2', label:'P2', start:'08:50', end:'09:23' },
+    { id:'3', label:'P3', start:'09:27', end:'10:00' },{ id:'4', label:'P4', start:'10:04', end:'10:37' },
+    { id:'brunch', label:'Lunch', start:'10:37', end:'11:10', break:true },
+    { id:'5', label:'P5', start:'11:14', end:'11:47' },{ id:'6', label:'P6', start:'11:51', end:'12:24' },
+    { id:'7', label:'P7', start:'12:28', end:'13:01' },
+  ]},
+  earlyRelease: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },{ id:'2', label:'P2', start:'09:00', end:'09:41' },
+    { id:'3', label:'P3', start:'09:45', end:'10:26' },{ id:'4', label:'P4', start:'10:30', end:'11:11' },
+    { id:'lunch', label:'Lunch', start:'11:11', end:'11:45', break:true },
+    { id:'5', label:'P5', start:'11:49', end:'12:30' },{ id:'6', label:'P6', start:'12:34', end:'13:15' },
+    { id:'7', label:'P7', start:'13:19', end:'14:00' },
+  ]},
+  foggy: { periods: [
+    { id:'1', label:'P1', start:'10:00', end:'10:44' },{ id:'2', label:'P2', start:'10:48', end:'11:28' },
+    { id:'3', label:'P3', start:'11:32', end:'12:12' },{ id:'lunch', label:'Lunch', start:'12:12', end:'12:49', break:true },
+    { id:'4', label:'P4', start:'12:53', end:'13:33' },{ id:'5', label:'P5', start:'13:37', end:'14:17' },
+    { id:'6', label:'P6', start:'14:21', end:'15:01' },{ id:'7', label:'P7', start:'15:05', end:'15:45' },
+  ]},
+  activity: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },{ id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },{ id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'5', label:'P5', start:'11:39', end:'12:23' },{ id:'lunch', label:'Lunch', start:'12:23', end:'12:57', break:true },
+    { id:'6', label:'P6', start:'13:01', end:'13:45' },{ id:'7', label:'P7', start:'13:49', end:'14:33' },
+    { id:'8', label:'P8 ACTIVITY', start:'14:37', end:'15:15' },
+  ]},
+  codeDay: { periods: [
+    { id:'1', label:'P1', start:'08:10', end:'08:56' },{ id:'2', label:'P2', start:'09:00', end:'09:44' },
+    { id:'brunch', label:'Brunch', start:'09:44', end:'09:59', break:true },
+    { id:'3', label:'P3', start:'10:03', end:'10:47' },{ id:'4', label:'P4', start:'10:51', end:'11:35' },
+    { id:'rally', label:'Rally', start:'11:39', end:'12:17', break:true },
+    { id:'lunch', label:'Lunch', start:'12:17', end:'12:51', break:true },
+    { id:'5', label:'P5', start:'12:55', end:'13:39' },{ id:'6', label:'P6', start:'13:43', end:'14:27' },
+    { id:'7', label:'P7', start:'14:31', end:'15:15' },
+  ]},
+};
+const NO_SCHOOL = [
+  '2026-08-10','2026-08-11','2026-08-12',
+  '2026-09-07',
+  '2026-10-12',
+  '2026-11-11',
+  '2026-11-23','2026-11-24','2026-11-25','2026-11-26','2026-11-27',
+  '2026-12-21','2026-12-22','2026-12-23','2026-12-24','2026-12-25',
+  '2026-12-28','2026-12-29','2026-12-30','2026-12-31',
+  '2027-01-01','2027-01-04','2027-01-05','2027-01-06','2027-01-07','2027-01-08',
+  '2027-01-11',
+  '2027-01-18',
+  '2027-02-08',
+  '2027-02-15',
+  '2027-03-22','2027-03-23','2027-03-24','2027-03-25','2027-03-26','2027-03-29',
+  '2027-04-26',
+  '2027-05-31'
+];
+const DATE_OVERRIDES = {
+  '2026-12-14': 'regular',
+  '2026-12-16': 'minimum',
+  '2026-12-17': 'minimum',
+  '2026-12-18': 'minimum',
+  '2027-03-15': 'regular',
+  '2027-03-19': 'minimum',
+  '2027-06-07': 'regular',
+  '2027-06-08': 'minimum',
+  '2027-06-09': 'minimum',
+  '2027-06-10': 'minimum'
+};
+
+function toMins(t){ var p=t.split(':'); return parseInt(p[0])*60+parseInt(p[1]); }
+function nowMins(){
+  if(DEMO_PERIOD!=null){
+    var ps=SCHEDULES.regular.periods||[];
+    for(var i=0;i<ps.length;i++){ var mt=(ps[i].label||'').match(/\d+/);
+      if(mt&&mt[0]===String(DEMO_PERIOD)) return (toMins(ps[i].start)+toMins(ps[i].end))>>1; }
+  }
+  var n=new Date(); return n.getHours()*60+n.getMinutes();
+}
+function dateStr(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function schoolDaysThisWeek(date){
+  var dow=date.getDay(), mon=new Date(date); mon.setDate(date.getDate()-(dow===0?6:dow-1)); var count=0;
+  for(var i=0;i<5;i++){ var d=new Date(mon); d.setDate(mon.getDate()+i); if(!NO_SCHOOL.includes(dateStr(d))) count++; }
+  return count;
+}
+async function loadOverrides(){
+  var rows=await sbFetch('cw2_schedule_override','or=(room.eq.'+ROOM+',room.eq.global)&select=*');
+  var map={}; (rows||[]).forEach(function(r){ map[r.room+'|'+r.date]=r; }); window._cwOverrides=map; return map;
+}
+function getSchedule(){
+  if(DEMO_PERIOD!=null) return SCHEDULES.regular;
+  var now=new Date(), ds=dateStr(now), dow=now.getDay();
+  if(dow===0||dow===6||NO_SCHOOL.includes(ds)) return null;
+  var ovr=window._cwOverrides||{}; var hit=ovr[ROOM+'|'+ds]||ovr['global|'+ds];
+  if(hit){ if(hit.custom_periods) return {periods:hit.custom_periods}; if(hit.schedule_type&&SCHEDULES[hit.schedule_type]) return SCHEDULES[hit.schedule_type]; }
+  if(DATE_OVERRIDES[ds]) return SCHEDULES[DATE_OVERRIDES[ds]];
+  if(schoolDaysThisWeek(now)<=4) return SCHEDULES.regular;
+  if(dow===1) return SCHEDULES.earlyRelease;
+  if(dow===3) return SCHEDULES.blockWed;
+  if(dow===4) return SCHEDULES.blockThu;
+  return SCHEDULES.regular;
+}
+function scheduleLabel(){
+  if(DEMO_PERIOD!=null) return 'REGULAR DAY';
+  var now=new Date(), ds=dateStr(now), dow=now.getDay();
+  if(dow===0||dow===6||NO_SCHOOL.includes(ds)) return 'NO SCHOOL';
+  var ovr=window._cwOverrides||{}; var hit=ovr[ROOM+'|'+ds]||ovr['global|'+ds];
+  if(hit&&hit.custom_label) return hit.custom_label.toUpperCase();
+  var sched=getSchedule();
+  for(var k in SCHEDULES){ if(SCHEDULES[k]===sched){
+    return {regular:'REGULAR DAY',blockWed:'BLOCK DAY',blockThu:'BLOCK DAY',minimum:'MINIMUM DAY',earlyRelease:'EARLY RELEASE',foggy:'LATE ARRIVAL',activity:'ACTIVITY DAY',codeDay:'CODE DAY'}[k]||'REGULAR DAY';
+  }}
+  return 'REGULAR DAY';
+}
+
+var CW_BIRTHDAYS = [];
+async function loadBirthdays(){
+  var rows = await sbFetch('cw2_birthdays','room=eq.'+ROOM+'&active=eq.true&select=*'); CW_BIRTHDAYS=rows||[];
+}
+function bdaysUntil(month,day){
+  var n=new Date(), y=n.getFullYear(); var b=new Date(y,month-1,day); var t=new Date(y,n.getMonth(),n.getDate());
+  if(b<t) b.setFullYear(y+1); return Math.round((b-t)/86400000);
+}
+
+async function loadHonorRollNames(){
+  if(SETTINGS && SETTINGS.show_honor_roll===false) return [];
+  var rows=await sbFetch('cw2_honor_roll','room=eq.global&active=eq.true&order=name.asc');
+  return (rows||[]).filter(function(r){ return !cwBlocked(r.name); }).map(function(r){ return r.name; });
+}
+
+var CW_WEATHER=null, CW_WEATHER_DAILY=null;
+var WEATHER_CODES={0:'Clear',1:'Mostly Clear',2:'Partly Cloudy',3:'Overcast',45:'Foggy',48:'Foggy',
+  51:'Light Drizzle',53:'Drizzle',55:'Heavy Drizzle',61:'Light Rain',63:'Rain',65:'Heavy Rain',
+  71:'Light Snow',73:'Snow',75:'Heavy Snow',77:'Snow',80:'Showers',81:'Showers',82:'Heavy Showers',
+  85:'Snow Showers',86:'Snow Showers',95:'Thunderstorm',96:'Thunderstorm',99:'Thunderstorm'};
+async function loadWeather(){
+  try{
+    var url='https://api.open-meteo.com/v1/forecast?latitude=36.4327&longitude=-119.8668'+
+      '&current=temperature_2m,weather_code,apparent_temperature'+
+      '&daily=temperature_2m_max,temperature_2m_min,weather_code'+
+      '&temperature_unit=fahrenheit&timezone=America/Los_Angeles&forecast_days=4';
+    var res=await fetch(url); if(!res.ok) return;
+    var data=await res.json(); CW_WEATHER=data.current; CW_WEATHER_DAILY=data.daily;
+  }catch(e){ CW_WEATHER=null; }
+}
+
+var CW_MESSAGES=[];
+async function loadMessages(){
+  var now=new Date().toISOString();
+  var rows=await sbFetch('cw2_messages','room=eq.'+ROOM+'&active=eq.true&expires_at=gte.'+now+'&select=*');
+  CW_MESSAGES=rows||[];
+}
+
+function renderClock(){
+  var n=new Date(), h=n.getHours(), m=String(n.getMinutes()).padStart(2,'0'), ap=h>=12?'PM':'AM';
+  h=h%12||12;
+  document.getElementById('tbClock').textContent = h+':'+m+' '+ap;
+  document.getElementById('bigClock').textContent = h+':'+m;
+}
+
+function renderStatus(){
+  document.getElementById('scheduleBadge').textContent = scheduleLabel();
+  var sched = getSchedule();
+  var box = document.getElementById('statusLabel');
+  var main = document.getElementById('statusMain');
+  var time = document.getElementById('statusTime');
+  var bars = document.getElementById('status-bars');
+  var n = nowMins();
+  if(!sched){
+    box.textContent = 'NO SCHOOL'; main.textContent = 'ENJOY YOUR DAY'; time.textContent = '--:--';
+    bars.innerHTML = '';
+    return;
+  }
+  var periods = sched.periods;
+  var cur = null, next = null;
+  for(var i=0;i<periods.length;i++){
+    var p = periods[i];
+    if(n >= toMins(p.start) && n < toMins(p.end)){ cur = p; next = periods[i+1]; break; }
+    if(n < toMins(p.start)){ next = p; break; }
+  }
+  var barsHtml = '';
+  for(var b=0;b<12;b++){ barsHtml += '<i style="height:'+(14+((b*37)%28))+'px"></i>'; }
+  bars.innerHTML = barsHtml;
+  if(cur){
+    var left = toMins(cur.end) - n;
+    box.textContent = (cur.label||'').toUpperCase() + (next ? (' → ' + (next.label||'').toUpperCase()) : '');
+    main.textContent = (cur.break ? 'ON BREAK' : 'IN SESSION') ;
+    time.textContent = left + ' MIN LEFT';
+  } else if(next){
+    var until = toMins(next.start) - n;
+    box.textContent = 'PASSING PERIOD';
+    main.textContent = 'NEXT: ' + (next.label||'').toUpperCase();
+    time.textContent = until + ' MIN';
+  } else {
+    box.textContent = 'SCHOOL DAY OVER';
+    main.textContent = 'SEE YOU TOMORROW';
+    time.textContent = '--:--';
+  }
+}
+
+function renderWeatherCard(){
+  var temp = document.getElementById('wx-temp');
+  var cond = document.getElementById('wx-cond');
+  if(!CW_WEATHER){ temp.textContent='--°'; cond.textContent='--'; return; }
+  temp.textContent = Math.round(CW_WEATHER.temperature_2m)+'°';
+  cond.textContent = WEATHER_CODES[CW_WEATHER.weather_code] || '--';
+}
+
+function renderBirthdays(){
+  var wrap = document.getElementById('bday-list');
+  var upcoming = CW_BIRTHDAYS.map(function(b){
+    return { name:b.name, days: bdaysUntil(b.month, b.day) };
+  }).sort(function(a,b){ return a.days - b.days; }).slice(0,6);
+  if(!upcoming.length){ wrap.innerHTML = '<div class="row"><span>No birthdays on file</span></div>'; return; }
+  wrap.innerHTML = upcoming.map(function(u){
+    var label = u.days===0 ? 'TODAY' : (u.days===1 ? '1 DAY' : u.days+' DAYS');
+    return '<div class="row"><span>'+u.name+'</span><span>'+label+'</span></div>';
+  }).join('');
+}
+
+function renderAnnounce(){
+  var el = document.getElementById('announce');
+  if(!CW_MESSAGES.length){ el.style.display='none'; return; }
+  var m = CW_MESSAGES[0];
+  var txt = [m.line1,m.line2,m.line3].filter(Boolean).join(' ');
+  document.getElementById('announce-text').textContent = txt;
+  el.style.display = 'block';
+}
+
+async function renderHonorRoll(){
+  var names = await loadHonorRollNames();
+  var wrap = document.getElementById('honor');
+  if(!names.length){ wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+  var html = names.map(function(n){ return '<span>'+n+'</span><span class="hn-sep">★</span>'; }).join('');
+  document.getElementById('honor-inner').innerHTML = html+html;
+}
+
+async function tickFast(){
+  renderClock();
+  renderStatus();
+}
+async function tickSlow(){
+  await Promise.all([loadOverrides(), loadWeather(), loadMessages(), loadBirthdays(), loadNoMedia()]);
+  renderWeatherCard();
+  renderBirthdays();
+  renderAnnounce();
+  renderHonorRoll();
+}
+async function init(){
+  await loadRoomConfig();
+  await tickSlow();
+  tickFast();
+  setInterval(tickFast, 1000);
+  setInterval(tickSlow, 5*60*1000);
+}
+init();
+
+</script>
+
+<script id="cw2-sports-widget-js">
+(function(){
+  var SPORTS_SHEET_CSV='https://docs.google.com/spreadsheets/d/1gjKQn9tDGOcyiuWn9feyrt1Xw5_8T3_qq9wcjdWvrh0/export?format=csv';
+  var CW_SPORTS_DAYS=[];
+
+  function mountSportsEl(){
+    if(document.getElementById('sports')) return;
+    var html='<div id="sports"><div id="sports-label">Sports Today</div>'+
+      '<div id="sports-track"><div id="sports-inner"></div></div></div>';
+    var wrap=document.createElement('div');
+    wrap.innerHTML=html;
+    var el=wrap.firstElementChild;
+    var announce=document.getElementById('announce');
+    var honor=document.getElementById('honor');
+    if(announce&&announce.parentNode){ announce.parentNode.insertBefore(el, announce.nextSibling); }
+    else if(honor&&honor.parentNode){ honor.parentNode.insertBefore(el, honor); }
+  }
+
+  function parseCSV(text){
+    var rows=[],row=[],field='',inQ=false;
+    for(var i=0;i<text.length;i++){
+      var c=text[i];
+      if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; } else field+=c; }
+      else{
+        if(c==='"') inQ=true;
+        else if(c===','){row.push(field);field='';}
+        else if(c==='\r'){}
+        else if(c==='\n'){row.push(field);rows.push(row);row=[];field='';}
+        else field+=c;
+      }
+    }
+    if(field.length||row.length){row.push(field);rows.push(row);}
+    return rows;
+  }
+  function dateISO(s){
+    var m=(s||'').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+    if(!m) return null;
+    var yy=+m[3]; if(yy<100) yy+=2000;
+    var mm=String(+m[1]); if(mm.length<2) mm='0'+mm;
+    var dd=String(+m[2]); if(dd.length<2) dd='0'+dd;
+    return yy+'-'+mm+'-'+dd;
+  }
+  function stripEmoji(s){
+    s=(s||'').trim();
+    var m=s.match(/^([\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\uFE0F\u200D]+)\s*(.*)$/u);
+    if(m) return {emoji:m[1].replace(/\uFE0F/g,'').trim(), text:m[2].trim()};
+    return {emoji:'', text:s};
+  }
+  function entryLine(e){
+    var parts=[];
+    parts.push((e.emoji?e.emoji+' ':'')+(e.sport||'Game')+(e.level?' ('+e.level+')':''));
+    if(e.opponent) parts.push((e.home?'vs ':'@ ')+e.opponent);
+    else if(e.place) parts.push((e.home?'vs ':'@ ')+e.place);
+    if(e.time) parts.push(e.time);
+    if(e.release) parts.push('Release '+e.release);
+    return parts.join(' · ');
+  }
+  function todayISO(){
+    var d=new Date();
+    var mm=String(d.getMonth()+1); if(mm.length<2)mm='0'+mm;
+    var dd=String(d.getDate()); if(dd.length<2)dd='0'+dd;
+    return d.getFullYear()+'-'+mm+'-'+dd;
+  }
+
+  async function loadSportsSchedule(){
+    try{
+      var res=await fetch(SPORTS_SHEET_CSV);
+      if(!res.ok){CW_SPORTS_DAYS=[];return;}
+      var rows=parseCSV(await res.text());
+      var hIdx=-1;
+      for(var i=0;i<rows.length;i++){ if(rows[i][0]==='Date'&&rows[i].indexOf('Sport')>=0){hIdx=i;break;} }
+      if(hIdx<0){CW_SPORTS_DAYS=[];return;}
+      var hd=rows[hIdx].map(function(h){return (h||'').trim();});
+      var col=function(n){return hd.indexOf(n);};
+      var cD=col('Date'),cDay=col('Day'),cSp=col('Sport'),cLv=col('Level'),cGe=col('Gender'),
+          cPl=col('Place'),cTm=col('Time'),cOp=col('Opponent'),cFa=col('Facility'),cRl=col('Dismiss/Release Time');
+      var groups=[],curDate=null,curDay=null;
+      for(var r=hIdx+1;r<rows.length;r++){
+        var row=rows[r]||[];
+        var blank=true;
+        for(var k=0;k<row.length;k++){ if(row[k]&&String(row[k]).trim()){blank=false;break;} }
+        if(blank) continue;
+        var dr=(row[cD]||'').trim();
+        var iso=dr?dateISO(dr):null;
+        if(iso){curDate=iso;curDay=(row[cDay]||'').trim();}
+        if(!curDate) continue;
+        var spRaw=(row[cSp]||'').trim();
+        if(!spRaw) continue;
+        var sp=stripEmoji(spRaw), pl=stripEmoji((row[cPl]||'').trim());
+        var isHome=pl.emoji.indexOf('🏠')>=0||/^home/i.test(pl.text);
+        var entry={sport:sp.text,emoji:sp.emoji,level:(row[cLv]||'').trim(),gender:(row[cGe]||'').trim(),
+          home:isHome,place:pl.text,time:(row[cTm]||'').trim(),opponent:(row[cOp]||'').trim(),
+          facility:(row[cFa]||'').trim(),release:(row[cRl]||'').trim()};
+        var g=groups.length&&groups[groups.length-1].date===curDate?groups[groups.length-1]:null;
+        if(!g){g={date:curDate,day:curDay,entries:[]};groups.push(g);}
+        g.entries.push(entry);
+      }
+      CW_SPORTS_DAYS=groups;
+    }catch(e){CW_SPORTS_DAYS=[];}
+  }
+
+  function renderSports(){
+    var wrap=document.getElementById('sports');
+    if(!wrap) return;
+    if(!CW_SPORTS_DAYS.length){wrap.style.display='none';return;}
+    var t=todayISO();
+    var group=null;
+    for(var i=0;i<CW_SPORTS_DAYS.length;i++){ if(CW_SPORTS_DAYS[i].date===t){group=CW_SPORTS_DAYS[i];break;} }
+    var label='SPORTS TODAY';
+    if(!group){
+      var future=CW_SPORTS_DAYS.filter(function(g){return g.date>t;}).sort(function(a,b){return a.date<b.date?-1:1;});
+      group=future[0];
+      if(group){
+        var dt=new Date(group.date+'T00:00:00');
+        label='NEXT UP · '+dt.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}).toUpperCase();
+      }
+    }
+    if(!group){wrap.style.display='none';return;}
+    var html=group.entries.map(function(e){return '<span class="sp-item">'+entryLine(e)+'</span><span class="sp-sep">·</span>';}).join('');
+    document.getElementById('sports-label').textContent=label;
+    document.getElementById('sports-inner').innerHTML=html+html;
+    wrap.style.display='flex';
+  }
+
+  async function tick(){ await loadSportsSchedule(); renderSports(); }
+  mountSportsEl();
+  tick();
+  setInterval(tick, 5*60*1000);
+})();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.4/lib/bundles/adhan.umd.min.js"></script>
+<script src="/shared/prayer-status.js"></script>
+<script id="cw2-prayer-window-js">
+(function(){
+  function renderPrayerStatus(status){
+    var wrap = document.getElementById('sbPrayerWrap');
+    var val = document.getElementById('sbPrayer');
+    if (!wrap || !val) return;
+    if (status && status.enabled && (status.dhuhrOpen || status.asrOpen)) {
+      val.textContent = 'OPEN · ' + status.activeLabel.toUpperCase();
+      wrap.style.display = '';
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+  async function tick(){
+    if (typeof CWPrayerStatus === 'undefined') return;
+    try {
+      var status = await CWPrayerStatus.computePrayerStatus();
+      renderPrayerStatus(status);
+    } catch(e) {}
+  }
+  tick();
+  setInterval(tick, 5*60*1000);
+})();
+</script>
+
+</body>
+</html>
