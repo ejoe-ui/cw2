@@ -2020,6 +2020,7 @@ var DISPLAY_MODES = [
   { key:'eve',          label:'ORB Board',       angle: 168 },
   { key:'scrape',       label:'SCRAP•E',         angle: 184, redirect:true },
   { key:'eve-screen',   label:'ORB Screen',      angle: 200, redirect:true },
+  { key:'orb-bbs',      label:'ORB · BBS Skin',  angle: 216, redirect:true },
 ];
 var dialModeIdx = 0, dialOpen = false;
 
@@ -2071,6 +2072,7 @@ function setDialMode(idx) {
   var mode = DISPLAY_MODES[idx];
   if (mode && mode.redirect) {
     if (mode.key === 'scrape') location.href = '/display-scrape-v2-legacy.html?room=' + ROOM;
+    else if (mode.key === 'orb-bbs') location.href = '/display-orb-bbs.html?room=' + ROOM;
     else location.href = '/display-orb.html?room=' + ROOM;
     return;
   }
