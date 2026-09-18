@@ -298,6 +298,18 @@
     <div class="card-grid" id="store-grid"></div>
   </div>
 
+  <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">Print &amp; Maker Shop</div>
+        <div class="section-sub">Order Intake &amp; Status</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="printshop-grid"></div>
+  </div>
+
 <div>
     <div class="section-head">
       <div class="section-pip muted"></div>
@@ -485,6 +497,25 @@ const STORE = [
   },
 ];
 
+const PRINTSHOP = [
+  {
+    icon: '🖨️', name: 'Order Status',
+    desc: 'Studio Lead view for the print/maker shop — search open orders, update status and machine, add notes. Auto-emails requesters when their order is ready for pickup.',
+    url: 'https://script.google.com/a/macros/rjusd.org/s/AKfycbxQPnSoj4J1YchorGMqdYPUUTTNvkkig2bceBuQzDIP2fGvGlku4pk1CBY74PedmVEn3g/exec',
+    badge: 'Studio Lead',
+    light: { bg:'#fdeee8', fg:'#a3401a', br:'#e8b89a', ac:'#c8541f' },
+    dark:  { bg:'#2a1408', fg:'#e8935a', br:'#8a4a1a', ac:'#e8935a' },
+  },
+  {
+    icon: '📊', name: 'Order Timeline',
+    desc: 'Gantt-style view of every open job from submission to due date, color-coded by status. Click any job to update it.',
+    url: 'https://script.google.com/a/macros/rjusd.org/s/AKfycbxQPnSoj4J1YchorGMqdYPUUTTNvkkig2bceBuQzDIP2fGvGlku4pk1CBY74PedmVEn3g/exec?view=gantt',
+    badge: 'Studio Lead',
+    light: { bg:'#fdeee8', fg:'#a3401a', br:'#e8b89a', ac:'#c8541f' },
+    dark:  { bg:'#2a1408', fg:'#e8935a', br:'#8a4a1a', ac:'#e8935a' },
+  },
+];
+
 const RESOURCES = [
   {
     icon: '📘', name: 'RHS Handbook Hub',
@@ -504,12 +535,14 @@ function renderCards() {
   const pg = document.getElementById('passable-grid');
   const kg = document.getElementById('checkmate-grid');
   const sg = document.getElementById('store-grid');
+  const zg = document.getElementById('printshop-grid');
   const rg = document.getElementById('resources-grid');
-  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; sg.innerHTML = ''; rg.innerHTML = '';
+  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; sg.innerHTML = ''; zg.innerHTML = ''; rg.innerHTML = '';
   COWBOY.forEach(p    => cg.appendChild(buildCard(p, th)));
   PASSABLE.forEach(p  => pg.appendChild(buildCard(p, th)));
   CHECKMATE.forEach(p => kg.appendChild(buildCard(p, th)));
   STORE.forEach(p     => sg.appendChild(buildCard(p, th)));
+  PRINTSHOP.forEach(p => zg.appendChild(buildCard(p, th)));
   RESOURCES.forEach(p => rg.appendChild(buildCard(p, th)));
 }
 
