@@ -310,6 +310,18 @@
     <div class="card-grid" id="printshop-grid"></div>
   </div>
 
+  <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">Design Tools</div>
+        <div class="section-sub">Buttons &amp; Print Prep</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="design-grid"></div>
+  </div>
+
 <div>
     <div class="section-head">
       <div class="section-pip muted"></div>
@@ -556,6 +568,25 @@ const PRINTSHOP = [
   },
 ];
 
+const DESIGN = [
+  {
+    icon: '🔘', name: 'Button UP',
+    desc: 'Lay out button art for the cutter. Pick a button size, drop in art, fit it to the face, and save a print-ready US Letter PDF.',
+    url: 'https://button-up.vercel.app',
+    badge: 'Tool',
+    light: { bg:'#f3e8fd', fg:'#5a1a8a', br:'#d0a8e0', ac:'#7c3aed' },
+    dark:  { bg:'#1e0a2e', fg:'#c4b5fd', br:'#5a2a8a', ac:'#a78bfa' },
+  },
+  {
+    icon: '⭕', name: 'Circle Trim',
+    desc: 'Finds circular art in a file, centers it, trims the extra space, and exports an exact-size PNG or PDF so the Roland places it at 100%.',
+    url: 'https://circle-trim.vercel.app',
+    badge: 'Print Prep',
+    light: { bg:'#fdeee8', fg:'#a3401a', br:'#e8b89a', ac:'#c8541f' },
+    dark:  { bg:'#2a1408', fg:'#e8935a', br:'#8a4a1a', ac:'#e8935a' },
+  },
+];
+
 const RESOURCES = [
   {
     icon: '📘', name: 'RHS Handbook Hub',
@@ -576,13 +607,15 @@ function renderCards() {
   const kg = document.getElementById('checkmate-grid');
   const sg = document.getElementById('store-grid');
   const zg = document.getElementById('printshop-grid');
+  const dg = document.getElementById('design-grid');
   const rg = document.getElementById('resources-grid');
-  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; sg.innerHTML = ''; zg.innerHTML = ''; rg.innerHTML = '';
+  cg.innerHTML = ''; pg.innerHTML = ''; kg.innerHTML = ''; sg.innerHTML = ''; zg.innerHTML = ''; dg.innerHTML = ''; rg.innerHTML = '';
   COWBOY.forEach(p    => cg.appendChild(buildCard(p, th)));
   PASSABLE.forEach(p  => pg.appendChild(buildCard(p, th)));
   CHECKMATE.forEach(p => kg.appendChild(buildCard(p, th)));
   STORE.forEach(p     => sg.appendChild(buildCard(p, th)));
   PRINTSHOP.forEach(p => zg.appendChild(buildCard(p, th)));
+  DESIGN.forEach(p    => dg.appendChild(buildCard(p, th)));
   RESOURCES.forEach(p => rg.appendChild(buildCard(p, th)));
 }
 
