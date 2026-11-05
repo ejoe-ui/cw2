@@ -264,6 +264,18 @@
     <div class="card-grid" id="printshop-grid"></div>
   </div>
 
+  <div>
+    <div class="section-head">
+      <div class="section-pip muted"></div>
+      <div class="section-wrap">
+        <div class="section-title">Design Tools</div>
+        <div class="section-sub">Print Prep</div>
+      </div>
+      <div class="section-rule"></div>
+    </div>
+    <div class="card-grid" id="design-grid"></div>
+  </div>
+
   <!--
     To add a new tool category for Room 18:
     1. Define a new card array below in the script (same shape as PRINTSHOP).
@@ -359,10 +371,22 @@ const PRINTSHOP = [
   },
 ];
 
+const DESIGN = [
+  {
+    icon: '⭕', name: 'Circle Trim',
+    desc: 'Finds circular art in a file, centers it, trims the extra space, and exports an exact-size PNG or PDF so the Roland places it at 100%.',
+    url: 'https://circle-trim.vercel.app',
+    badge: 'Print Prep',
+    light: { bg:'#fdeee8', fg:'#a3401a', br:'#e8b89a', ac:'#c8541f' },
+    dark:  { bg:'#2a1408', fg:'#e8935a', br:'#8a4a1a', ac:'#e8935a' },
+  },
+];
+
 // Data-driven sections: add { data: SOME_ARRAY, gridId: 'some-grid' } here
 // (plus the matching markup block above) to add a new tool category.
 const SECTIONS = [
   { data: PRINTSHOP, gridId: 'printshop-grid' },
+  { data: DESIGN,    gridId: 'design-grid' },
 ];
 
 let qc = 0;
